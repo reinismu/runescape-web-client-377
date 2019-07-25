@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "parcel index.html",
     "test": "jest",
+    "rs-test": "ts-jest",
     "test-watch": "jest --watch"
   },
   "author": "",
@@ -17,9 +18,11 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.15",
+    "@types/node": "^12.6.8",
     "jest": "^24.8.0",
     "parcel-bundler": "^1.12.3",
     "parcel-plugin-wasm.rs": "^1.2.11",
+    "rs-jest": "^1.1.0",
     "ts-jest": "^24.0.2",
     "typescript": "^3.5.3"
   }

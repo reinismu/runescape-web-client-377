@@ -32,4 +32,12 @@ Promise.all(
     const tileArchive = new Archive(indexes[0].get(1));
     const tileData = tileArchive.getFile("title.dat")
     console.log(tileData);
+    var bytes = new Uint8Array(indexes[0].get(1)); // pass your byte response to this constructor
+
+    var blob=new Blob([bytes]);// change resultByte to bytes
+
+    var link=document.createElement('a');
+    link.href=window.URL.createObjectURL(blob);
+    link.download="index1.raw";
+    link.click();
 })

@@ -1,6 +1,6 @@
 import { Buffer } from "../net/Buffer";
 import { BZip2Decompressor } from "./bzip/BZip2Decompressor";
-import { rs_hash_string } from "./../../wasm/Cargo.toml";
+import { rs_hash_string } from "./../../wasm/src/lib.rs";
 
 /**
  * Creates the archive.
