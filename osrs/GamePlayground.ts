@@ -3,6 +3,7 @@ import cacheIndices from "./../client_cache/*.idx*";
 import { rs_hash_string } from "./../wasm/src/lib.rs";
 import { Index } from "./cache/Index";
 import { Archive } from "./cache/Archive";
+import pixels from "image-pixels";
 
 console.log("Hello");
 console.log("Rust add: " + rs_hash_string("title.dat"));
@@ -13,31 +14,30 @@ async function getFile(fileUrl: string): Promise<ArrayBuffer> {
     return resp.arrayBuffer();
 }
 
-Promise.all(
-    [
+async function test() {
+    const promises = await Promise.all([
         getFile(cacheData.main_file_cache),
         getFile(cacheIndices.main_file_cache[0]),
         getFile(cacheIndices.main_file_cache[1]),
         getFile(cacheIndices.main_file_cache[2]),
         getFile(cacheIndices.main_file_cache[3]),
-        getFile(cacheIndices.main_file_cache[4]),
-    ]
-).then((promises) => {
+        getFile(cacheIndices.main_file_cache[4])
+    ]);
     const main = promises[0];
-    let indexes: Index[] = []
-    for(let type = 0; type< 5; type++) {
-        indexes.push(new Index(type+1, 0x927c0, main, promises[1+type]));
+    let indexes: Index[] = [];
+    for (let type = 0; type < 5; type++) {
+        indexes.push(new Index(type + 1, 0x927c0, main, promises[1 + type]));
     }
     console.log(indexes[0]);
     const tileArchive = new Archive(indexes[0].get(1));
-    const tileData = tileArchive.getFile("title.dat")
-    console.log(tileData);
-    var bytes = new Uint8Array(indexes[0].get(1)); // pass your byte response to this constructor
+    const tileData = tileArchive.getFile("title.dat");
+    const data = await pixels(new Uint8Array(tileData));
+    console.log(data);
+    console.log(new Int32Array(data.data.buffer));
+    // FFFFFFFFFF90968A FFFFFFFFFF3D4342
+    (document.getElementById("preview") as HTMLImageElement).src =
+        "data:image/jpg;base64," +
+        btoa(String.fromCharCode.apply(null, new Uint8Array(tileData)));
+}
 
-    var blob=new Blob([bytes]);// change resultByte to bytes
-
-    var link=document.createElement('a');
-    link.href=window.URL.createObjectURL(blob);
-    link.download="index1.raw";
-    link.click();
-})
+test();
