@@ -9,6 +9,8 @@ import { Rasterizer } from "./media/Rasterizer";
 import { ImageRGB } from "./cache/media/ImageRGB";
 import { IndexedImage } from "./cache/media/IndexedImage";
 import { Buffer } from "./net/Buffer";
+import { Scene } from "./scene/Scene";
+import { CollisionMap } from "./scene/util/CollisionMap";
 
 export class Game extends GameShell {
     public static pulseCycle: number = 0;
@@ -68,16 +70,43 @@ export class Game extends GameShell {
     anInt1322: number = 0;
     aString1027: string = null;
     aBoolean1243: boolean = false;
+    renderDelay: number = 0;
+    currentSceneTileFlags: number[][][] = null;
+    anIntArrayArrayArray891: number[][][] = null;
+    currentScene: Scene = null;
+    currentCollisionMap: CollisionMap[] = Array(4).fill(null);
+    minimapImage: ImageRGB = null;
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
     }
 
     public async startUp() {
+        this.drawLoadingText(20, "Starting up");
         await this.initStores();
         this.initArchives();
         this.initTypeFaces();
-        await this.initializeApplication(765, 503);
+
+        await this.prepareTitleBackground();
+        await this.prepareTitle();
+
+        const configArchive: Archive = this.requestArchive(2, "config", this.archiveHashes[2], 30, "config");
+        const archiveInterface: Archive = this.requestArchive(3, "interface", this.archiveHashes[3], 35, "interface");
+        const archiveMedia: Archive = this.requestArchive(4, "media", this.archiveHashes[4], 40, "2d gameGraphics");
+        const textureArchive: Archive = this.requestArchive(6, "textures", this.archiveHashes[6], 45, "textures");
+        const chatArchive: Archive = this.requestArchive(7, "wordenc", this.archiveHashes[7], 50, "chat system");
+        const soundArchive: Archive = this.requestArchive(8, "sounds", this.archiveHashes[8], 55, "sound effects");
+
+        this.currentSceneTileFlags = Array<Array<Array<number>>>(4).fill(Array<Array<number>>(104).fill(Array<number>(104).fill(0)));
+        this.anIntArrayArrayArray891 = Array<Array<Array<number>>>(4).fill(Array<Array<number>>(105).fill(Array<number>(105).fill(0)));
+
+        this.currentScene = new Scene(this.anIntArrayArrayArray891, 104, 4, 104, 5);
+        for (let j: number = 0; j < 4; j++) {
+            this.currentCollisionMap[j] = new CollisionMap(104, 104);
+        }
+        this.minimapImage = ImageRGB.from(512, 512);
+        const versionListArchive: Archive = this.requestArchive(5, "versionlist", this.archiveHashes[5], 60, "update list");
+        this.drawLoadingText(60, "Connecting to update server");
     }
 
     async resetTitleScreen() {
@@ -118,11 +147,7 @@ export class Game extends GameShell {
 
     async prepareTitle() {
         this.titleboxImage = new IndexedImage(this.titleArchive, "titlebox", 0);
-        this.titleboxButtonImage = new IndexedImage(
-            this.titleArchive,
-            "titlebutton",
-            0
-        );
+        this.titleboxButtonImage = new IndexedImage(this.titleArchive, "titlebutton", 0);
         this.titleFlameEmblem = (s => {
             const a = [];
             while (s-- > 0) {
@@ -131,11 +156,7 @@ export class Game extends GameShell {
             return a;
         })(12);
         for (let i: number = 0; i < 12; i++) {
-            this.titleFlameEmblem[i] = new IndexedImage(
-                this.titleArchive,
-                "runes",
-                i
-            );
+            this.titleFlameEmblem[i] = new IndexedImage(this.titleArchive, "runes", i);
         }
         this.anImageRGB1226 = ImageRGB.from(128, 265);
         this.anImageRGB1227 = ImageRGB.from(128, 265);
@@ -238,7 +259,7 @@ export class Game extends GameShell {
         if (!this.startedRenderingFlames) {
             this.shouldRenderFlames = true;
             this.startedRenderingFlames = true;
-            await this.run();
+            // await this.run();
         }
     }
 
@@ -256,58 +277,34 @@ export class Game extends GameShell {
         const byte0: number = 20;
         this.fontBold.drawStringLeft(
             "RuneScape is loading - please wait...",
-            ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) /
-                2) |
-                0,
-            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) /
-                2) |
-                0) -
-                26 -
-                byte0,
+            ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) - 26 - byte0,
             16777215
         );
-        const j: number =
-            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) /
-                2) |
-                0) -
-            18 -
-            byte0;
+        const j: number = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) - 18 - byte0;
         Rasterizer.drawUnfilledRectangle(
-            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) /
-                2) |
-                0) -
-                152,
+            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) - 152,
             j,
             304,
             34,
             9179409
         );
         Rasterizer.drawUnfilledRectangle(
-            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) /
-                2) |
-                0) -
-                151,
+            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) - 151,
             j + 1,
             302,
             32,
             0
         );
         Rasterizer.drawFilledRectangle(
-            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) /
-                2) |
-                0) -
-                150,
+            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) - 150,
             j + 2,
             i * 3,
             30,
             9179409
         );
         Rasterizer.drawFilledRectangle(
-            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) /
-                2) |
-                0) -
-                150 +
-                i * 3,
+            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) - 150 + i * 3,
             j + 2,
             300 - i * 3,
             30,
@@ -315,14 +312,8 @@ export class Game extends GameShell {
         );
         this.fontBold.drawStringLeft(
             s,
-            ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) /
-                2) |
-                0,
-            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) /
-                2) |
-                0) +
-                5 -
-                byte0,
+            ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+            (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) + 5 - byte0,
             16777215
         );
         this.aClass18_1200.drawGraphics(202, 171, this.gameGraphics);
@@ -330,11 +321,7 @@ export class Game extends GameShell {
             this.aBoolean1046 = false;
             if (!this.aBoolean1243) {
                 this.flameLeftBackground.drawGraphics(0, 0, this.gameGraphics);
-                this.flameRightBackground.drawGraphics(
-                    637,
-                    0,
-                    this.gameGraphics
-                );
+                this.flameRightBackground.drawGraphics(637, 0, this.gameGraphics);
             }
             this.aClass18_1198.drawGraphics(128, 0, this.gameGraphics);
             this.aClass18_1199.drawGraphics(202, 371, this.gameGraphics);
@@ -353,10 +340,8 @@ export class Game extends GameShell {
         }
         for (let l: number = 0; l < 5000; l++) {
             {
-                const i1: number =
-                    (((Math.random() * 128.0 * j) as number) as number) | 0;
-                this.anIntArray1176[i1] =
-                    ((Math.random() * 256.0) as number) | 0;
+                const i1: number = (((Math.random() * 128.0 * j) as number) as number) | 0;
+                this.anIntArray1176[i1] = ((Math.random() * 256.0) as number) | 0;
             }
         }
         for (let j1: number = 0; j1 < 20; j1++) {
@@ -386,16 +371,10 @@ export class Game extends GameShell {
             let l1: number = 0;
             for (let j2: number = 0; j2 < class50_sub1_sub1_sub3.height; j2++) {
                 {
-                    for (
-                        let l2: number = 0;
-                        l2 < class50_sub1_sub1_sub3.width;
-                        l2++
-                    ) {
+                    for (let l2: number = 0; l2 < class50_sub1_sub1_sub3.width; l2++) {
                         if (class50_sub1_sub1_sub3.pixels[l1++] !== 0) {
-                            const i3: number =
-                                l2 + 16 + class50_sub1_sub1_sub3.xDrawOffset;
-                            const j3: number =
-                                j2 + 16 + class50_sub1_sub1_sub3.yDrawOffset;
+                            const i3: number = l2 + 16 + class50_sub1_sub1_sub3.xDrawOffset;
+                            const j3: number = j2 + 16 + class50_sub1_sub1_sub3.yDrawOffset;
                             const k3: number = i3 + (j3 << 7);
                             this.anIntArray1176[k3] = 0;
                         }
@@ -405,20 +384,25 @@ export class Game extends GameShell {
         }
     }
 
-    public async run() {
-        if (this.shouldRenderFlames) {
-            this.processFlamesCycle();
-        } else {
-            await super.run();
-            if (this.gameState == -2) {
-                return;
+    public async run(): Promise<number> {
+        const currentMilis = new Date().getTime();
+        if (currentMilis > this.renderDelay) {
+            let delay = 0;
+            if (this.shouldRenderFlames) {
+                delay = this.processFlamesCycle();
+            } else {
+                delay = await super.run();
+                if (this.gameState == -2) {
+                    return;
+                }
             }
-        }
 
+            this.renderDelay = new Date().getTime() + delay;
+        }
         requestAnimationFrame(this.run.bind(this));
     }
 
-    processFlamesCycle() {
+    processFlamesCycle(): number {
         this.aBoolean1320 = true;
         try {
             if (!this.startedRenderingFlames) {
@@ -430,6 +414,7 @@ export class Game extends GameShell {
             this.calculateFlamePositions();
             this.renderFlames();
         } catch (ignored) {}
+        return 20;
     }
 
     calculateFlamePositions() {
@@ -445,8 +430,7 @@ export class Game extends GameShell {
         for (let i: number = 0; i < 100; i++) {
             {
                 const x: number = (((Math.random() * 124.0) as number) | 0) + 2;
-                const y: number =
-                    (((Math.random() * 128.0) as number) | 0) + 128;
+                const y: number = (((Math.random() * 128.0) as number) | 0) + 128;
                 const pixel: number = x + (y << 7);
                 this.anIntArray1084[pixel] = 192;
             }
@@ -480,12 +464,7 @@ export class Game extends GameShell {
                         const pixel: number = x + (y << 7);
                         let i4: number =
                             this.anIntArray1085[pixel + 128] -
-                            ((this.anIntArray1176[
-                                (pixel + this.anInt1238) &
-                                    (this.anIntArray1176.length - 1)
-                            ] /
-                                5) |
-                                0);
+                            ((this.anIntArray1176[(pixel + this.anInt1238) & (this.anIntArray1176.length - 1)] / 5) | 0);
                         if (i4 < 0) {
                             i4 = 0;
                         }
@@ -572,8 +551,7 @@ export class Game extends GameShell {
         let k1: number = 1152;
         for (let l1: number = 1; l1 < c - 1; l1++) {
             {
-                const i2: number =
-                    ((this.anIntArray1166[l1] * (c - l1)) / c) | 0;
+                const i2: number = ((this.anIntArray1166[l1] * (c - l1)) / c) | 0;
                 let k2: number = 22 + i2;
                 if (k2 < 0) {
                     k2 = 0;
@@ -586,15 +564,10 @@ export class Game extends GameShell {
                             const i4: number = k3;
                             const k4: number = 256 - k3;
                             k3 = this.anIntArray1310[k3];
-                            const i5: number = this.flameLeftBackground.pixels[
-                                k1
-                            ];
+                            const i5: number = this.flameLeftBackground.pixels[k1];
                             this.flameLeftBackground.pixels[k1++] =
-                                ((((k3 & 16711935) * i4 +
-                                    (i5 & 16711935) * k4) &
-                                    -16711936) +
-                                    (((k3 & 65280) * i4 + (i5 & 65280) * k4) &
-                                        16711680)) >>
+                                ((((k3 & 16711935) * i4 + (i5 & 16711935) * k4) & -16711936) +
+                                    (((k3 & 65280) * i4 + (i5 & 65280) * k4) & 16711680)) >>
                                 8;
                         } else {
                             k1++;
@@ -610,8 +583,7 @@ export class Game extends GameShell {
         k1 = 1176;
         for (let l2: number = 1; l2 < c - 1; l2++) {
             {
-                const j3: number =
-                    ((this.anIntArray1166[l2] * (c - l2)) / c) | 0;
+                const j3: number = ((this.anIntArray1166[l2] * (c - l2)) / c) | 0;
                 const l3: number = 103 - j3;
                 k1 += j3;
                 for (let j4: number = 0; j4 < l3; j4++) {
@@ -621,15 +593,10 @@ export class Game extends GameShell {
                             const j5: number = l4;
                             const k5: number = 256 - l4;
                             l4 = this.anIntArray1310[l4];
-                            const l5: number = this.flameRightBackground.pixels[
-                                k1
-                            ];
+                            const l5: number = this.flameRightBackground.pixels[k1];
                             this.flameRightBackground.pixels[k1++] =
-                                ((((l4 & 16711935) * j5 +
-                                    (l5 & 16711935) * k5) &
-                                    -16711936) +
-                                    (((l4 & 65280) * j5 + (l5 & 65280) * k5) &
-                                        16711680)) >>
+                                ((((l4 & 16711935) * j5 + (l5 & 16711935) * k5) & -16711936) +
+                                    (((l4 & 65280) * j5 + (l5 & 65280) * k5) & 16711680)) >>
                                 8;
                         } else {
                             k1++;
@@ -648,11 +615,7 @@ export class Game extends GameShell {
             this.outBuffer.putByte(235);
         }
         const i1: number = 256 - k;
-        return (
-            ((((i & 16711935) * i1 + (j & 16711935) * k) & -16711936) +
-                (((i & 65280) * i1 + (j & 65280) * k) & 16711680)) >>
-            8
-        );
+        return ((((i & 16711935) * i1 + (j & 16711935) * k) & -16711936) + (((i & 65280) * i1 + (j & 65280) * k) & 16711680)) >> 8;
     }
 
     async initStores() {
@@ -666,9 +629,7 @@ export class Game extends GameShell {
         ]);
         const main = promises[0];
         for (let type = 0; type < 5; type++) {
-            this.stores.push(
-                new Index(type + 1, 0x927c0, main, promises[1 + type])
-            );
+            this.stores.push(new Index(type + 1, 0x927c0, main, promises[1 + type]));
         }
         console.log("stores initialized");
     }
@@ -705,18 +666,10 @@ export class Game extends GameShell {
         for (let i: number = 0; i < class50_sub1_sub1_sub1.height; i++) {
             {
                 for (let j: number = 0; j < class50_sub1_sub1_sub1.width; j++) {
-                    ai[j] =
-                        class50_sub1_sub1_sub1.pixels[
-                            class50_sub1_sub1_sub1.width -
-                                j -
-                                1 +
-                                class50_sub1_sub1_sub1.width * i
-                        ];
+                    ai[j] = class50_sub1_sub1_sub1.pixels[class50_sub1_sub1_sub1.width - j - 1 + class50_sub1_sub1_sub1.width * i];
                 }
                 for (let l: number = 0; l < class50_sub1_sub1_sub1.width; l++) {
-                    class50_sub1_sub1_sub1.pixels[
-                        l + class50_sub1_sub1_sub1.width * i
-                    ] = ai[l];
+                    class50_sub1_sub1_sub1.pixels[l + class50_sub1_sub1_sub1.width * i] = ai[l];
                 }
             }
         }
@@ -738,16 +691,9 @@ export class Game extends GameShell {
         class50_sub1_sub1_sub1.drawInverse(254, -171);
         this.aClass18_1206.createRasterizer();
         class50_sub1_sub1_sub1.drawInverse(-180, -171);
-        class50_sub1_sub1_sub1 = ImageRGB.fromArchive(
-            this.titleArchive,
-            "logo",
-            0
-        );
+        class50_sub1_sub1_sub1 = ImageRGB.fromArchive(this.titleArchive, "logo", 0);
         this.aClass18_1198.createRasterizer();
-        class50_sub1_sub1_sub1.drawImage(
-            18,
-            382 - ((class50_sub1_sub1_sub1.width / 2) | 0) - 128
-        );
+        class50_sub1_sub1_sub1.drawImage(18, 382 - ((class50_sub1_sub1_sub1.width / 2) | 0) - 128);
         class50_sub1_sub1_sub1 = null;
         abyte0 = null;
         ai = null;
@@ -755,13 +701,7 @@ export class Game extends GameShell {
 
     initArchives() {
         console.log("initArchives");
-        this.titleArchive = this.requestArchive(
-            1,
-            "title",
-            this.archiveHashes[1],
-            25,
-            "title screen"
-        );
+        this.titleArchive = this.requestArchive(1, "title", this.archiveHashes[1], 25, "title screen");
     }
 
     initTypeFaces() {
@@ -772,13 +712,7 @@ export class Game extends GameShell {
         this.fontFancy = new TypeFace(true, this.titleArchive, "q8_full");
     }
 
-    requestArchive(
-        id: number,
-        file: string,
-        expectedCrc: number,
-        x: number,
-        displayName: string
-    ): Archive {
+    requestArchive(id: number, file: string, expectedCrc: number, x: number, displayName: string): Archive {
         // In rs it does web requests, hash checks and updates
         return new Archive(this.stores[0].get(id));
     }

@@ -35,14 +35,7 @@ export class GameShell {
 
     public imageProducer: ProducingGraphicsBuffer;
 
-    public aClass50_Sub1_Sub1_Sub1Array16: ImageRGB[] = [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
-    ];
+    public aClass50_Sub1_Sub1_Sub1Array16: ImageRGB[] = [null, null, null, null, null, null];
 
     // public gameFrame: GameFrame;
 
@@ -119,14 +112,11 @@ export class GameShell {
         this.height = _height;
         // this.gameFrame = new GameFrame(this, this.width, this.height);
         this.gameGraphics = new Graphics(this.canvas);
-        this.imageProducer = new ProducingGraphicsBuffer(
-            this.width,
-            this.height
-        );
+        this.imageProducer = new ProducingGraphicsBuffer(this.width, this.height);
         await this.run();
     }
 
-    public async run() {
+    public async run(): Promise<number> {
         if (!this.runInitialized) {
             this.runInitialized = true;
             // this.getParentComponent().addMouseListener(this);
@@ -135,17 +125,19 @@ export class GameShell {
             // this.getParentComponent().addFocusListener(this);
             // if (this.gameFrame != null) { this.gameFrame.addWindowListener(this); }
             await this.drawLoadingText(0, "Loading...");
-            this.startup();
+            await this.startUp();
 
             for (let optim: number = 0; optim < 10; optim++) {
                 this.optims[optim] = new Date().getTime();
             }
         }
-
-        this.mainLoop();
+        if (this.gameState >= 0) {
+            return this.mainLoop();
+        }
+        return 0;
     }
 
-    public mainLoop() {
+    public mainLoop(): number {
         const ld = this.loopData;
         if (this.gameState > 0) {
             this.gameState--;
@@ -159,9 +151,7 @@ export class GameShell {
         const currentTime: number = new Date().getTime();
         if (currentTime > this.optims[ld.opos]) {
             ld.ratio =
-                ((n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(
-                    (2560 * this.deltime) / (currentTime - this.optims[ld.opos])
-                ) as number) | 0;
+                ((n => (n < 0 ? Math.ceil(n) : Math.floor(n)))((2560 * this.deltime) / (currentTime - this.optims[ld.opos])) as number) | 0;
         }
         if (ld.ratio < 25) {
             ld.ratio = 25;
@@ -169,10 +159,7 @@ export class GameShell {
         if (ld.ratio > 256) {
             ld.ratio = 256;
             ld.del =
-                ((this.deltime -
-                    (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(
-                        (currentTime - this.optims[ld.opos]) / 10
-                    )) as number) | 0;
+                ((this.deltime - (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))((currentTime - this.optims[ld.opos]) / 10)) as number) | 0;
         }
         if (ld.del > this.deltime) {
             ld.del = this.deltime;
@@ -214,17 +201,8 @@ export class GameShell {
                     console.info("otim" + optim + ":" + this.optims[optim]);
                 }
             }
-            console.info(
-                "fps:" + this.fps + " ratio:" + ld.ratio + " count:" + ld.count
-            );
-            console.info(
-                "del:" +
-                    ld.del +
-                    " deltime:" +
-                    this.deltime +
-                    " mindel:" +
-                    this.mindel
-            );
+            console.info("fps:" + this.fps + " ratio:" + ld.ratio + " count:" + ld.count);
+            console.info("del:" + ld.del + " deltime:" + this.deltime + " mindel:" + this.mindel);
             console.info("intex:" + ld.intex + " opos:" + ld.opos);
             this.dumpRequested = false;
             ld.intex = 0;
@@ -232,6 +210,7 @@ export class GameShell {
         if (this.gameState === -1) {
             this.exit();
         }
+        return ld.del;
     }
 
     public exit() {
@@ -478,7 +457,7 @@ export class GameShell {
         }
     }
 
-    public async startup() {}
+    public async startUp() {}
 
     public doLogic() {}
 
@@ -503,31 +482,12 @@ export class GameShell {
         const color: Color = new Color(140, 17, 17);
         const centerHeight: number = ((this.height / 2) | 0) - 18;
         this.gameGraphics.setColor(color);
-        this.gameGraphics.drawRect(
-            ((this.width / 2) | 0) - 152,
-            centerHeight,
-            304,
-            34
-        );
-        this.gameGraphics.fillRect(
-            ((this.width / 2) | 0) - 150,
-            centerHeight + 2,
-            percent * 3,
-            30
-        );
+        this.gameGraphics.drawRect(((this.width / 2) | 0) - 152, centerHeight, 304, 34);
+        this.gameGraphics.fillRect(((this.width / 2) | 0) - 150, centerHeight + 2, percent * 3, 30);
         this.gameGraphics.setColor(Color.black);
-        this.gameGraphics.fillRect(
-            ((this.width / 2) | 0) - 150 + percent * 3,
-            centerHeight + 2,
-            300 - percent * 3,
-            30
-        );
+        this.gameGraphics.fillRect(((this.width / 2) | 0) - 150 + percent * 3, centerHeight + 2, 300 - percent * 3, 30);
         this.gameGraphics.setFont(helveticaBold);
         this.gameGraphics.setColor(Color.white);
-        this.gameGraphics.drawString(
-            desc,
-            ((this.width - this.gameGraphics.measureTextWidth(desc)) / 2) | 0,
-            centerHeight + 22
-        );
+        this.gameGraphics.drawString(desc, ((this.width - this.gameGraphics.measureTextWidth(desc)) / 2) | 0, centerHeight + 22);
     }
 }

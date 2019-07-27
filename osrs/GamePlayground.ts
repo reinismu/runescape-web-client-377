@@ -42,7 +42,7 @@ import { Game } from "./Game";
 // }
 async function startGame() {
     const game = new Game(document.getElementById("gameCanvas") as HTMLCanvasElement);
-    await game.startUp();
+    await game.initializeApplication(765, 503);
 } 
 startGame().then(() => {
     console.log("Game stopped!");

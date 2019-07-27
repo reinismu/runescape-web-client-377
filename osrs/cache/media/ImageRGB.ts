@@ -45,11 +45,7 @@ export class ImageRGB extends Rasterizer {
         return image;
     }
 
-    public static fromArchive(
-        archive: Archive,
-        archiveName: string,
-        archiveIndex: number
-    ): ImageRGB {
+    public static fromArchive(archive: Archive, archiveName: string, archiveIndex: number): ImageRGB {
         let image = new ImageRGB();
         const imageBytes = archive.getFile(archiveName + ".dat");
         const dataBuffer: Buffer = new Buffer(imageBytes);
@@ -76,9 +72,7 @@ export class ImageRGB extends Rasterizer {
         for (let index: number = 0; index < archiveIndex; index++) {
             {
                 indexBuffer.currentPosition += 2;
-                dataBuffer.currentPosition +=
-                    indexBuffer.getUnsignedLEShort() *
-                    indexBuffer.getUnsignedLEShort();
+                dataBuffer.currentPosition += indexBuffer.getUnsignedLEShort() * indexBuffer.getUnsignedLEShort();
                 indexBuffer.currentPosition++;
             }
         }
@@ -107,7 +101,7 @@ export class ImageRGB extends Rasterizer {
                 {
                     for (let y: number = 0; y < image.height; y++) {
                         const newPixel = pixels[dataBuffer.getUnsignedByte()];
-                        image.pixels[x + y * image.width] = newPixel
+                        image.pixels[x + y * image.width] = newPixel;
                     }
                 }
             }
@@ -119,11 +113,7 @@ export class ImageRGB extends Rasterizer {
         Rasterizer.createRasterizer(this.pixels, this.width, this.height);
     }
 
-    public adjustRGB(
-        redOffset: number,
-        greenOffset: number,
-        blueOffset: number
-    ) {
+    public adjustRGB(redOffset: number, greenOffset: number, blueOffset: number) {
         for (let pixel: number = 0; pixel < this.pixels.length; pixel++) {
             {
                 const originalColor: number = this.pixels[pixel];
@@ -166,9 +156,7 @@ export class ImageRGB extends Rasterizer {
         for (let y: number = 0; y < this.height; y++) {
             {
                 for (let x: number = 0; x < this.width; x++) {
-                    newPixels[
-                        (y + this.offsetY) * this.maxWidth + (x + this.offsetX)
-                    ] = this.pixels[y * this.width + x];
+                    newPixels[(y + this.offsetY) * this.maxWidth + (x + this.offsetX)] = this.pixels[y * this.width + x];
                 }
             }
         }
@@ -216,16 +204,7 @@ export class ImageRGB extends Rasterizer {
         if (newWidth <= 0 || newHeight <= 0) {
             return;
         }
-        this.copyPixels(
-            this.pixels,
-            Rasterizer.pixels,
-            pixel,
-            rasterizerPixel,
-            pixelOffset,
-            rasterizerPixelOffset,
-            newWidth,
-            newHeight
-        );
+        this.copyPixels(this.pixels, Rasterizer.pixels, pixel, rasterizerPixel, pixelOffset, rasterizerPixelOffset, newWidth, newHeight);
     }
 
     public copyPixels(
@@ -240,17 +219,9 @@ export class ImageRGB extends Rasterizer {
     ) {
         const shiftedWidth: number = -(width >> 2);
         width = -(width & 3);
-        for (
-            let heightCounter: number = -height;
-            heightCounter < 0;
-            heightCounter++
-        ) {
+        for (let heightCounter: number = -height; heightCounter < 0; heightCounter++) {
             {
-                for (
-                    let widthCounter: number = shiftedWidth;
-                    widthCounter < 0;
-                    widthCounter++
-                ) {
+                for (let widthCounter: number = shiftedWidth; widthCounter < 0; widthCounter++) {
                     {
                         rasterizerPixels[rasterizerPixel++] = pixels[pixel++];
                         rasterizerPixels[rasterizerPixel++] = pixels[pixel++];
@@ -258,11 +229,7 @@ export class ImageRGB extends Rasterizer {
                         rasterizerPixels[rasterizerPixel++] = pixels[pixel++];
                     }
                 }
-                for (
-                    let widthCounter: number = width;
-                    widthCounter < 0;
-                    widthCounter++
-                ) {
+                for (let widthCounter: number = width; widthCounter < 0; widthCounter++) {
                     rasterizerPixels[rasterizerPixel++] = pixels[pixel++];
                 }
                 rasterizerPixel += rasterizerPixelOffset;
@@ -336,17 +303,9 @@ export class ImageRGB extends Rasterizer {
     ) {
         const shiftedWidth: number = -(width >> 2);
         width = -(width & 3);
-        for (
-            let heightCounter: number = -height;
-            heightCounter < 0;
-            heightCounter++
-        ) {
+        for (let heightCounter: number = -height; heightCounter < 0; heightCounter++) {
             {
-                for (
-                    let widthCounter: number = shiftedWidth;
-                    widthCounter < 0;
-                    widthCounter++
-                ) {
+                for (let widthCounter: number = shiftedWidth; widthCounter < 0; widthCounter++) {
                     {
                         pixelColor = pixels[pixel++];
                         if (pixelColor !== 0) {
@@ -374,11 +333,7 @@ export class ImageRGB extends Rasterizer {
                         }
                     }
                 }
-                for (
-                    let widthCounter: number = width;
-                    widthCounter < 0;
-                    widthCounter++
-                ) {
+                for (let widthCounter: number = width; widthCounter < 0; widthCounter++) {
                     {
                         pixelColor = pixels[pixel++];
                         if (pixelColor !== 0) {
@@ -457,31 +412,16 @@ export class ImageRGB extends Rasterizer {
         alpha: number
     ) {
         const alphaValue: number = 256 - alpha;
-        for (
-            let heightCounter: number = -height;
-            heightCounter < 0;
-            heightCounter++
-        ) {
+        for (let heightCounter: number = -height; heightCounter < 0; heightCounter++) {
             {
-                for (
-                    let widthCounter: number = -width;
-                    widthCounter < 0;
-                    widthCounter++
-                ) {
+                for (let widthCounter: number = -width; widthCounter < 0; widthCounter++) {
                     {
                         color = pixels[pixel++];
                         if (color !== 0) {
-                            const rasterizerPixelColor: number =
-                                rasterizerPixels[rasterizerPixel];
+                            const rasterizerPixelColor: number = rasterizerPixels[rasterizerPixel];
                             rasterizerPixels[rasterizerPixel++] =
-                                ((((color & 16711935) * alpha +
-                                    (rasterizerPixelColor & 16711935) *
-                                        alphaValue) &
-                                    -16711936) +
-                                    (((color & 65280) * alpha +
-                                        (rasterizerPixelColor & 65280) *
-                                            alphaValue) &
-                                        16711680)) >>
+                                ((((color & 16711935) * alpha + (rasterizerPixelColor & 16711935) * alphaValue) & -16711936) +
+                                    (((color & 65280) * alpha + (rasterizerPixelColor & 65280) * alphaValue) & 16711680)) >>
                                 8;
                         } else {
                             rasterizerPixel++;
@@ -524,9 +464,7 @@ export class ImageRGB extends Rasterizer {
                     let l4: number = k3 - l2 * i4;
                     for (j1 = -ai[i]; j1 < 0; j1++) {
                         {
-                            Rasterizer.pixels[j4++] = this.pixels[
-                                (k4 >> 16) + (l4 >> 16) * this.width
-                            ];
+                            Rasterizer.pixels[j4++] = this.pixels[(k4 >> 16) + (l4 >> 16) * this.width];
                             k4 += i3;
                             l4 -= l2;
                         }
@@ -542,61 +480,25 @@ export class ImageRGB extends Rasterizer {
         }
     }
 
-    public shapeImageToPixels(
-        i?: any,
-        k?: any,
-        l?: any,
-        i1?: any,
-        ai?: any,
-        j1?: any,
-        k1?: any,
-        l1?: any,
-        ai1?: any,
-        i2?: any
-    ): any {
+    public shapeImageToPixels(i?: any, k?: any, l?: any, i1?: any, ai?: any, j1?: any, k1?: any, l1?: any, ai1?: any, i2?: any): any {
         if (
             (typeof i === "number" || i === null) &&
             (typeof k === "number" || k === null) &&
             (typeof l === "number" || l === null) &&
             (typeof i1 === "number" || i1 === null) &&
-            ((ai != null &&
-                ((ai instanceof Array) as any) &&
-                (ai.length == 0 ||
-                    ai[0] == null ||
-                    typeof ai[0] === "number")) ||
+            ((ai != null && ((ai instanceof Array) as any) && (ai.length == 0 || ai[0] == null || typeof ai[0] === "number")) ||
                 ai === null) &&
             (typeof j1 === "number" || j1 === null) &&
             (typeof k1 === "number" || k1 === null) &&
             (typeof l1 === "number" || l1 === null) &&
-            ((ai1 != null &&
-                ((ai1 instanceof Array) as any) &&
-                (ai1.length == 0 ||
-                    ai1[0] == null ||
-                    typeof ai1[0] === "number")) ||
+            ((ai1 != null && ((ai1 instanceof Array) as any) && (ai1.length == 0 || ai1[0] == null || typeof ai1[0] === "number")) ||
                 ai1 === null) &&
             (typeof i2 === "number" || i2 === null)
         ) {
-            return this.shapeImageToPixels$int$int$int$int$int_A$int$int$int$int_A$int(
-                i,
-                k,
-                l,
-                i1,
-                ai,
-                j1,
-                k1,
-                l1,
-                ai1,
-                i2
-            ) as any;
+            return this.shapeImageToPixels$int$int$int$int$int_A$int$int$int$int_A$int(i, k, l, i1, ai, j1, k1, l1, ai1, i2) as any;
         } else if (
-            ((i != null &&
-                ((i instanceof Array) as any) &&
-                (i.length == 0 || i[0] == null || typeof i[0] === "number")) ||
-                i === null) &&
-            ((k != null &&
-                ((k instanceof Array) as any) &&
-                (k.length == 0 || k[0] == null || typeof k[0] === "number")) ||
-                k === null) &&
+            ((i != null && ((i instanceof Array) as any) && (i.length == 0 || i[0] == null || typeof i[0] === "number")) || i === null) &&
+            ((k != null && ((k instanceof Array) as any) && (k.length == 0 || k[0] == null || typeof k[0] === "number")) || k === null) &&
             (typeof l === "number" || l === null) &&
             (typeof i1 === "number" || i1 === null) &&
             (typeof ai === "number" || ai === null) &&
@@ -606,33 +508,13 @@ export class ImageRGB extends Rasterizer {
             (typeof ai1 === "number" || ai1 === null) &&
             i2 === undefined
         ) {
-            return this.shapeImageToPixels$int_A$int_A$int$int$int$int$int$int$int(
-                i,
-                k,
-                l,
-                i1,
-                ai,
-                j1,
-                k1,
-                l1,
-                ai1
-            ) as any;
+            return this.shapeImageToPixels$int_A$int_A$int$int$int$int$int$int$int(i, k, l, i1, ai, j1, k1, l1, ai1) as any;
         } else {
             throw new Error("invalid overload");
         }
     }
 
-    public method466(
-        i: number,
-        j: number,
-        k: number,
-        l: number,
-        i1: number,
-        j1: number,
-        k1: number,
-        d: number,
-        l1: number
-    ) {
+    public method466(i: number, j: number, k: number, l: number, i1: number, j1: number, k1: number, d: number, l1: number) {
         if (j1 !== -30658) {
             return;
         }
@@ -653,9 +535,7 @@ export class ImageRGB extends Rasterizer {
                     let j4: number = j3;
                     for (k = -k1; k < 0; k++) {
                         {
-                            const k4: number = this.pixels[
-                                (i4 >> 16) + (j4 >> 16) * this.width
-                            ];
+                            const k4: number = this.pixels[(i4 >> 16) + (j4 >> 16) * this.width];
                             if (k4 !== 0) {
                                 Rasterizer.pixels[l3++] = k4;
                             } else {
@@ -676,12 +556,7 @@ export class ImageRGB extends Rasterizer {
         }
     }
 
-    public method467(
-        class50_sub1_sub1_sub3: IndexedImage,
-        i: number,
-        j: number,
-        k: number
-    ) {
+    public method467(class50_sub1_sub1_sub3: IndexedImage, i: number, j: number, k: number) {
         if (j !== -49993) {
             return;
         }
@@ -721,19 +596,7 @@ export class ImageRGB extends Rasterizer {
         if (k1 <= 0 || j1 <= 0) {
             return;
         } else {
-            this.method468(
-                l,
-                l1,
-                this.pixels,
-                k1,
-                Rasterizer.pixels,
-                class50_sub1_sub1_sub3.pixels,
-                40303,
-                j1,
-                i1,
-                0,
-                i2
-            );
+            this.method468(l, l1, this.pixels, k1, Rasterizer.pixels, class50_sub1_sub1_sub3.pixels, 40303, j1, i1, 0, i2);
             return;
         }
     }
