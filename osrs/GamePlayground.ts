@@ -5,6 +5,7 @@ import { Index } from "./cache/Index";
 import { Archive } from "./cache/Archive";
 import pixels from "image-pixels";
 import { Game } from "./Game";
+import { Socket } from "./net/Socket";
 
 // console.log("Hello");
 // console.log("Rust add: " + rs_hash_string("title.dat"));
@@ -40,12 +41,31 @@ import { Game } from "./Game";
 //         "data:image/jpg;base64," +
 //         btoa(String.fromCharCode.apply(null, new Uint8Array(tileData)));
 // }
-async function startGame() {
-    const game = new Game(document.getElementById("gameCanvas") as HTMLCanvasElement);
-    await game.initializeApplication(765, 503);
-} 
-startGame().then(() => {
-    console.log("Game stopped!");
-}).catch(error => {
-    console.error(error);
+
+// async function startGame() {
+//     const game = new Game(document.getElementById("gameCanvas") as HTMLCanvasElement);
+//     await game.initializeApplication(765, 503);
+// }
+// startGame().then(() => {
+//     console.log("Game stopped!");
+// }).catch(error => {
+//     console.error(error);
+// });
+
+async function testSocket() {
+    const socket = new Socket("localhost", 43594);
+    console.log("Connecting");
+    await socket.connect();
+    console.log("Connected");
+
+    console.log("Write");
+    socket.write$int(15);
+    const data = await socket.read();
+    console.log(data);
+    const data2 = await socket.read();
+    console.log(data2);
+
+}
+testSocket().then(() => {
+    console.log("socket tested");
 });

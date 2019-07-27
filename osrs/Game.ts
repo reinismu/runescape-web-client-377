@@ -11,9 +11,15 @@ import { IndexedImage } from "./cache/media/IndexedImage";
 import { Buffer } from "./net/Buffer";
 import { Scene } from "./scene/Scene";
 import { CollisionMap } from "./scene/util/CollisionMap";
+import { Socket } from "./net/Socket";
+
+interface GameConfig {
+    host: string;
+}
 
 export class Game extends GameShell {
     public static pulseCycle: number = 0;
+    public static portOffset: number = 0;
 
     public stores: Index[] = [];
     public archiveHashes: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0]; // currently unused
@@ -76,6 +82,10 @@ export class Game extends GameShell {
     currentScene: Scene = null;
     currentCollisionMap: CollisionMap[] = Array(4).fill(null);
     minimapImage: ImageRGB = null;
+    loggedIn: boolean = false;
+    gameConfig: GameConfig = {
+        host: "localhost",
+    } as GameConfig;
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
@@ -107,6 +117,14 @@ export class Game extends GameShell {
         this.minimapImage = ImageRGB.from(512, 512);
         const versionListArchive: Archive = this.requestArchive(5, "versionlist", this.archiveHashes[5], 60, "update list");
         this.drawLoadingText(60, "Connecting to update server");
+
+
+    }
+
+    public async openSocket(port: number): Promise<Socket> {
+        const socket = new Socket(this.gameConfig.host, port);
+        await socket.connect();
+        return socket;
     }
 
     async resetTitleScreen() {

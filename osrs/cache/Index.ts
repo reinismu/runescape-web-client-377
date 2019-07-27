@@ -141,13 +141,15 @@ export class Index {
     }
   }
 
-//   public put$int$byte_A$int(len: number, buf: number[], id: number): boolean {
-//     let success: boolean = this.put$byte_A$int$boolean$int(buf, id, true, len);
-//     if (!success) {
-//       success = this.put$byte_A$int$boolean$int(buf, id, false, len);
-//     }
-//     return success;
-//   }
+  public put$int$byte_A$int(len: number, buf: number[], id: number): boolean {
+      throw Error("Unimplemented method put$int$byte_A$int");
+      return true;
+    // let success: boolean = this.put$byte_A$int$boolean$int(buf, id, true, len);
+    // if (!success) {
+    //   success = this.put$byte_A$int$boolean$int(buf, id, false, len);
+    // }
+    // return success;
+  }
 
 //   public put$byte_A$int$boolean$int(
 //     buf: number[],
