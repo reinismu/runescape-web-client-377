@@ -2,7 +2,7 @@ import { Rasterizer } from "../../media/Rasterizer";
 import { Buffer } from "../../net/Buffer";
 import { Archive } from "../Archive";
 import { IndexedImage } from "./IndexedImage";
-import pixels from "image-pixels";
+import { decode } from "jpeg-js";
 
 export class ImageRGB extends Rasterizer {
     public pixels: number[];
@@ -36,8 +36,7 @@ export class ImageRGB extends Rasterizer {
 
     public static async fromJpg(bytes: Uint8Array): Promise<ImageRGB> {
         // Pixel data didn't align with one one in java. Tho it seemed to change the same way.
-        console.log(pixels);
-        const jpgData = await pixels(bytes, { type: "jpg" });
+        const jpgData = decode(bytes);
         let image = new ImageRGB();
         image.pixels = Array.from(new Int32Array(jpgData.data.buffer));
         image.width = image.maxWidth = jpgData.width;
@@ -52,9 +51,8 @@ export class ImageRGB extends Rasterizer {
         archiveIndex: number
     ): ImageRGB {
         let image = new ImageRGB();
-        const dataBuffer: Buffer = new Buffer(
-            archive.getFile(archiveName + ".dat")
-        );
+        const imageBytes = archive.getFile(archiveName + ".dat");
+        const dataBuffer: Buffer = new Buffer(imageBytes);
         const indexBuffer: Buffer = new Buffer(archive.getFile("index.dat"));
         indexBuffer.currentPosition = dataBuffer.getUnsignedLEShort();
         image.maxWidth = indexBuffer.getUnsignedLEShort();
@@ -99,16 +97,17 @@ export class ImageRGB extends Rasterizer {
         })(pixelCount);
         if (type === 0) {
             for (let pixel: number = 0; pixel < pixelCount; pixel++) {
-                image.pixels[pixel] = pixels[dataBuffer.getUnsignedByte()];
+                const newPixel = pixels[dataBuffer.getUnsignedByte()];
+                image.pixels[pixel] = newPixel;
             }
-            return;
+            return image;
         }
         if (type === 1) {
             for (let x: number = 0; x < image.width; x++) {
                 {
                     for (let y: number = 0; y < image.height; y++) {
-                        image.pixels[x + y * image.width] =
-                            pixels[dataBuffer.getUnsignedByte()];
+                        const newPixel = pixels[dataBuffer.getUnsignedByte()];
+                        image.pixels[x + y * image.width] = newPixel
                     }
                 }
             }

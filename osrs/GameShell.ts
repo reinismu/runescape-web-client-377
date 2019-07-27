@@ -107,13 +107,14 @@ export class GameShell {
         count: 0,
         intex: 0
     };
+    public runInitialized = false;
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.gameGraphics = new Graphics(canvas);
     }
 
-    public initializeApplication(_width: number, _height: number) {
+    public async initializeApplication(_width: number, _height: number) {
         this.width = _width;
         this.height = _height;
         // this.gameFrame = new GameFrame(this, this.width, this.height);
@@ -122,20 +123,23 @@ export class GameShell {
             this.width,
             this.height
         );
-        this.startRunnable(this as any, 1);
+        await this.run();
     }
 
-    public run() {
-        // this.getParentComponent().addMouseListener(this);
-        // this.getParentComponent().addMouseMotionListener(this);
-        // this.getParentComponent().addKeyListener(this);
-        // this.getParentComponent().addFocusListener(this);
-        // if (this.gameFrame != null) { this.gameFrame.addWindowListener(this); }
-        this.drawLoadingText(0, "Loading...");
-        this.startup();
+    public async run() {
+        if (!this.runInitialized) {
+            this.runInitialized = true;
+            // this.getParentComponent().addMouseListener(this);
+            // this.getParentComponent().addMouseMotionListener(this);
+            // this.getParentComponent().addKeyListener(this);
+            // this.getParentComponent().addFocusListener(this);
+            // if (this.gameFrame != null) { this.gameFrame.addWindowListener(this); }
+            await this.drawLoadingText(0, "Loading...");
+            this.startup();
 
-        for (let optim: number = 0; optim < 10; optim++) {
-            this.optims[optim] = new Date().getTime();
+            for (let optim: number = 0; optim < 10; optim++) {
+                this.optims[optim] = new Date().getTime();
+            }
         }
 
         this.mainLoop();
@@ -227,8 +231,6 @@ export class GameShell {
         }
         if (this.gameState === -1) {
             this.exit();
-        } else {
-            requestAnimationFrame(this.mainLoop.bind(this));
         }
     }
 
@@ -490,13 +492,7 @@ export class GameShell {
         // if (this.gameFrame != null) { return this.gameFrame; } else { return this; }
     }
 
-    public startRunnable(runnable: () => void, priority: number) {
-        // const thread: java.lang.Thread = new java.lang.Thread((runnable) as any);
-        // thread.start();
-        // thread.setPriority(priority);
-    }
-
-    public drawLoadingText(percent: number, desc: string) {
+    public async drawLoadingText(percent: number, desc: string) {
         const helveticaBold: Font = new Font("Helvetica", 1, 13);
 
         if (this.clearScreen) {

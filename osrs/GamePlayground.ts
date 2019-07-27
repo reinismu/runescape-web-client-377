@@ -43,6 +43,9 @@ import { Game } from "./Game";
 async function startGame() {
     const game = new Game(document.getElementById("gameCanvas") as HTMLCanvasElement);
     await game.startUp();
-    game.run();
 } 
-startGame();
+startGame().then(() => {
+    console.log("Game stopped!");
+}).catch(error => {
+    console.error(error);
+});
