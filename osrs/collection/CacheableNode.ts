@@ -3,23 +3,23 @@ import { Node } from "./Node";
 
 export class CacheableNode extends Node {
 
-    public next: CacheableNode = null;
+    public cacheNext: CacheableNode = null;
 
-    public prev: CacheableNode = null;
+    public cachePrevious: CacheableNode = null;
 
     public constructor() {
         super();
-        if (this.next === undefined) { this.next = null; }
-        if (this.prev === undefined) { this.prev = null; }
+        if (this.cacheNext === undefined) { this.cacheNext = null; }
+        if (this.cachePrevious === undefined) { this.cachePrevious = null; }
     }
     public clear() {
-        if (this.prev == null) {
+        if (this.cachePrevious == null) {
             return;
         } else {
-            this.prev.next = this.next;
-            this.next.prev = this.prev;
-            this.next = null;
-            this.prev = null;
+            this.cachePrevious.next = this.next;
+            this.cacheNext.cachePrevious = this.cachePrevious;
+            this.cacheNext = null;
+            this.cachePrevious = null;
             return;
         }
     }

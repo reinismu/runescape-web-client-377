@@ -226,13 +226,7 @@ export class OnDemandRequester extends Requester {
                         this.onDemandNode = null;
                     } else {
                         if (this.onDemandNode.buffer == null && chunk === 0) {
-                            this.onDemandNode.buffer = (s => {
-                                const a = [];
-                                while (s-- > 0) {
-                                    a.push(0);
-                                }
-                                return a;
-                            })(size);
+                            this.onDemandNode.buffer = Array(size).fill(0);
                         }
                         if (this.onDemandNode.buffer == null && chunk !== 0) {
                             throw Error("missing initializeApplication of file");
@@ -424,19 +418,10 @@ export class OnDemandRequester extends Requester {
         if (onDemandNode.buffer == null) {
             return onDemandNode;
         }
-        let offset: number = 0;
         this.deflateOut = Array.from(ungzip(onDemandNode.buffer));
 
-        onDemandNode.buffer = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(offset);
-        for (let position: number = 0; position < offset; position++) {
-            onDemandNode.buffer[position] = this.deflateOut[position];
-        }
+        onDemandNode.buffer = [...this.deflateOut];
+
         return onDemandNode;
     }
 

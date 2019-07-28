@@ -1155,26 +1155,26 @@ export class Game extends GameShell {
         Model.init(this.onDemandRequester.fileCount(0), this.onDemandRequester);
 
         // TODO fix sound
-        // if (!Game.lowMemory) {
-        //     this.nextSong = 0;
-        //     try {
-        //         this.nextSong = javaemul.internal.IntegerHelper.parseInt(this.getParameter("music"));
-        //     } catch (ignored) {
-        //     }
-        //     this.songChanging = true;
-        //     this.onDemandRequester.request(2, this.nextSong);
-        //     while ((this.onDemandRequester.immediateRequestsCount() > 0)) {{
-        //         this.method77(false);
-        //         try {
-        //             java.lang.Thread.sleep(100);
-        //         } catch (ignored) {
-        //         }
-        //         if (this.onDemandRequester.requestFails > 3) {
-        //             this.method19("ondemand");
-        //             return;
-        //         }
-        //     }}
-        // }
+        if (!Game.lowMemory) {
+            this.nextSong = 0;
+            // try {
+            //     this.nextSong = parseInt(this.getParameter("music"));
+            // } catch (ignored) {
+            // }
+            this.songChanging = true;
+            this.onDemandRequester.request(2, this.nextSong);
+            while ((this.onDemandRequester.immediateRequestsCount() > 0)) {{
+                this.method77(false);
+                try {
+                    await sleep(100);
+                } catch (ignored) {
+                }
+                if (this.onDemandRequester.requestFails > 3) {
+                    this.method19("ondemand");
+                    return;
+                }
+            }}
+        }
 
         this.drawLoadingText(65, "Requesting animations");
 
