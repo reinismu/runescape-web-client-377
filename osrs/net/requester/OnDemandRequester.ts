@@ -42,7 +42,7 @@ export class OnDemandRequester extends Requester {
 
     public anInt1350: number;
 
-    public aClass6_1351: LinkedList = new LinkedList();
+    public wantedToSend: LinkedList = new LinkedList();
 
     public aBoolean1352: boolean = false;
 
@@ -77,8 +77,6 @@ export class OnDemandRequester extends Requester {
     public midiIndex: number[];
 
     public anInt1367: number = 591;
-
-    public immediateRequests1: Queue = new Queue();
 
     public onDemandNode: OnDemandNode;
 
@@ -388,9 +386,19 @@ export class OnDemandRequester extends Requester {
         }
 
         for (
-            let onDemandNode: OnDemandNode = this.immediateRequests1.first() as OnDemandNode;
+            let onDemandNode: OnDemandNode = this.wanted.first() as OnDemandNode;
             onDemandNode != null;
-            onDemandNode = this.immediateRequests1.next() as OnDemandNode
+            onDemandNode = this.wanted.next() as OnDemandNode
+        ) {
+            if (onDemandNode.type === type && onDemandNode.id === id) {
+                return;
+            }
+        }
+
+        for (
+            let onDemandNode: OnDemandNode = this.wantedToSend.first() as OnDemandNode;
+            onDemandNode != null;
+            onDemandNode = this.wantedToSend.next() as OnDemandNode
         ) {
             if (onDemandNode.type === type && onDemandNode.id === id) {
                 return;
@@ -403,7 +411,6 @@ export class OnDemandRequester extends Requester {
         onDemandNode.immediate = true;
 
         this.wanted.insertBack(onDemandNode);
-        this.immediateRequests1.push(onDemandNode);
     }
 
     public next(): OnDemandNode {
@@ -537,7 +544,7 @@ export class OnDemandRequester extends Requester {
         }
         while (this.immediateRequestsSent < 10) {
             {
-                const class50_sub1_sub3_1: OnDemandNode = this.aClass6_1351.removeFirst() as OnDemandNode;
+                const class50_sub1_sub3_1: OnDemandNode = this.wantedToSend.removeFirst() as OnDemandNode;
                 if (class50_sub1_sub3_1 == null) {
                     break;
                 }
@@ -563,7 +570,10 @@ export class OnDemandRequester extends Requester {
     }
 
     public immediateRequestsCount(): number {
-        return this.immediateRequests1.size();
+        let i = 0; 
+        for(let n = this.wanted.first(); n != null; n = this.wanted.next()){ i++; } 
+        for(let j = this.wantedToSend.first(); j != null; j = this.wantedToSend.next()){ i++; } 
+        return i;
     }
 
     public method334(i: number, flag: boolean): boolean {
@@ -662,9 +672,7 @@ export class OnDemandRequester extends Requester {
     }
 
     public immediateRequestCount() {
-        {
-            this.immediateRequests.getNodeCount();
-        }
+        this.immediateRequests.getNodeCount();
     }
 
     public passiveRequest(i: number, j: number) {
@@ -708,7 +716,7 @@ export class OnDemandRequester extends Requester {
                 abyte0 = null;
             }
             if (abyte0 == null) {
-                this.aClass6_1351.insertBack(onDemandNode);
+                this.wantedToSend.insertBack(onDemandNode);
             } else {
                 onDemandNode.buffer = abyte0;
                 this.completed.insertBack(onDemandNode);
