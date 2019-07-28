@@ -120,6 +120,15 @@ export class GameShell {
     public async run() {
         if (!this.runInitialized) {
             this.runInitialized = true;
+            this.canvas.addEventListener("mousedown", this.mousePressed.bind(this));
+            this.canvas.addEventListener("mouseup", this.mouseReleased.bind(this));
+            this.canvas.addEventListener("dragstart", this.mouseDragged.bind(this));
+            this.canvas.addEventListener("mouseleave", this.mouseExited.bind(this));
+            this.canvas.addEventListener("mousemove", this.mouseMoved.bind(this));
+
+            this.canvas.addEventListener("keydown", this.keyPressed.bind(this));
+            this.canvas.addEventListener("keyup", this.keyReleased.bind(this));
+
             // this.getParentComponent().addMouseListener(this);
             // this.getParentComponent().addMouseMotionListener(this);
             // this.getParentComponent().addKeyListener(this);
@@ -208,7 +217,7 @@ export class GameShell {
 
         if (this.gameState === -1) {
             this.exit();
-        } else if (this.gameState >= 0){
+        } else if (this.gameState >= 0) {
             setTimeout(this.mainLoopBound, ld.del);
         }
     }
@@ -267,15 +276,14 @@ export class GameShell {
     }
 
     public mousePressed(mouseevent: MouseEvent) {
-        let mouseX: number = mouseevent.x;
-        let mouseY: number = mouseevent.y;
-        mouseX -= 4;
-        mouseY -= 22;
+        let mouseX: number = mouseevent.offsetX;
+        let mouseY: number = mouseevent.offsetY;
+
         this.idleTime = 0;
         this.eventClickX = mouseX;
         this.eventClickY = mouseY;
         this.lastClick = new Date().getTime();
-        if (mouseevent.button === 2) {
+        if (mouseevent.button === 1) {
             this.mouseWheelDown = true;
             this.mouseWheelX = mouseX;
             this.mouseWheelY = mouseY;
@@ -296,21 +304,16 @@ export class GameShell {
         this.mouseWheelDown = false;
     }
 
-    public mouseClicked(mouseevent: MouseEvent) {}
-
-    public mouseEntered(mouseevent: MouseEvent) {}
-
     public mouseExited(mouseevent: MouseEvent) {
         this.idleTime = 0;
         this.mouseX = -1;
         this.mouseY = -1;
     }
 
-    public mouseDragged(mouseevent: MouseEvent) {
-        let mouseX: number = mouseevent.x;
-        let mouseY: number = mouseevent.y;
-        mouseX -= 4;
-        mouseY -= 22;
+    public mouseDragged(mouseevent: DragEvent) {
+        let mouseX: number = mouseevent.offsetX;
+        let mouseY: number = mouseevent.offsetY;
+
         if (this.mouseWheelDown) {
             mouseY = this.mouseWheelX - mouseevent.x;
             const k: number = this.mouseWheelY - mouseevent.y;
@@ -327,24 +330,26 @@ export class GameShell {
     public mouseWheelDragged(param1: number, param2: number) {}
 
     public mouseMoved(mouseevent: MouseEvent) {
-        let mouseX: number = mouseevent.x;
-        let mouseY: number = mouseevent.y;
-        mouseX -= 4;
-        mouseY -= 22;
+        let mouseX: number = mouseevent.offsetX;
+        let mouseY: number = mouseevent.offsetY;
+        
         this.idleTime = 0;
         this.mouseX = mouseX;
         this.mouseY = mouseY;
     }
 
-    public keyPressed(KeyboardEvent: KeyboardEvent) {
+    public keyPressed(event: KeyboardEvent) {
         this.idleTime = 0;
-        const keyCode: number = KeyboardEvent.keyCode;
-        let keyChar: number = KeyboardEvent.charCode;
+        const keyCode: number = event.keyCode;
+        let keyChar: number = (event.key.length == 1) ? event.key.charCodeAt(0) : keyCode;
         if (keyChar < 30) {
             keyChar = 0;
         }
         if (keyCode === 37) {
             keyChar = 1;
+        }
+        if (keyCode === 13) {
+            keyChar = 13;
         }
         if (keyCode === 39) {
             keyChar = 2;
@@ -394,10 +399,10 @@ export class GameShell {
         }
     }
 
-    public keyReleased(KeyboardEvent: KeyboardEvent) {
+    public keyReleased(event: KeyboardEvent) {
         this.idleTime = 0;
-        const keyCode: number = KeyboardEvent.keyCode;
-        let keyChar: number = KeyboardEvent.charCode;
+        const keyCode: number = event.keyCode;
+        let keyChar: number = (event.key.length == 1) ? event.key.charCodeAt(0) : keyCode;
         if (keyChar < 36) {
             keyChar = 0;
         }
