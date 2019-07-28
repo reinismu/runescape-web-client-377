@@ -202,8 +202,8 @@ export class Game extends GameShell {
     aClass50_Sub1_Sub1_Sub3_986: IndexedImage = null;
     aClass50_Sub1_Sub1_Sub3_987: IndexedImage = null;
     moderatorIcon: IndexedImage[] = Array(2).fill(null);
-    anIntArray1180: number[] = null;
-    anIntArray1286: number[] = Array(13).fill(0);
+    anIntArray1180: number[] = Array(33).fill(0);
+    anIntArray1286: number[] = Array(33).fill(0);
     anIntArray1019: number[] = Array(151).fill(0);
     anIntArray920: number[] = Array(151).fill(0);
     anIntArray1003: number[] = null;
@@ -220,6 +220,8 @@ export class Game extends GameShell {
     aClass18_912: ProducingGraphicsBuffer = null;
     aClass18_913: ProducingGraphicsBuffer = null;
     aClass18_914: ProducingGraphicsBuffer = null;
+
+    runBound = this.run.bind(this);
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
@@ -984,7 +986,7 @@ export class Game extends GameShell {
 
             this.renderDelay = new Date().getTime() + delay;
         }
-        requestAnimationFrame(this.run.bind(this));
+        requestAnimationFrame(this.runBound);
     }
 
     processFlamesCycle(): number {

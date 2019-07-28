@@ -21,13 +21,7 @@ export class ImageRGB extends Rasterizer {
 
     public static from(width: number, height: number): ImageRGB {
         let image = new ImageRGB();
-        image.pixels = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(width * height);
+        image.pixels = Array(width * height).fill(0);
         image.width = image.maxWidth = width;
         image.height = image.maxHeight = height;
         image.offsetX = image.offsetY = 0;
@@ -54,13 +48,7 @@ export class ImageRGB extends Rasterizer {
         image.maxWidth = indexBuffer.getUnsignedLEShort();
         image.maxHeight = indexBuffer.getUnsignedLEShort();
         const length: number = indexBuffer.getUnsignedByte();
-        const pixels: number[] = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(length);
+        const pixels: number[] = Array(length).fill(0);
         for (let pixel: number = 0; pixel < length - 1; pixel++) {
             {
                 pixels[pixel + 1] = indexBuffer.get24BitInt();
@@ -82,13 +70,7 @@ export class ImageRGB extends Rasterizer {
         image.height = indexBuffer.getUnsignedLEShort();
         const type: number = indexBuffer.getUnsignedByte();
         const pixelCount: number = image.width * image.height;
-        image.pixels = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(pixelCount);
+        image.pixels = Array(pixelCount).fill(0);
         if (type === 0) {
             for (let pixel: number = 0; pixel < pixelCount; pixel++) {
                 const newPixel = pixels[dataBuffer.getUnsignedByte()];

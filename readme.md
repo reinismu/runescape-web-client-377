@@ -8,6 +8,7 @@
 * Change `number[]` to `UInt8Array`
 
 * Issues with nodes. For sore reason `type` was undefined and head.next null
+* Nodes are fucked for some reason
 
 ## USEFUL links
 

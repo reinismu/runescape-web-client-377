@@ -9,7 +9,7 @@ export class HashTable {
         if (this.size === undefined) { this.size = 0; }
         if (this.cache === undefined) { this.cache = null; }
         this.size = _size;
-        this.cache = ((s) => { const a = []; while (s-- > 0) { a.push(null); } return a; })(_size);
+        this.cache = Array(_size);
         for (let nodeId: number = 0; nodeId < _size; nodeId++) {{
             const node: Node = this.cache[nodeId] = new Node();
             node.next = node;
@@ -19,7 +19,11 @@ export class HashTable {
 
     public get(id: number): Node {
         const bucket: Node = this.cache[(((id & (this.size - 1)) as number) | 0)];
-        for (let node: Node = bucket.next; node !== bucket; node = node.next) {if (node.id === id) { return node; }}
+        for (let node: Node = bucket.next; node !== bucket; node = node.next) {
+            if (node.id === id) { 
+                return node; 
+            }
+        }
         return null;
     }
 

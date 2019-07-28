@@ -45,10 +45,10 @@ export class Model extends Renderable {
     public static anInt1707: number = 0;
     public static anInt1708: number = 0;
     public static anIntArray1709: number[] = Array(1000).fill(0);
-    public static SINE: number[] = null;
-    public static COSINE: number[] = null;
-    public static anIntArray1712: number[] = null;
-    public static anIntArray1713: number[] = null;
+    public static SINE: number[] = Rasterizer3D.SINE;
+    public static COSINE: number[] = Rasterizer3D.COSINE;
+    public static anIntArray1712: number[] = Rasterizer3D.getRgbLookupTableId;
+    public static anIntArray1713: number[] = Rasterizer3D.anIntArray1535;
 
     public static reset() {
         Model.modelHeaders = null;
@@ -206,12 +206,6 @@ export class Model extends Renderable {
         return (i & 65408) + j;
     }
 
-    public static __static_initializer_0() {
-        Model.SINE = Rasterizer3D.SINE;
-        Model.COSINE = Rasterizer3D.COSINE;
-        Model.anIntArray1712 = Rasterizer3D.getRgbLookupTableId;
-        Model.anIntArray1713 = Rasterizer3D.anIntArray1535;
-    }
 
     public anInt1636: number;
 

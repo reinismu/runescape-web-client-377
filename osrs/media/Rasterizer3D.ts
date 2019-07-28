@@ -2,13 +2,16 @@ import { Archive } from "../cache/Archive";
 import { IndexedImage } from "../cache/media/IndexedImage";
 import { Rasterizer } from "./Rasterizer";
 
+function staticInitialize() {
+    for (let i: number = 1; i < 512; i++) {Rasterizer3D.anIntArray1534[i] = (32768 / i | 0); }
+    for (let j: number = 1; j < 2048; j++) {Rasterizer3D.anIntArray1535[j] = (65536 / j | 0); }
+    for (let k: number = 0; k < 2048; k++) {
+        Rasterizer3D.SINE[k] = (((65536.0 * Math.sin(k * 0.0030679615)) as number) | 0);
+        Rasterizer3D.COSINE[k] = (((65536.0 * Math.cos(k * 0.0030679615)) as number) | 0);
+    }
+}
+
 export class Rasterizer3D extends Rasterizer {
-    static lineOffsets_$LI$(): any {
-        throw new Error("Method not implemented.");
-    }
-    static SINE_$LI$() {
-        throw new Error("Method not implemented.");
-    }
 
     public static anInt1524: number = -20714;
 
@@ -1774,13 +1777,5 @@ export class Rasterizer3D extends Rasterizer {
             j += l7;
         }}
     }
-
-    public static __static_initializer_0() {
-        for (let i: number = 1; i < 512; i++) {Rasterizer3D.anIntArray1534[i] = (32768 / i | 0); }
-        for (let j: number = 1; j < 2048; j++) {Rasterizer3D.anIntArray1535[j] = (65536 / j | 0); }
-        for (let k: number = 0; k < 2048; k++) {{
-            Rasterizer3D.SINE[k] = (((65536.0 * Math.sin(k * 0.0030679615)) as number) | 0);
-            Rasterizer3D.COSINE[k] = (((65536.0 * Math.cos(k * 0.0030679615)) as number) | 0);
-        }}
-    }
 }
+staticInitialize();

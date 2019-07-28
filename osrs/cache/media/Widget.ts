@@ -22,7 +22,8 @@ export class Widget {
 
     public static anInt246: number = -1;
 
-    public static spriteCache: Cache = null;
+    // public static spriteCache: Cache = null;
+    public static spriteCacheModern: Map<number, ImageRGB> = new Map<number, ImageRGB>();
 
     public static anInt255: number = -1;
 
@@ -34,13 +35,18 @@ export class Widget {
     public static data: number[][] = null;
 
     public static getImage(spriteId: number, spriteName: string): ImageRGB {
-        const spriteHash: number = (TextUtils.spriteToHash(spriteName) << 8) + spriteId;
-        let sprite: ImageRGB = Widget.spriteCache.get(spriteHash) as ImageRGB;
-        if (sprite != null) { return sprite; }
-        if (Widget.mediaArchive == null) { return null; }
+        const hash = TextUtils.spriteToHash(spriteName);
+        const spriteHash = (hash << 8) + spriteId;
+        let sprite: ImageRGB = Widget.spriteCacheModern.get(spriteHash);
+        if (sprite != null) { 
+            return sprite; 
+        }
+        if (Widget.mediaArchive == null) {
+             return null;
+             }
         try {
             sprite = ImageRGB.fromArchive(Widget.mediaArchive, spriteName, spriteId);
-            Widget.spriteCache.put(sprite, spriteHash);
+            Widget.spriteCacheModern.set(spriteHash, sprite);
         } catch (_ex) {
             return null;
         }
@@ -73,8 +79,8 @@ export class Widget {
         if (widget.contentType === 655) { Widget.anInt277 = parentId; }
         const conditionCount: number = buffer.getUnsignedByte();
         if (conditionCount > 0) {
-            widget.conditionTypes = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(conditionCount);
-            widget.conditionValues = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(conditionCount);
+            widget.conditionTypes = Array(conditionCount).fill(0);
+            widget.conditionValues = Array(conditionCount).fill(0);
             for (let condition: number = 0; condition < conditionCount; condition++) {{
                 widget.conditionTypes[condition] = buffer.getUnsignedByte();
                 widget.conditionValues[condition] = buffer.getUnsignedLEShort();
@@ -82,7 +88,7 @@ export class Widget {
         }
         const opcodeCount: number = buffer.getUnsignedByte();
         if (opcodeCount > 0) {
-            widget.opcodes = ((s) => { const a = []; while (s-- > 0) { a.push(null); } return a; })(opcodeCount);
+            widget.opcodes =Array(opcodeCount).fill(0);
             for (let opcode: number = 0; opcode < opcodeCount; opcode++) {{
                 const subOpcodeCount: number = buffer.getUnsignedLEShort();
                 widget.opcodes[opcode] = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(subOpcodeCount);
@@ -108,7 +114,7 @@ export class Widget {
         }
         if (widget.type === 2) {
             widget.items = Array(widget.width * widget.height).fill(0);
-            widget.itemAmounts = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(widget.width * widget.height);
+            widget.itemAmounts = Array(widget.width * widget.height).fill(0) ;
             widget.itemSwapable = buffer.getUnsignedByte() === 1;
             widget.isInventory = buffer.getUnsignedByte() === 1;
             widget.itemUsable = buffer.getUnsignedByte() === 1;
@@ -220,14 +226,14 @@ export class Widget {
     }
 
     public static load(widgetArchive: Archive, fonts: TypeFace[], mediaArchive: Archive) {
-        Widget.spriteCache = new Cache(50000);
+        // Widget.spriteCache = new Cache(50000);
         const buffer: Buffer = new Buffer(widgetArchive.getFile("data"));
         Widget.mediaArchive = mediaArchive;
         Widget.fonts = fonts;
         let parentId: number = -1;
         const widgetCount: number = buffer.getUnsignedLEShort();
-        Widget.interfaces = ((s) => { const a = []; while (s-- > 0) { a.push(null); } return a; })(widgetCount);
-        Widget.data = ((s) => { const a = []; while (s-- > 0) { a.push(null); } return a; })(widgetCount);
+        Widget.interfaces = Array(widgetCount).fill(0);
+        Widget.data = Array(widgetCount).fill(0);
         while ((buffer.currentPosition < buffer.buffer.length)) {{
             let widgetIndex: number = buffer.getUnsignedLEShort();
             if (widgetIndex === 65535) {
@@ -257,7 +263,7 @@ export class Widget {
     public static reset() {
         Widget.interfaces = null;
         Widget.mediaArchive = null;
-        Widget.spriteCache = null;
+        Widget.spriteCacheModern = new Map();
         Widget.fonts = null;
         Widget.data = null;
     }

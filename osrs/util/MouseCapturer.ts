@@ -5,13 +5,7 @@ export class MouseCapturer {
 
     public capturing: boolean = true;
 
-    public coordsY: number[] = (s => {
-        const a = [];
-        while (s-- > 0) {
-            a.push(0);
-        }
-        return a;
-    })(500);
+    public coordsY: number[] = Array(500).fill(0);
 
     public objectLock: any = new Object() as any;
 
@@ -19,13 +13,9 @@ export class MouseCapturer {
 
     public coord: number;
 
-    public coordsX: number[] = (s => {
-        const a = [];
-        while (s-- > 0) {
-            a.push(0);
-        }
-        return a;
-    })(500);
+    public coordsX: number[] = Array(500).fill(0);
+
+    runBound = this.run.bind(this);
 
     public constructor(_client: Game) {
         if (this._client === undefined) {
@@ -47,7 +37,7 @@ export class MouseCapturer {
             this.coord++;
         }
         if (this.capturing) {
-            setInterval(this.run.bind(this), 50);
+            setTimeout(this.runBound, 50);
         }
     }
 }

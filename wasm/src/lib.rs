@@ -18,3 +18,13 @@ pub fn rs_hash_string(s: &str) -> i32 {
   }
   hash
 }
+
+//  sprite = sprite.toUpperCase();
+//         let spriteHash: number = 0;
+//         for (let index: number = 0; index < sprite.length; index++) {
+//             {
+//                 spriteHash = spriteHash * 61 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(sprite.charAt(index)) - 32;
+//                 spriteHash = (spriteHash + (spriteHash >> 56)) & 72057594037927935;
+//             }
+//         }
+//         return spriteHash;

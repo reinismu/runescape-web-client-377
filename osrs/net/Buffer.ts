@@ -2,125 +2,89 @@ import { CacheableNode } from "../collection/CacheableNode";
 import { LinkedList } from "../util/LinkedList";
 import { ISAACCipher } from "./ISAACCipher";
 
+
+function createCRC32Table(): number[] {
+  let pos: number = 0;
+  let table = Array(256);
+  while (pos < 256) {
+    {
+      let value: number = pos;
+      for (let pass: number = 0; pass < 8; pass++) {
+        if ((value & 1) === 1) {
+          value = (value >>> 1) ^ -306674912;
+        } else {
+          value >>>= 1;
+        }
+      }
+      table[pos] = value;
+      pos++;
+    }
+  }
+  return table
+}
+
 export class Buffer extends CacheableNode {
   public static __static_initialized: boolean = false;
 
-  public static CRC32_TABLE: number[];
-  public static BIT_MASKS: number[];
-  public static smallBufferCount: number;
-  public static mediumBufferCount: number;
-  public static largeBufferCount: number;
-  public static smallBuffers: LinkedList;
-  public static mediumBuffers: LinkedList;
-  public static largeBuffers: LinkedList;
-  public static __static_initialize() {
-    if (!Buffer.__static_initialized) {
-      Buffer.__static_initialized = true;
-      Buffer.__static_initializer_0();
-    }
-  }
-  public static CRC32_TABLE_$LI$(): number[] {
-    Buffer.__static_initialize();
-    if (Buffer.CRC32_TABLE == null) {
-      Buffer.CRC32_TABLE = (s => {
-        const a = [];
-        while (s-- > 0) {
-          a.push(0);
-        }
-        return a;
-      })(256);
-    }
-    return Buffer.CRC32_TABLE;
-  }
-  public static BIT_MASKS_$LI$(): number[] {
-    Buffer.__static_initialize();
-    if (Buffer.BIT_MASKS == null) {
-      Buffer.BIT_MASKS = [
-        0,
-        1,
-        3,
-        7,
-        15,
-        31,
-        63,
-        127,
-        255,
-        511,
-        1023,
-        2047,
-        4095,
-        8191,
-        16383,
-        32767,
-        65535,
-        131071,
-        262143,
-        524287,
-        1048575,
-        2097151,
-        4194303,
-        8388607,
-        16777215,
-        33554431,
-        67108863,
-        134217727,
-        268435455,
-        536870911,
-        1073741823,
-        2147483647,
-        -1
-      ];
-    }
-    return Buffer.BIT_MASKS;
-  }
-  public static smallBufferCount_$LI$(): number {
-    Buffer.__static_initialize();
-    return Buffer.smallBufferCount;
-  }
-  public static mediumBufferCount_$LI$(): number {
-    Buffer.__static_initialize();
-    return Buffer.mediumBufferCount;
-  }
-  public static largeBufferCount_$LI$(): number {
-    Buffer.__static_initialize();
-    return Buffer.largeBufferCount;
-  }
-  public static smallBuffers_$LI$(): LinkedList {
-    Buffer.__static_initialize();
-    if (Buffer.smallBuffers == null) {
-      Buffer.smallBuffers = new LinkedList();
-    }
-    return Buffer.smallBuffers;
-  }
-  public static mediumBuffers_$LI$(): LinkedList {
-    Buffer.__static_initialize();
-    if (Buffer.mediumBuffers == null) {
-      Buffer.mediumBuffers = new LinkedList();
-    }
-    return Buffer.mediumBuffers;
-  }
-  public static largeBuffers_$LI$(): LinkedList {
-    Buffer.__static_initialize();
-    if (Buffer.largeBuffers == null) {
-      Buffer.largeBuffers = new LinkedList();
-    }
-    return Buffer.largeBuffers;
-  }
+  public static CRC32_TABLE: number[] = createCRC32Table();
+  public static BIT_MASKS: number[] =[
+    0,
+    1,
+    3,
+    7,
+    15,
+    31,
+    63,
+    127,
+    255,
+    511,
+    1023,
+    2047,
+    4095,
+    8191,
+    16383,
+    32767,
+    65535,
+    131071,
+    262143,
+    524287,
+    1048575,
+    2097151,
+    4194303,
+    8388607,
+    16777215,
+    33554431,
+    67108863,
+    134217727,
+    268435455,
+    536870911,
+    1073741823,
+    2147483647,
+    -1
+  ];
+
+  public static smallBufferCount: number = 0;
+  public static mediumBufferCount: number = 0;
+  public static largeBufferCount: number = 0;
+  public static smallBuffers: LinkedList = new LinkedList();
+  public static mediumBuffers: LinkedList = new LinkedList();
+  public static largeBuffers: LinkedList = new LinkedList();
+
   public static allocate(sizeMode: number): Buffer {
     {
       let buffer: Buffer = null;
-      if (sizeMode === 0 && Buffer.smallBufferCount_$LI$() > 0) {
-        Buffer.smallBufferCount_$LI$();
+      if (sizeMode === 0 && Buffer.smallBufferCount > 0) {
+        Buffer.smallBufferCount;
         Buffer.smallBufferCount--;
-        buffer = Buffer.smallBuffers_$LI$().removeFirst() as Buffer;
-      } else if (sizeMode === 1 && Buffer.mediumBufferCount_$LI$() > 0) {
-        Buffer.mediumBufferCount_$LI$();
+        buffer = Buffer.smallBuffers.removeFirst() as Buffer;
+      } else if (sizeMode === 1 && Buffer.mediumBufferCount > 0) {
+        Buffer.mediumBufferCount;
         Buffer.mediumBufferCount--;
-        buffer = Buffer.mediumBuffers_$LI$().removeFirst() as Buffer;
-      } else if (sizeMode === 2 && Buffer.largeBufferCount_$LI$() > 0) {
-        Buffer.largeBufferCount_$LI$();
+        buffer = Buffer.mediumBuffers.removeFirst() as Buffer;
+      } else if (sizeMode === 2 && Buffer.largeBufferCount > 0) {
+        Buffer.largeBufferCount;
         Buffer.largeBufferCount--;
-        buffer = Buffer.largeBuffers_$LI$().removeFirst() as Buffer;
+        buffer = Buffer.largeBuffers.removeFirst() as Buffer;
       }
       if (buffer != null) {
         buffer.currentPosition = 0;
@@ -130,52 +94,16 @@ export class Buffer extends CacheableNode {
     const buffer: Buffer = new Buffer();
     buffer.currentPosition = 0;
     if (sizeMode === 0) {
-      buffer.buffer = (s => {
-        const a = [];
-        while (s-- > 0) {
-          a.push(0);
-        }
-        return a;
-      })(100);
+      buffer.buffer = new Uint8Array(100);
     } else if (sizeMode === 1) {
-      buffer.buffer = (s => {
-        const a = [];
-        while (s-- > 0) {
-          a.push(0);
-        }
-        return a;
-      })(5000);
+      buffer.buffer = new Uint8Array(5000);
     } else {
-      buffer.buffer = (s => {
-        const a = [];
-        while (s-- > 0) {
-          a.push(0);
-        }
-        return a;
-      })(30000);
+      buffer.buffer = new Uint8Array(30000);
     }
     return buffer;
   }
 
-  public static __static_initializer_0() {
-    let pos: number = 0;
-    while (pos < 256) {
-      {
-        let value: number = pos;
-        for (let pass: number = 0; pass < 8; pass++) {
-          if ((value & 1) === 1) {
-            value = (value >>> 1) ^ -306674912;
-          } else {
-            value >>>= 1;
-          }
-        }
-        Buffer.CRC32_TABLE_$LI$()[pos] = value;
-        pos++;
-      }
-    }
-  }
-
-  public buffer: number[];
+  public buffer: Uint8Array;
 
   public currentPosition: number;
 
@@ -313,18 +241,6 @@ export class Buffer extends CacheableNode {
   }
 
   public putString(str: string) {
-    const bytes: number[] = (s => {
-      const a = [];
-      while (s-- > 0) {
-        a.push(0);
-      }
-      return a;
-    })(str.length);
-    for (let i: number = 0; i < bytes.length; i++) {
-      {
-        bytes[i] = str.charAt(i).charCodeAt(0);
-      }
-    }
     for (let c of str) {
       this.buffer[this.currentPosition++] = c.charCodeAt(0);
     }
@@ -396,27 +312,13 @@ export class Buffer extends CacheableNode {
   public getString(): string {
     const start: number = this.currentPosition;
     while (this.buffer[this.currentPosition++] !== 10) {}
-    return ((str, index, len) => str.substring(index, index + len))(
-      this.buffer.map(s => String.fromCharCode(s)).join(""),
-      start,
-      this.currentPosition - start - 1
-    ) as string;
+    return String.fromCharCode.apply(null, this.buffer.slice(start, this.currentPosition));
   }
 
   public getStringBytes(): number[] {
     const start: number = this.currentPosition;
     while (this.buffer[this.currentPosition++] !== 10) {}
-    const bytes: number[] = (s => {
-      const a = [];
-      while (s-- > 0) {
-        a.push(0);
-      }
-      return a;
-    })(this.currentPosition - start - 1);
-    for (let pos: number = start; pos < this.currentPosition - 1; pos++) {
-      bytes[pos - start] = this.buffer[pos];
-    }
-    return bytes;
+    return Array.from(this.buffer.slice(start, this.currentPosition));
   }
 
   public getBytes(bytes: number[], start: number, len: number) {
@@ -437,15 +339,15 @@ export class Buffer extends CacheableNode {
     for (; numBits > l; l = 8) {
       {
         value +=
-          (this.buffer[k++] & Buffer.BIT_MASKS_$LI$()[l]) << (numBits - l);
+          (this.buffer[k++] & Buffer.BIT_MASKS[l]) << (numBits - l);
         numBits -= l;
       }
     }
     if (numBits === l) {
-      value += this.buffer[k] & Buffer.BIT_MASKS_$LI$()[l];
+      value += this.buffer[k] & Buffer.BIT_MASKS[l];
     } else {
       value +=
-        (this.buffer[k] >> (l - numBits)) & Buffer.BIT_MASKS_$LI$()[numBits];
+        (this.buffer[k] >> (l - numBits)) & Buffer.BIT_MASKS[numBits];
     }
     return value;
   }
@@ -639,21 +541,3 @@ export class Buffer extends CacheableNode {
     }
   }
 }
-
-Buffer.largeBuffers_$LI$();
-
-Buffer.mediumBuffers_$LI$();
-
-Buffer.smallBuffers_$LI$();
-
-Buffer.largeBufferCount_$LI$();
-
-Buffer.mediumBufferCount_$LI$();
-
-Buffer.smallBufferCount_$LI$();
-
-Buffer.BIT_MASKS_$LI$();
-
-Buffer.CRC32_TABLE_$LI$();
-
-Buffer.__static_initialize();
