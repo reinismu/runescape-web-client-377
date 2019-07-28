@@ -3,10 +3,11 @@
 * DONE -> Run RS client 
 * Functionality
     * DONE -> read archives
-    * render graphics
-    * implement networking
+    * DONE -> render graphics
+    * CLOSE ->implement networking
 * Change `number[]` to `UInt8Array`
 
+* Issues with nodes. For sore reason `type` was undefined and head.next null
 
 ## USEFUL links
 

@@ -3,9 +3,9 @@ import { Node } from "./Node";
 
 export class CacheableNode extends Node {
 
-    public next: CacheableNode;
+    public next: CacheableNode = null;
 
-    public prev: CacheableNode;
+    public prev: CacheableNode = null;
 
     public constructor() {
         super();

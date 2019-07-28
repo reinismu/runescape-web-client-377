@@ -3,6 +3,12 @@ import { IndexedImage } from "../cache/media/IndexedImage";
 import { Rasterizer } from "./Rasterizer";
 
 export class Rasterizer3D extends Rasterizer {
+    static lineOffsets_$LI$(): any {
+        throw new Error("Method not implemented.");
+    }
+    static SINE_$LI$() {
+        throw new Error("Method not implemented.");
+    }
 
     public static anInt1524: number = -20714;
 

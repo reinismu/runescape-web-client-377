@@ -1,9 +1,9 @@
 export class Node {
-  public id: number;
+  public id: number = 0;
 
-  public next: Node;
+  public next: Node = null;
 
-  public previous: Node;
+  public previous: Node = null;
 
   constructor() {
     if (this.id === undefined) {

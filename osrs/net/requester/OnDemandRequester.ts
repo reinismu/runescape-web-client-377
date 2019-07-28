@@ -181,11 +181,11 @@ export class OnDemandRequester extends Requester {
         }
         const length: number = data.length - 2;
         const version: number = ((data[length] & 255) << 8) + (data[length + 1] & 255);
-       
+
         if (version !== expectedVersion) {
             return false;
         }
-        return  crc32(data) === expectedCrc;
+        return crc32(data) === expectedCrc;
     }
 
     public async handleResp() {
@@ -416,10 +416,8 @@ export class OnDemandRequester extends Requester {
     }
 
     public next(): OnDemandNode {
-        let onDemandNode: OnDemandNode;
-        {
-            onDemandNode = this.completed.removeFirst() as OnDemandNode;
-        }
+        let onDemandNode = this.completed.removeFirst() as OnDemandNode;
+
         if (onDemandNode == null) {
             return null;
         }
@@ -530,11 +528,11 @@ export class OnDemandRequester extends Requester {
                     }
                 }
             }
-            if(this.running) {
+            if (this.running) {
                 setTimeout(this.run.bind(this), toWait);
             }
         } catch (exception) {
-            console.error("od_ex " + exception.message);
+            console.error(exception);
         }
     }
 
@@ -582,11 +580,9 @@ export class OnDemandRequester extends Requester {
         }
     }
 
-    public method333(): number {
-        {
-            const i: number = this.immediateRequests1.size();
-            return i;
-        }
+    public immediateRequestsCount(): number {
+        const i: number = this.immediateRequests1.size();
+        return i;
     }
 
     public method334(i: number, flag: boolean): boolean {
@@ -760,24 +756,25 @@ export class OnDemandRequester extends Requester {
     }
 
     public localComplete(flag: boolean) {
-        let class50_sub1_sub3: OnDemandNode;
-        {
-            class50_sub1_sub3 = this.wanted.removeFirst() as OnDemandNode;
-        }
+        let onDemandNode = this.wanted.removeFirst() as OnDemandNode;
+
         if (!flag) {
             for (let i: number = 1; i > 0; i++) {}
         }
-        while (class50_sub1_sub3 != null) {
+        while (onDemandNode != null && onDemandNode instanceof OnDemandNode) {
             {
                 this.expectData = true;
                 let abyte0: number[] | null = null;
                 if (this.client.stores[0] != null) {
-                    abyte0 = this.client.stores[class50_sub1_sub3.type + 1].get(class50_sub1_sub3.id);
+                    if (onDemandNode.type === undefined) {
+                        console.log(onDemandNode);
+                    }
+                    abyte0 = this.client.stores[onDemandNode.type + 1].get(onDemandNode.id);
                 }
                 if (
                     !this.verify(
-                        this.fileVersions[class50_sub1_sub3.type][class50_sub1_sub3.id],
-                        this.fileCrc[class50_sub1_sub3.type][class50_sub1_sub3.id],
+                        this.fileVersions[onDemandNode.type][onDemandNode.id],
+                        this.fileCrc[onDemandNode.type][onDemandNode.id],
                         abyte0
                     )
                 ) {
@@ -785,14 +782,14 @@ export class OnDemandRequester extends Requester {
                 }
                 {
                     if (abyte0 == null) {
-                        this.aClass6_1351.insertBack(class50_sub1_sub3);
+                        this.aClass6_1351.insertBack(onDemandNode);
                     } else {
-                        class50_sub1_sub3.buffer = abyte0;
+                        onDemandNode.buffer = abyte0;
                         {
-                            this.completed.insertBack(class50_sub1_sub3);
+                            this.completed.insertBack(onDemandNode);
                         }
                     }
-                    class50_sub1_sub3 = this.wanted.removeFirst() as OnDemandNode;
+                    onDemandNode = this.wanted.removeFirst() as OnDemandNode;
                 }
             }
         }

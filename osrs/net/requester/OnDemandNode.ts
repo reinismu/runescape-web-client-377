@@ -1,21 +1,17 @@
 import { CacheableNode } from "../../collection/CacheableNode";
 
 export class OnDemandNode extends CacheableNode {
-    public type: number;
+    public type: number = 0;
 
-    public id: number;
+    public id: number = 0;
 
-    public cyclesSinceSend: number;
+    public cyclesSinceSend: number = 0;
 
-    public buffer: number[];
+    public buffer: number[] = null;
 
     public immediate: boolean = true;
 
     constructor() {
         super();
-        if (this.type === undefined) { this.type = 0; }
-        if (this.id === undefined) { this.id = 0; }
-        if (this.cyclesSinceSend === undefined) { this.cyclesSinceSend = 0; }
-        if (this.buffer === undefined) { this.buffer = null; }
     }
 }

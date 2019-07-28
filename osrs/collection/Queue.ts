@@ -31,7 +31,7 @@ export class Queue {
 
     public first(): CacheableNode {
         const node: CacheableNode = this.head.next;
-        if (node === this.head) {
+        if (node === this.head || node == null) {
             this.current = null;
             return null;
         } else {
@@ -52,7 +52,7 @@ export class Queue {
 
     public size(): number {
         let size: number = 0;
-        for (let node: CacheableNode = this.head.next; node !== this.head; node = node.next) {size++; }
+        for (let node: CacheableNode = this.head.next; node !== this.head && node != null; node = node.next) {size++; }
         return size;
     }
 }

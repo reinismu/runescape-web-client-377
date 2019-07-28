@@ -42,30 +42,30 @@ import { Socket } from "./net/Socket";
 //         btoa(String.fromCharCode.apply(null, new Uint8Array(tileData)));
 // }
 
-// async function startGame() {
-//     const game = new Game(document.getElementById("gameCanvas") as HTMLCanvasElement);
-//     await game.initializeApplication(765, 503);
-// }
-// startGame().then(() => {
-//     console.log("Game stopped!");
-// }).catch(error => {
-//     console.error(error);
-// });
-
-async function testSocket() {
-    const socket = new Socket("localhost", 43594);
-    console.log("Connecting");
-    await socket.connect();
-    console.log("Connected");
-
-    console.log("Write");
-    socket.write$int(15);
-    const data = await socket.read();
-    console.log(data);
-    const data2 = await socket.read();
-    console.log(data2);
-
+async function startGame() {
+    const game = new Game(document.getElementById("gameCanvas") as HTMLCanvasElement);
+    await game.initializeApplication(765, 503);
 }
-testSocket().then(() => {
-    console.log("socket tested");
+startGame().then(() => {
+    console.log("Game stopped!");
+}).catch(error => {
+    console.error(error);
 });
+
+// async function testSocket() {
+//     const socket = new Socket("localhost", 43594);
+//     console.log("Connecting");
+//     await socket.connect();
+//     console.log("Connected");
+
+//     console.log("Write");
+//     socket.write$int(15);
+//     const data = await socket.read();
+//     console.log(data);
+//     const data2 = await socket.read();
+//     console.log(data2);
+
+// }
+// testSocket().then(() => {
+//     console.log("socket tested");
+// });
