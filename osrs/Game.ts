@@ -33,6 +33,10 @@ import { MouseCapturer } from "./util/MouseCapturer";
 import { ChatCensor } from "./cache/cfg/ChatCensor";
 import { GameObject } from "./media/renderable/GameObject";
 import { Player } from "./media/renderable/actor/Player";
+import { Graphics } from "./graphics/Graphics";
+import { Color } from "./graphics/Color";
+import { Font } from "./graphics/Font";
+import { TextUtils } from "./util/TextUtils";
 
 interface GameConfig {
     host: string;
@@ -84,6 +88,8 @@ export class Game extends GameShell {
         [4550, 4537, 5681, 5673, 5790, 6806, 8076, 4574]
     ];
     static SKIN_COLOURS: number[] = [9104, 10275, 7595, 3610, 7975, 8526, 918, 38802, 24466, 10145, 58654, 5027, 1457, 16565, 34991, 25486];
+    public static VALID_CHARACTERS: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"\u00a3$%^&*()-_=+[{]};:\'@#~,<.>/?\\| ";
+    public static anInt1309: number = 0;
 
     public stores: Index[] = [];
     public archiveHashes: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0]; // currently unused
@@ -222,10 +228,399 @@ export class Game extends GameShell {
     aClass18_914: ProducingGraphicsBuffer = null;
 
     processFlamesBound = this.processFlamesCycle.bind(this);
-    aBoolean1283: boolean = false;
+    startUpError: boolean = false;
+    aBoolean1016: boolean = false;
+    aBoolean1097: boolean = false;
+    buffer: Buffer = Buffer.allocate(1);
+    username: string = "Promises";
+    password: string = "Testing";
+    aBoolean1283: boolean;
+
+    loginScreenState: number = 0;
+    anInt977: number = 0;
+    statusLineOne: string = "";
+    statusLineTwo: string = "";
+    anInt850: number = 0;
+    anInt1094: number = 0;
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
+    }
+
+    public doLogic() {
+        if (this.aBoolean1016 || this.startUpError || this.aBoolean1097) {
+            return;
+        }
+        Game.pulseCycle++;
+        if (!this.loggedIn) {
+            this.method149(-724);
+        } else {
+            this.processGame();
+        }
+        this.method77(false);
+    }
+
+    public repaintGame() {
+        if (this.aBoolean1016 || this.startUpError || this.aBoolean1097) {
+            this.method123(281);
+            return;
+        }
+        Game.anInt1309++;
+        if (!this.loggedIn) {
+            this.drawLoginScreen(false);
+        } else {
+            this.method74(7);
+        }
+        this.anInt1094 = 0;
+    }
+
+    method74(arg0: number) {
+        throw new Error("Method not implemented.");
+    }
+
+    public drawLoginScreen(flag: boolean) {
+        this.resetTitleScreen();
+        this.aClass18_1200.createRasterizer();
+        this.titleboxImage.drawImage(0, 0);
+        const c: string = "\u0168";
+        const c1: string = "\u00c8";
+        if (this.loginScreenState === 0) {
+            let j: number = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) + 80;
+            this.fontSmall.drawStringCenter(
+                this.onDemandRequester.message,
+                ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                j,
+                7711145,
+                true
+            );
+            j = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) - 20;
+            this.fontBold.drawStringCenter(
+                "Welcome to RuneScape",
+                ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                j,
+                16776960,
+                true
+            );
+            j += 30;
+            let i1: number = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) - 80;
+            const l1: number = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) + 20;
+            this.titleboxButtonImage.drawImage(i1 - 73, l1 - 20);
+            this.fontBold.drawStringCenter("New User", i1, l1 + 5, 16777215, true);
+            i1 = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) + 80;
+            this.titleboxButtonImage.drawImage(i1 - 73, l1 - 20);
+            this.fontBold.drawStringCenter("Existing User", i1, l1 + 5, 16777215, true);
+        }
+        if (this.loginScreenState === 2) {
+            let k: number = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) - 40;
+            if (this.statusLineOne.length > 0) {
+                this.fontBold.drawStringCenter(
+                    this.statusLineOne,
+                    ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                    k - 15,
+                    16776960,
+                    true
+                );
+                this.fontBold.drawStringCenter(
+                    this.statusLineTwo,
+                    ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                    k,
+                    16776960,
+                    true
+                );
+                k += 30;
+            } else {
+                this.fontBold.drawStringCenter(
+                    this.statusLineTwo,
+                    ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                    k - 7,
+                    16776960,
+                    true
+                );
+                k += 30;
+            }
+            this.fontBold.drawShadowedString(
+                "Username: " + this.username + (((lhs, rhs) => lhs && rhs)(this.anInt977 === 0, Game.pulseCycle % 40 < 20) ? "@yel@|" : ""),
+                (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) - 90,
+                k,
+                true,
+                16777215
+            );
+            k += 15;
+            this.fontBold.drawShadowedString(
+                "Password: " +
+                    TextUtils.censorPassword(this.password) +
+                    (((lhs, rhs) => lhs && rhs)(this.anInt977 === 1, Game.pulseCycle % 40 < 20) ? "@yel@|" : ""),
+                (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) - 88,
+                k,
+                true,
+                16777215
+            );
+            k += 15;
+            if (!flag) {
+                let j1: number = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) - 80;
+                const i2: number = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) + 50;
+                this.titleboxButtonImage.drawImage(j1 - 73, i2 - 20);
+                this.fontBold.drawStringCenter("Login", j1, i2 + 5, 16777215, true);
+                j1 = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0) + 80;
+                this.titleboxButtonImage.drawImage(j1 - 73, i2 - 20);
+                this.fontBold.drawStringCenter("Cancel", j1, i2 + 5, 16777215, true);
+            }
+        }
+        if (this.loginScreenState === 3) {
+            this.fontBold.drawStringCenter(
+                "Create a free account",
+                ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) - 60,
+                16776960,
+                true
+            );
+            let l: number = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) - 35;
+            this.fontBold.drawStringCenter(
+                "To create a new account you need to",
+                ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                l,
+                16777215,
+                true
+            );
+            l += 15;
+            this.fontBold.drawStringCenter(
+                "go back to the main RuneScape webpage",
+                ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                l,
+                16777215,
+                true
+            );
+            l += 15;
+            this.fontBold.drawStringCenter(
+                "and choose the 'create account'",
+                ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                l,
+                16777215,
+                true
+            );
+            l += 15;
+            this.fontBold.drawStringCenter(
+                "button near the top of that page.",
+                ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0,
+                l,
+                16777215,
+                true
+            );
+            l += 15;
+            const k1: number = ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0;
+            const j2: number = (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c1) / 2) | 0) + 50;
+            this.titleboxButtonImage.drawImage(k1 - 73, j2 - 20);
+            this.fontBold.drawStringCenter("Cancel", k1, j2 + 5, 16777215, true);
+        }
+        this.aClass18_1200.drawGraphics(202, 171, this.gameGraphics);
+        if (this.aBoolean1046) {
+            this.aBoolean1046 = false;
+            this.aClass18_1198.drawGraphics(128, 0, this.gameGraphics);
+            this.aClass18_1199.drawGraphics(202, 371, this.gameGraphics);
+            this.aClass18_1203.drawGraphics(0, 265, this.gameGraphics);
+            this.aClass18_1204.drawGraphics(562, 265, this.gameGraphics);
+            this.aClass18_1205.drawGraphics(128, 171, this.gameGraphics);
+            this.aClass18_1206.drawGraphics(562, 171, this.gameGraphics);
+        }
+    }
+
+    public method123(i: number) {
+        const g: Graphics = this.gameGraphics;
+        g.setColor(Color.black);
+        i = (68 / i) | 0;
+        g.fillRect(0, 0, 765, 503);
+        this.setFrameRate(1);
+        if (this.startUpError) {
+            this.aBoolean1243 = false;
+            g.setFont(new Font("Helvetica", 1, 16));
+            g.setColor(Color.yellow);
+            let j: number = 35;
+            g.drawString("Sorry, an error has occured whilst loading RuneScape", 30, j);
+            j += 50;
+            g.setColor(Color.white);
+            g.drawString("To fix this try the following (in order):", 30, j);
+            j += 50;
+            g.setColor(Color.white);
+            g.setFont(new Font("Helvetica", 1, 12));
+            g.drawString("1: Try closing ALL open web-browser windows, and reloading", 30, j);
+            j += 30;
+            g.drawString("2: Try clearing your web-browsers cache from tools->internet options", 30, j);
+            j += 30;
+            g.drawString("3: Try using a different game-world", 30, j);
+            j += 30;
+            g.drawString("4: Try rebooting your computer", 30, j);
+            j += 30;
+            g.drawString("5: Try selecting a different version of Java from the play-game menu", 30, j);
+        }
+        if (this.aBoolean1097) {
+            this.aBoolean1243 = false;
+            g.setFont(new Font("Helvetica", 1, 20));
+            g.setColor(Color.white);
+            g.drawString("Error - unable to load game!", 50, 50);
+            g.drawString("To play RuneScape make sure you play from", 50, 100);
+            g.drawString("http://www.runescape.com", 50, 150);
+        }
+        if (this.aBoolean1016) {
+            this.aBoolean1243 = false;
+            g.setColor(Color.yellow);
+            let k: number = 35;
+            g.drawString("Error a copy of RuneScape already appears to be loaded", 30, k);
+            k += 50;
+            g.setColor(Color.white);
+            g.drawString("To fix this try the following (in order):", 30, k);
+            k += 50;
+            g.setColor(Color.white);
+            g.setFont(new Font("Helvetica", 1, 12));
+            g.drawString("1: Try closing ALL open web-browser windows, and reloading", 30, k);
+            k += 30;
+            g.drawString("2: Try rebooting your computer, and reloading", 30, k);
+            k += 30;
+        }
+    }
+
+    public method149(i: number) {
+        while (i >= 0) {
+            this.opcode = this.buffer.getUnsignedByte();
+        }
+        if (this.loginScreenState === 0) {
+            let j: number = ((this.width / 2) | 0) - 80;
+            let i1: number = ((this.height / 2) | 0) + 20;
+            i1 += 20;
+            if (
+                this.clickType === 1 &&
+                this.clickX >= j - 75 &&
+                this.clickX <= j + 75 &&
+                this.clickY >= i1 - 20 &&
+                this.clickY <= i1 + 20
+            ) {
+                this.loginScreenState = 3;
+                this.anInt977 = 0;
+            }
+            j = ((this.width / 2) | 0) + 80;
+            if (
+                this.clickType === 1 &&
+                this.clickX >= j - 75 &&
+                this.clickX <= j + 75 &&
+                this.clickY >= i1 - 20 &&
+                this.clickY <= i1 + 20
+            ) {
+                this.statusLineOne = "";
+                this.statusLineTwo = "Enter your username & password.";
+                this.loginScreenState = 2;
+                this.anInt977 = 0;
+                return;
+            }
+        } else {
+            if (this.loginScreenState === 2) {
+                let k: number = ((this.height / 2) | 0) - 40;
+                k += 30;
+                k += 25;
+                if (this.clickType === 1 && this.clickY >= k - 15 && this.clickY < k) {
+                    this.anInt977 = 0;
+                }
+                k += 15;
+                if (this.clickType === 1 && this.clickY >= k - 15 && this.clickY < k) {
+                    this.anInt977 = 1;
+                }
+                k += 15;
+                let j1: number = ((this.width / 2) | 0) - 80;
+                let l1: number = ((this.height / 2) | 0) + 50;
+                l1 += 20;
+                if (
+                    this.clickType === 1 &&
+                    this.clickX >= j1 - 75 &&
+                    this.clickX <= j1 + 75 &&
+                    this.clickY >= l1 - 20 &&
+                    this.clickY <= l1 + 20
+                ) {
+                    this.anInt850 = 0;
+                    this.login(this.username, this.password, false);
+                    if (this.loggedIn) {
+                        return;
+                    }
+                }
+                j1 = ((this.width / 2) | 0) + 80;
+                if (
+                    this.clickType === 1 &&
+                    this.clickX >= j1 - 75 &&
+                    this.clickX <= j1 + 75 &&
+                    this.clickY >= l1 - 20 &&
+                    this.clickY <= l1 + 20
+                ) {
+                    this.loginScreenState = 0;
+                    this.username = "";
+                    this.password = "";
+                }
+                do {
+                    {
+                        const i2: number = this.readCharacter();
+                        if (i2 === -1) {
+                            break;
+                        }
+                        let flag: boolean = false;
+                        for (let j2: number = 0; j2 < Game.VALID_CHARACTERS.length; j2++) {
+                            {
+                                if (i2 != (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(Game.VALID_CHARACTERS.charAt(j2))) {
+                                    continue;
+                                }
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (this.anInt977 === 0) {
+                            if (i2 === 8 && this.username.length > 0) {
+                                this.username = this.username.substring(0, this.username.length - 1);
+                            }
+                            if (i2 === 9 || i2 === 10 || i2 === 13) {
+                                this.anInt977 = 1;
+                            }
+                            if (flag) {
+                                this.username += String.fromCharCode(i2);
+                            }
+                            if (this.username.length > 12) {
+                                this.username = this.username.substring(0, 12);
+                            }
+                        } else if (this.anInt977 === 1) {
+                            if (i2 === 8 && this.password.length > 0) {
+                                this.password = this.password.substring(0, this.password.length - 1);
+                            }
+                            if (i2 === 9 || i2 === 10 || i2 === 13) {
+                                this.anInt977 = 0;
+                            }
+                            if (flag) {
+                                this.password += String.fromCharCode(i2);
+                            }
+                            if (this.password.length > 20) {
+                                this.password = this.password.substring(0, 20);
+                            }
+                        }
+                    }
+                } while (true);
+                return;
+            }
+            if (this.loginScreenState === 3) {
+                const l: number = (this.width / 2) | 0;
+                let k1: number = ((this.height / 2) | 0) + 50;
+                k1 += 20;
+                if (
+                    this.clickType === 1 &&
+                    this.clickX >= l - 75 &&
+                    this.clickX <= l + 75 &&
+                    this.clickY >= k1 - 20 &&
+                    this.clickY <= k1 + 20
+                ) {
+                    this.loginScreenState = 0;
+                }
+            }
+        }
+    }
+
+    login(username: string, password: string, arg2: boolean) {
+        throw new Error("Method not implemented.");
+    }
+
+    processGame() {
+        throw new Error("Method not implemented.");
     }
 
     public async startUp() {
@@ -612,8 +1007,6 @@ export class Game extends GameShell {
         GameObject.client = this;
         GameObjectDefinition.client = this;
         ActorDefinition.client = this;
-
-        this.aBoolean1283 = true;
     }
 
     public method19(s: string) {
@@ -954,7 +1347,6 @@ export class Game extends GameShell {
         // } catch (ignored) {}
         // return 20;
 
-
         this.aBoolean1320 = true;
         try {
             this.flameCycle++;
@@ -968,7 +1360,6 @@ export class Game extends GameShell {
         } else {
             this.aBoolean1320 = false;
         }
-
     }
 
     calculateFlamePositions() {
