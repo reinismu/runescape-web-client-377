@@ -221,7 +221,8 @@ export class Game extends GameShell {
     aClass18_913: ProducingGraphicsBuffer = null;
     aClass18_914: ProducingGraphicsBuffer = null;
 
-    runBound = this.run.bind(this);
+    processFlamesBound = this.processFlamesCycle.bind(this);
+    aBoolean1283: boolean = false;
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
@@ -611,6 +612,8 @@ export class Game extends GameShell {
         GameObject.client = this;
         GameObjectDefinition.client = this;
         ActorDefinition.client = this;
+
+        this.aBoolean1283 = true;
     }
 
     public method19(s: string) {
@@ -749,13 +752,7 @@ export class Game extends GameShell {
         this.anImageRGB1227 = ImageRGB.from(128, 265);
         this.anImageRGB1226.pixels = [...this.flameLeftBackground.pixels];
         this.anImageRGB1227.pixels = [...this.flameRightBackground.pixels];
-        this.anIntArray1311 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(256);
+        this.anIntArray1311 = Array(256).fill(0);
         for (let l: number = 0; l < 64; l++) {
             this.anIntArray1311[l] = l * 262144;
         }
@@ -768,13 +765,7 @@ export class Game extends GameShell {
         for (let k1: number = 0; k1 < 64; k1++) {
             this.anIntArray1311[k1 + 192] = 16777215;
         }
-        this.anIntArray1312 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(256);
+        this.anIntArray1312 = Array(256).fill(0);
         for (let l1: number = 0; l1 < 64; l1++) {
             this.anIntArray1312[l1] = l1 * 1024;
         }
@@ -806,47 +797,17 @@ export class Game extends GameShell {
         for (let k3: number = 0; k3 < 64; k3++) {
             this.anIntArray1313[k3 + 192] = 16777215;
         }
-        this.anIntArray1310 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(256);
-        this.anIntArray1176 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(32768);
-        this.anIntArray1177 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(32768);
+        this.anIntArray1310 = Array(256).fill(0);
+        this.anIntArray1176 = Array(32768).fill(0);
+        this.anIntArray1177 = Array(32768).fill(0);
         this.method83(null, 0);
-        this.anIntArray1084 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(32768);
-        this.anIntArray1085 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(32768);
+        this.anIntArray1084 = Array(32768).fill(0);
+        this.anIntArray1085 = Array(32768).fill(0);
         await this.drawLoadingText(10, "Connecting to fileserver");
         if (!this.startedRenderingFlames) {
             this.shouldRenderFlames = true;
             this.startedRenderingFlames = true;
-            // await this.run();
+            this.run();
         }
     }
 
@@ -971,37 +932,43 @@ export class Game extends GameShell {
         }
     }
 
-    public async run(): Promise<number> {
-        const currentMilis = new Date().getTime();
-        if (currentMilis > this.renderDelay) {
-            let delay = 0;
-            if (this.shouldRenderFlames) {
-                delay = this.processFlamesCycle();
-            } else {
-                delay = await super.run();
-                if (this.gameState == -2) {
-                    return;
-                }
-            }
-
-            this.renderDelay = new Date().getTime() + delay;
+    public async run() {
+        if (this.shouldRenderFlames) {
+            this.processFlamesCycle();
+        } else {
+            super.run();
         }
-        requestAnimationFrame(this.runBound);
     }
 
-    processFlamesCycle(): number {
+    processFlamesCycle() {
+        // this.aBoolean1320 = true;
+        // try {
+        //     if (!this.startedRenderingFlames) {
+        //         this.aBoolean1320 = false;
+        //         return;
+        //     }
+        //     this.flameCycle++;
+        //     this.calculateFlamePositions();
+        //     this.calculateFlamePositions();
+        //     this.renderFlames();
+        // } catch (ignored) {}
+        // return 20;
+
+
         this.aBoolean1320 = true;
         try {
-            if (!this.startedRenderingFlames) {
-                this.aBoolean1320 = false;
-                return;
-            }
             this.flameCycle++;
             this.calculateFlamePositions();
             this.calculateFlamePositions();
             this.renderFlames();
         } catch (ignored) {}
-        return 20;
+
+        if (this.startedRenderingFlames) {
+            setTimeout(this.processFlamesBound, 50);
+        } else {
+            this.aBoolean1320 = false;
+        }
+
     }
 
     calculateFlamePositions() {

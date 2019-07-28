@@ -101,6 +101,7 @@ export class GameShell {
         intex: 0
     };
     public runInitialized = false;
+    mainLoopBound = this.mainLoop.bind(this);
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -116,7 +117,7 @@ export class GameShell {
         await this.run();
     }
 
-    public async run(): Promise<number> {
+    public async run() {
         if (!this.runInitialized) {
             this.runInitialized = true;
             // this.getParentComponent().addMouseListener(this);
@@ -131,13 +132,10 @@ export class GameShell {
                 this.optims[optim] = new Date().getTime();
             }
         }
-        if (this.gameState >= 0) {
-            return this.mainLoop();
-        }
-        return 0;
+        this.mainLoop();
     }
 
-    public mainLoop(): number {
+    public async mainLoop() {
         const ld = this.loopData;
         if (this.gameState > 0) {
             this.gameState--;
@@ -207,10 +205,12 @@ export class GameShell {
             this.dumpRequested = false;
             ld.intex = 0;
         }
+
         if (this.gameState === -1) {
             this.exit();
+        } else if (this.gameState >= 0){
+            setTimeout(this.mainLoopBound, ld.del);
         }
-        return ld.del;
     }
 
     public exit() {
