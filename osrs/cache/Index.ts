@@ -34,7 +34,7 @@ export class Index {
   }
 
   readIn(inBuffer: number[], inOffset: number, inSize: number, fromBuffer: ArrayBuffer, fromOffset: number): number {
-    const fromSlice = new Uint8Array(fromBuffer.slice(fromOffset, fromOffset + inSize));
+    const fromSlice = new Int8Array(fromBuffer.slice(fromOffset, fromOffset + inSize));
     const readSize = Math.min(inSize, fromSlice.byteLength);
     for(let i = 0; i < readSize; i++) {
         inBuffer[inOffset+i] = fromSlice[i];

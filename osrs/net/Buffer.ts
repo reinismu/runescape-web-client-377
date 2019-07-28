@@ -94,16 +94,16 @@ export class Buffer extends CacheableNode {
     const buffer: Buffer = new Buffer();
     buffer.currentPosition = 0;
     if (sizeMode === 0) {
-      buffer.buffer = new Uint8Array(100);
+      buffer.buffer = new Int8Array(100);
     } else if (sizeMode === 1) {
-      buffer.buffer = new Uint8Array(5000);
+      buffer.buffer = new Int8Array(5000);
     } else {
-      buffer.buffer = new Uint8Array(30000);
+      buffer.buffer = new Int8Array(30000);
     }
     return buffer;
   }
 
-  public buffer: Uint8Array;
+  public buffer: Int8Array;
 
   public currentPosition: number;
 
@@ -247,7 +247,7 @@ export class Buffer extends CacheableNode {
     this.buffer[this.currentPosition++] = 10;
   }
 
-  public putBytes(bytes: number[], start: number, length: number) {
+  public putBytes(bytes: number[] | Int8Array, start: number, length: number) {
     for (let pos: number = start; pos < start + length; pos++) {
       this.buffer[this.currentPosition++] = bytes[pos];
     }

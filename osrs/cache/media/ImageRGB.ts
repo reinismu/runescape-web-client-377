@@ -28,7 +28,7 @@ export class ImageRGB extends Rasterizer {
         return image;
     }
 
-    public static async fromJpg(bytes: Uint8Array): Promise<ImageRGB> {
+    public static async fromJpg(bytes: Int8Array): Promise<ImageRGB> {
         // Pixel data didn't align with one one in java. Tho it seemed to change the same way.
         const jpgData = decode(bytes);
         let image = new ImageRGB();

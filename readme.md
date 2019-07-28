@@ -5,7 +5,7 @@
     * DONE -> read archives
     * DONE -> render graphics
     * CLOSE ->implement networking
-* Change `number[]` to `UInt8Array`
+* Change `number[]` to `Int8Array`
 
 * Issues with nodes. For sore reason `type` was undefined and head.next null
 * Nodes are fucked for some reason

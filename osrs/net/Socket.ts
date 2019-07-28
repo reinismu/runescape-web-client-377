@@ -4,7 +4,7 @@ export class Socket {
     host: string;
     port: number;
     client: WebSocketClient;
-    lastArrayBufferReceived: Uint8Array = null;
+    lastArrayBufferReceived: Int8Array = null;
     lastArrayBufferReadIndex: number = 0;
 
     constructor(host: string, port: number) {
@@ -18,11 +18,16 @@ export class Socket {
     }
 
     public write$int(buf: number) {
-        this.client.send(new Uint8Array([buf]));
+        this.client.send(new Int8Array([buf]));
     }
 
-    public write$byte_A$int$int(bytes: number[], off: number, len: number) {
-        this.client.send(new Uint8Array(bytes.slice(off, off + len)));
+    public write$byte_A$int$int(bytes: number[] | Int8Array, off: number, len: number) {
+        if(bytes instanceof Int8Array) {
+            this.client.send(bytes.slice(off, off + len));
+        } else {
+            this.client.send(new Int8Array(bytes.slice(off, off + len)));
+
+        }
     }
 
     public async read(): Promise<number> {
@@ -33,7 +38,7 @@ export class Socket {
         if (received instanceof Error) {
             return -1;
         }
-        this.lastArrayBufferReceived = new Uint8Array(received);
+        this.lastArrayBufferReceived = new Int8Array(received);
         this.lastArrayBufferReadIndex = 0;
         return this.lastArrayBufferReceived[this.lastArrayBufferReadIndex++];
     }
@@ -46,11 +51,11 @@ export class Socket {
             return -1;
         }
         this.lastArrayBufferReadIndex = 0;
-        this.lastArrayBufferReceived = new Uint8Array(this.client.receiveLocal());
+        this.lastArrayBufferReceived = new Int8Array(this.client.receiveLocal());
         return this.lastArrayBufferReceived[this.lastArrayBufferReadIndex++];
     }
 
-    public async read$byte_A$int$int(b: number[], off: number, len: number): Promise<number> {
+    public async read$byte_A$int$int(b: number[] | Int8Array, off: number, len: number): Promise<number> {
         let c = await this.read();
         if (c == -1) {
             return -1;

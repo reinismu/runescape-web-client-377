@@ -33,10 +33,16 @@ import { MouseCapturer } from "./util/MouseCapturer";
 import { ChatCensor } from "./cache/cfg/ChatCensor";
 import { GameObject } from "./media/renderable/GameObject";
 import { Player } from "./media/renderable/actor/Player";
+import { Npc } from "./media/renderable/actor/Npc";
 import { Graphics } from "./graphics/Graphics";
 import { Color } from "./graphics/Color";
 import { Font } from "./graphics/Font";
 import { TextUtils } from "./util/TextUtils";
+import { SignLink } from "./util/SignLink";
+import { BufferedConnection } from "./net/BufferedConnection";
+import { Configuration } from "./Configuration";
+import { ISAACCipher } from "./net/ISAACCipher";
+import { LinkedList } from "./util/LinkedList";
 
 interface GameConfig {
     host: string;
@@ -88,11 +94,26 @@ export class Game extends GameShell {
         [4550, 4537, 5681, 5673, 5790, 6806, 8076, 4574]
     ];
     static SKIN_COLOURS: number[] = [9104, 10275, 7595, 3610, 7975, 8526, 918, 38802, 24466, 10145, 58654, 5027, 1457, 16565, 34991, 25486];
-    public static VALID_CHARACTERS: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"\u00a3$%^&*()-_=+[{]};:\'@#~,<.>/?\\| ";
+    public static VALID_CHARACTERS: string =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"\u00a3$%^&*()-_=+[{]};:'@#~,<.>/?\\| ";
     public static anInt1309: number = 0;
 
     public stores: Index[] = [];
     public archiveHashes: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0]; // currently unused
+    static accountFlagged: boolean = false;
+    static aBoolean1190: boolean = true;
+    static anInt1100: number = 0;
+    static anInt1165: number = 0;
+    static anInt1235: number = 0;
+    static anInt1052: number = 0;
+    static anInt1139: number = 0;
+    static anInt841: number = 0;
+    static anInt1230: number = 0;
+    static anInt1013: number = 0;
+    static anInt1049: number = 0;
+    static anInt1162: number = 0;
+    static aBoolean1242: boolean = true;
+
     titleArchive: Archive = null;
     fontSmall: TypeFace = null;
     fontNormal: TypeFace = null;
@@ -153,9 +174,6 @@ export class Game extends GameShell {
     currentCollisionMap: CollisionMap[] = Array(4).fill(null);
     minimapImage: ImageRGB = null;
     loggedIn: boolean = false;
-    gameConfig: GameConfig = {
-        host: "localhost"
-    } as GameConfig;
     onDemandRequester: OnDemandRequester = null;
     opcode: number = 0;
     redrawTabArea: boolean = false;
@@ -242,6 +260,68 @@ export class Game extends GameShell {
     statusLineTwo: string = "";
     anInt850: number = 0;
     anInt1094: number = 0;
+    gameConnection: BufferedConnection = null;
+    tempBuffer: Buffer = Buffer.allocate(1);
+    incomingRandom: ISAACCipher = null;
+    playerRights: number = 0;
+    aLong902: number = 0;
+    duplicateClickCount: number = 0;
+    aBoolean1275: boolean = true;
+    lastOpcode: number = 0;
+    secondLastOpcode: number = 0;
+    thirdLastOpcode: number = 0;
+    timeoutCounter: number = 0;
+    systemUpdateTime: number = 0;
+    anInt873: number = 0;
+    anInt1197: number = 0;
+    menuActionRow: number = 0;
+    menuOpen: boolean = false;
+    chatMessages: string[] = Array(100).fill(null);
+    itemSelected: number = 0;
+    widgetSelected: number = 0;
+    currentSound: number = 0;
+    anInt1009: number = 0;
+    anInt1255: number = 0;
+    anInt916: number = 0;
+    anInt1233: number = 0;
+    cameraHorizontal: number = 0;
+    minimapState: number = 0;
+    anInt1276: number = -1;
+    destinationX: number = 0;
+    destinationY: number = 0;
+    localPlayerCount: number = 0;
+    anInt1133: number = 0;
+    anInt968: number = 2048;
+    players: Player[] = Array(this.anInt968).fill(null);
+    cachedAppearances: Buffer[] = Array(this.anInt968).fill(null);
+    npcs: Npc[] = Array(16384).fill(null);
+    thisPlayerId: number = 2047;
+    aClass6_1282: LinkedList = new LinkedList();
+    aClass6_1210: LinkedList = new LinkedList();
+    groundItems: LinkedList[][][] = Array(4).fill(Array(104).fill(Array(104).fill(null)));
+    aClass6_1261: LinkedList = new LinkedList();
+    friendListStatus: number = 0;
+    friendsCount: number = 0;
+    openInterfaceId: number = -1;
+    anInt1053: number = -1;
+    anInt960: number = -1;
+    anInt1089: number = -1;
+    anInt1279: number = -1;
+    aBoolean1239: boolean = false;
+    anInt1285: number = 3;
+    inputType: number = 0;
+    messagePromptRaised: boolean = false;
+    clickToContinueString: string = null;
+    anInt1319: number = 0;
+    anInt1213: number = -1;
+    characterEditChangeGenger: boolean = true;
+    characterEditColors: number[] = Array(5).fill(0);
+    aStringArray1069: string[] = Array(5).fill(null);
+    aBooleanArray1070: boolean[] = Array(5).fill(false);
+    aLong1229: number = 0;
+    aBoolean1277: boolean = false;
+    characterEditIdentityKits: number[] = Array(7).fill(0);
+    aClass18_1110: ProducingGraphicsBuffer = null;
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
@@ -478,7 +558,7 @@ export class Game extends GameShell {
         }
     }
 
-    public method149(i: number) {
+    public async method149(i: number) {
         while (i >= 0) {
             this.opcode = this.buffer.getUnsignedByte();
         }
@@ -534,7 +614,7 @@ export class Game extends GameShell {
                     this.clickY <= l1 + 20
                 ) {
                     this.anInt850 = 0;
-                    this.login(this.username, this.password, false);
+                    await this.login(this.username, this.password, false);
                     if (this.loggedIn) {
                         return;
                     }
@@ -615,12 +695,431 @@ export class Game extends GameShell {
         }
     }
 
-    login(username: string, password: string, arg2: boolean) {
-        throw new Error("Method not implemented.");
+    public async login(username: string, password: string, reconnecting: boolean) {
+        SignLink.errorName = username;
+        try {
+            if (!reconnecting) {
+                this.statusLineOne = "";
+                this.statusLineTwo = "Connecting to server...";
+                this.drawLoginScreen(true);
+            }
+            this.gameConnection = new BufferedConnection(this, await this.openSocket(Configuration.GAME_PORT + Game.portOffset));
+            const base37name: number = TextUtils.nameToLong(username);
+            const hash: number = (((base37name >> 16) & 31) as number) | 0;
+            this.outBuffer.currentPosition = 0;
+            this.outBuffer.putByte(14);
+            this.outBuffer.putByte(hash);
+            this.gameConnection.write(2, 0, this.outBuffer.buffer);
+            for (let j: number = 0; j < 8; j++) {
+                await this.gameConnection.read$();
+            }
+            let responseCode: number = await this.gameConnection.read$();
+            const initialResponseCode: number = responseCode;
+            if (responseCode === 0) {
+                await this.gameConnection.read$byte_A$int$int(this.buffer.buffer, 0, 8);
+                this.buffer.currentPosition = 0;
+                const seed: number[] = [0, 0, 0, 0];
+                seed[0] = ((Math.random() * 9.9999999e7) as number) | 0;
+                seed[1] = ((Math.random() * 9.9999999e7) as number) | 0;
+                seed[2] = this.buffer.getInt();
+                seed[3] = this.buffer.getInt();
+                this.outBuffer.currentPosition = 0;
+                this.outBuffer.putByte(10);
+                this.outBuffer.putInt(seed[0]);
+                this.outBuffer.putInt(seed[1]);
+                this.outBuffer.putInt(seed[2]);
+                this.outBuffer.putInt(seed[3]);
+                this.outBuffer.putInt(SignLink.uid);
+                this.outBuffer.putString(username);
+                this.outBuffer.putString(password);
+                if (Configuration.RSA_ENABLED) {
+                    // this.outBuffer.encrypt(Configuration.RSA_MODULUS, Configuration.RSA_PUBLIC_KEY);
+                }
+                this.tempBuffer.currentPosition = 0;
+                if (reconnecting) {
+                    this.tempBuffer.putByte(18);
+                } else {
+                    this.tempBuffer.putByte(16);
+                }
+                this.tempBuffer.putByte(this.outBuffer.currentPosition + 36 + 1 + 1 + 2);
+                this.tempBuffer.putByte(255);
+                this.tempBuffer.putShort(SignLink.CLIENT_REVISION);
+                this.tempBuffer.putByte(Game.lowMemory ? 1 : 0);
+                for (let i: number = 0; i < 9; i++) {
+                    this.tempBuffer.putInt(this.archiveHashes[i]);
+                }
+                this.tempBuffer.putBytes(this.outBuffer.buffer, 0, this.outBuffer.currentPosition);
+                this.outBuffer.random = new ISAACCipher(seed);
+                for (let i: number = 0; i < 4; i++) {
+                    seed[i] += 50;
+                }
+                this.incomingRandom = new ISAACCipher(seed);
+                this.gameConnection.write(this.tempBuffer.currentPosition, 0, this.tempBuffer.buffer);
+                responseCode = await this.gameConnection.read$();
+            }
+            if (responseCode === 1) {
+                try {
+                    await sleep(500);
+                } catch (ignored) {}
+                this.login(username, password, reconnecting);
+                return;
+            }
+            if (responseCode === 2) {
+                this.playerRights = await this.gameConnection.read$();
+                Game.accountFlagged = await this.gameConnection.read$() === 1;
+                this.aLong902 = 0;
+                this.duplicateClickCount = 0;
+                this.mouseCapturer.coord = 0;
+                this.awtFocus = true;
+                this.aBoolean1275 = true;
+                this.loggedIn = true;
+                this.outBuffer.currentPosition = 0;
+                this.buffer.currentPosition = 0;
+                this.opcode = -1;
+                this.lastOpcode = -1;
+                this.secondLastOpcode = -1;
+                this.thirdLastOpcode = -1;
+                this.packetSize = 0;
+                this.timeoutCounter = 0;
+                this.systemUpdateTime = 0;
+                this.anInt873 = 0;
+                this.anInt1197 = 0;
+                this.menuActionRow = 0;
+                this.menuOpen = false;
+                this.idleTime = 0;
+                for (let j1: number = 0; j1 < 100; j1++) {
+                    this.chatMessages[j1] = null;
+                }
+                this.itemSelected = 0;
+                this.widgetSelected = 0;
+                this.loadingStage = 0;
+                this.currentSound = 0;
+                this.anInt850 = (((Math.random() * 100.0) as number) | 0) - 50;
+                this.anInt1009 = (((Math.random() * 110.0) as number) | 0) - 55;
+                this.anInt1255 = (((Math.random() * 80.0) as number) | 0) - 40;
+                this.anInt916 = (((Math.random() * 120.0) as number) | 0) - 60;
+                this.anInt1233 = (((Math.random() * 30.0) as number) | 0) - 20;
+                this.cameraHorizontal = ((((Math.random() * 20.0) as number) | 0) - 10) & 2047;
+                this.minimapState = 0;
+                this.anInt1276 = -1;
+                this.destinationX = 0;
+                this.destinationY = 0;
+                this.localPlayerCount = 0;
+                this.anInt1133 = 0;
+                for (let i2: number = 0; i2 < this.anInt968; i2++) {
+                    {
+                        this.players[i2] = null;
+                        this.cachedAppearances[i2] = null;
+                    }
+                }
+                for (let k2: number = 0; k2 < 16384; k2++) {
+                    this.npcs[k2] = null;
+                }
+                Game.localPlayer = this.players[this.thisPlayerId] = new Player();
+                this.aClass6_1282.getNodeCount();
+                this.aClass6_1210.getNodeCount();
+                for (let l2: number = 0; l2 < 4; l2++) {
+                    {
+                        for (let i3: number = 0; i3 < 104; i3++) {
+                            {
+                                for (let k3: number = 0; k3 < 104; k3++) {
+                                    this.groundItems[l2][i3][k3] = null;
+                                }
+                            }
+                        }
+                    }
+                }
+                this.aClass6_1261 = new LinkedList();
+                this.friendListStatus = 0;
+                this.friendsCount = 0;
+                this.method44(Game.aBoolean1190, this.dialogueId);
+                this.dialogueId = -1;
+                this.method44(Game.aBoolean1190, this.backDialogueId);
+                this.backDialogueId = -1;
+                this.method44(Game.aBoolean1190, this.openInterfaceId);
+                this.openInterfaceId = -1;
+                this.method44(Game.aBoolean1190, this.anInt1053);
+                this.anInt1053 = -1;
+                this.method44(Game.aBoolean1190, this.anInt960);
+                this.anInt960 = -1;
+                this.method44(Game.aBoolean1190, this.anInt1089);
+                this.anInt1089 = -1;
+                this.method44(Game.aBoolean1190, this.anInt1279);
+                this.anInt1279 = -1;
+                this.aBoolean1239 = false;
+                this.anInt1285 = 3;
+                this.inputType = 0;
+                this.menuOpen = false;
+                this.messagePromptRaised = false;
+                this.clickToContinueString = null;
+                this.anInt1319 = 0;
+                this.anInt1213 = -1;
+                this.characterEditChangeGenger = true;
+                this.method25();
+                for (let j3: number = 0; j3 < 5; j3++) {
+                    this.characterEditColors[j3] = 0;
+                }
+                for (let l3: number = 0; l3 < 5; l3++) {
+                    {
+                        this.aStringArray1069[l3] = null;
+                        this.aBooleanArray1070[l3] = false;
+                    }
+                }
+                Game.anInt1100 = 0;
+                Game.anInt1165 = 0;
+                Game.anInt1235 = 0;
+                Game.anInt1052 = 0;
+                Game.anInt1139 = 0;
+                Game.anInt841 = 0;
+                Game.anInt1230 = 0;
+                Game.anInt1013 = 0;
+                Game.anInt1049 = 0;
+                Game.anInt1162 = 0;
+                await this.method122();
+                return;
+            }
+            if (responseCode === 3) {
+                this.statusLineOne = "";
+                this.statusLineTwo = "Invalid username or password.";
+                return;
+            }
+            if (responseCode === 4) {
+                this.statusLineOne = "Your account has been disabled.";
+                this.statusLineTwo = "Please check your message-centre for details.";
+                return;
+            }
+            if (responseCode === 5) {
+                this.statusLineOne = "Your account is already logged in.";
+                this.statusLineTwo = "Try again in 60 secs...";
+                return;
+            }
+            if (responseCode === 6) {
+                this.statusLineOne = "RuneScape has been updated!";
+                this.statusLineTwo = "Please reload this page.";
+                return;
+            }
+            if (responseCode === 7) {
+                this.statusLineOne = "This world is full.";
+                this.statusLineTwo = "Please use a different world.";
+                return;
+            }
+            if (responseCode === 8) {
+                this.statusLineOne = "Unable to connect.";
+                this.statusLineTwo = "Login server offline.";
+                return;
+            }
+            if (responseCode === 9) {
+                this.statusLineOne = "Login limit exceeded.";
+                this.statusLineTwo = "Too many connections from your address.";
+                return;
+            }
+            if (responseCode === 10) {
+                this.statusLineOne = "Unable to connect.";
+                this.statusLineTwo = "Bad session id.";
+                return;
+            }
+            if (responseCode === 12) {
+                this.statusLineOne = "You need a members account to login to this world.";
+                this.statusLineTwo = "Please subscribe, or use a different world.";
+                return;
+            }
+            if (responseCode === 13) {
+                this.statusLineOne = "Could not complete login.";
+                this.statusLineTwo = "Please try using a different world.";
+                return;
+            }
+            if (responseCode === 14) {
+                this.statusLineOne = "The server is being updated.";
+                this.statusLineTwo = "Please wait 1 minute and try again.";
+                return;
+            }
+            if (responseCode === 15) {
+                this.loggedIn = true;
+                this.outBuffer.currentPosition = 0;
+                this.buffer.currentPosition = 0;
+                this.opcode = -1;
+                this.lastOpcode = -1;
+                this.secondLastOpcode = -1;
+                this.thirdLastOpcode = -1;
+                this.packetSize = 0;
+                this.timeoutCounter = 0;
+                this.systemUpdateTime = 0;
+                this.menuActionRow = 0;
+                this.menuOpen = false;
+                this.aLong1229 = new Date().getTime();
+                return;
+            }
+            if (responseCode === 16) {
+                this.statusLineOne = "Login attempts exceeded.";
+                this.statusLineTwo = "Please wait 1 minute and try again.";
+                return;
+            }
+            if (responseCode === 17) {
+                this.statusLineOne = "You are standing in a members-only area.";
+                this.statusLineTwo = "To play on this world move to a free area first";
+                return;
+            }
+            if (responseCode === 18) {
+                this.statusLineOne = "Account locked as we suspect it has been stolen.";
+                this.statusLineTwo = "Press 'recover a locked account' on front page.";
+                return;
+            }
+            if (responseCode === 20) {
+                this.statusLineOne = "Invalid loginserver requested";
+                this.statusLineTwo = "Please try using a different world.";
+                return;
+            }
+            if (responseCode === 21) {
+                let time: number = await this.gameConnection.read$();
+                for (time += 3; time >= 0; time--) {
+                    {
+                        this.statusLineOne = "You have only just left another world";
+                        this.statusLineTwo = "Your profile will be transferred in: " + time;
+                        this.drawLoginScreen(true);
+                        try {
+                            await sleep(1200);
+                        } catch (ignored) {}
+                    }
+                }
+                this.login(username, password, reconnecting);
+                return;
+            }
+            if (responseCode === 22) {
+                this.statusLineOne = "Malformed login packet.";
+                this.statusLineTwo = "Please try again.";
+                return;
+            }
+            if (responseCode === 23) {
+                this.statusLineOne = "No reply from loginserver.";
+                this.statusLineTwo = "Please try again.";
+                return;
+            }
+            if (responseCode === 24) {
+                this.statusLineOne = "Error loading your profile.";
+                this.statusLineTwo = "Please contact customer support.";
+                return;
+            }
+            if (responseCode === 25) {
+                this.statusLineOne = "Unexpected loginserver response.";
+                this.statusLineTwo = "Please try using a different world.";
+                return;
+            }
+            if (responseCode === 26) {
+                this.statusLineOne = "This computers address has been blocked";
+                this.statusLineTwo = "as it was used to break our rules";
+                return;
+            }
+            if (responseCode === -1) {
+                if (initialResponseCode === 0) {
+                    if (this.anInt850 < 2) {
+                        try {
+                            await sleep(2000);
+                        } catch (ignored) {}
+                        this.anInt850++;
+                        this.login(username, password, reconnecting);
+                        return;
+                    } else {
+                        this.statusLineOne = "No response from loginserver";
+                        this.statusLineTwo = "Please wait 1 minute and try again.";
+                        return;
+                    }
+                } else {
+                    this.statusLineOne = "No response from server";
+                    this.statusLineTwo = "Please try using a different world.";
+                    return;
+                }
+            } else {
+                console.info("response:" + responseCode);
+                this.statusLineOne = "Unexpected server response";
+                this.statusLineTwo = "Please try using a different world.";
+                return;
+            }
+        } catch (ex) {
+            this.statusLineOne = "";
+        }
+        this.statusLineTwo = "Error connecting to server.";
     }
 
     processGame() {
         throw new Error("Method not implemented.");
+    }
+
+    public method44(flag: boolean, i: number) {
+        if (!flag) {
+            return;
+        } else {
+            Widget.method200(i);
+            return;
+        }
+    }
+    
+    public method25() {
+        this.aBoolean1277 = true;
+        for (let j: number = 0; j < 7; j++) {{
+            this.characterEditIdentityKits[j] = -1;
+            for (let k: number = 0; k < IdentityKit.count; k++) {{
+                if (IdentityKit.cache[k].widgetDisplayed || IdentityKit.cache[k].partId !== j + (this.characterEditChangeGenger ? 0 : 7)) { continue; }
+                this.characterEditIdentityKits[j] = k;
+                break;
+            }}
+        }}
+    }
+    
+    public async method122() {
+
+        if (this.chatboxProducingGraphicsBuffer != null) {
+            return;
+        } else {
+            await this.method141();
+            this.imageProducer = null;
+            this.aClass18_1198 = null;
+            this.aClass18_1199 = null;
+            this.aClass18_1200 = null;
+            this.flameLeftBackground = null;
+            this.flameRightBackground = null;
+            this.aClass18_1203 = null;
+            this.aClass18_1204 = null;
+            this.aClass18_1205 = null;
+            this.aClass18_1206 = null;
+            this.chatboxProducingGraphicsBuffer = new ProducingGraphicsBuffer(479, 96);
+            this.aClass18_1157 = new ProducingGraphicsBuffer(172, 156);
+            Rasterizer.resetPixels();
+            this.minimapBackgroundImage.drawImage(0, 0);
+            this.aClass18_1156 = new ProducingGraphicsBuffer(190, 261);
+            this.aClass18_1158 = new ProducingGraphicsBuffer(512, 334);
+            Rasterizer.resetPixels();
+            this.aClass18_1108 = new ProducingGraphicsBuffer(496, 50);
+            this.aClass18_1109 = new ProducingGraphicsBuffer(269, 37);
+            this.aClass18_1110 = new ProducingGraphicsBuffer(249, 45);
+            this.aBoolean1046 = true;
+            this.aClass18_1158.createRasterizer();
+            Rasterizer3D.lineOffsets = this.anIntArray1002;
+            return;
+        }
+    }
+
+    public async method141() {
+        this.aBoolean1243 = false;
+        while ((this.aBoolean1320)) {{
+            this.aBoolean1243 = false;
+            try {
+                await sleep(50);
+            } catch (_ex) {
+            }
+        }}
+        this.titleboxImage = null;
+        this.titleboxButtonImage = null;
+        this.titleFlameEmblem = null;
+        this.anIntArray1310 = null;
+        this.anIntArray1311 = null;
+        this.anIntArray1312 = null;
+        this.anIntArray1313 = null;
+        this.anIntArray1176 = null;
+        this.anIntArray1177 = null;
+        this.anIntArray1084 = null;
+        this.anIntArray1085 = null;
+        this.anImageRGB1226 = null;
+        this.anImageRGB1227 = null;
     }
 
     public async startUp() {
@@ -684,12 +1183,12 @@ export class Game extends GameShell {
             this.onDemandRequester.request(1, i);
         }
         while (this.onDemandRequester.immediateRequestsCount() > 0) {
-            await sleep(100);
             const total: number = fileRequestCount - this.onDemandRequester.immediateRequestsCount();
             if (total > 0) {
                 this.drawLoadingText(65, "Loading animations - " + (((total * 100) / fileRequestCount) | 0) + "%");
             }
             this.method77(false);
+            await sleep(100);
             if (this.onDemandRequester.requestFails > 3) {
                 this.method19("ondemand");
                 return;
@@ -714,9 +1213,7 @@ export class Game extends GameShell {
                     this.drawLoadingText(70, "Loading models - " + (((total * 100) / fileRequestCount) | 0) + "%");
                 }
                 this.method77(false);
-                try {
-                    await sleep(100);
-                } catch (ignored) {}
+                await sleep(100);
             }
         }
 
@@ -1087,7 +1584,7 @@ export class Game extends GameShell {
     }
 
     public async openSocket(port: number): Promise<Socket> {
-        const socket = new Socket(this.gameConfig.host, port);
+        const socket = new Socket(Configuration.SERVER_ADDRESS, port);
         await socket.connect();
         return socket;
     }
@@ -1581,7 +2078,7 @@ export class Game extends GameShell {
 
     async prepareTitleBackground() {
         const jpgBytes = this.titleArchive.getFile("title.dat");
-        let abyte0: Uint8Array = new Uint8Array(jpgBytes);
+        let abyte0: Int8Array = new Int8Array(jpgBytes);
         let class50_sub1_sub1_sub1: ImageRGB = await ImageRGB.fromJpg(abyte0);
         this.flameLeftBackground.createRasterizer();
         class50_sub1_sub1_sub1.drawInverse(0, 0);

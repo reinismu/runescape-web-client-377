@@ -7,7 +7,7 @@ import { OnDemandNode } from "./OnDemandNode";
 import { Requester } from "./Requester";
 import { ungzip } from "pako";
 import { Socket } from "../Socket";
-import { crc32 } from "../CRC32";
+import { crc32 } from "@stardazed/crc32";
 
 export class OnDemandRequester extends Requester {
     public anInt1334: number;
@@ -54,13 +54,7 @@ export class OnDemandRequester extends Requester {
 
     public immediateRequests: LinkedList = new LinkedList();
 
-    public deflateOut: number[] = (s => {
-        const a = [];
-        while (s-- > 0) {
-            a.push(0);
-        }
-        return a;
-    })(65000);
+    public deflateOut: number[] = Array(65000).fill(0);
 
     public regMapIndex: number[];
 
@@ -101,6 +95,8 @@ export class OnDemandRequester extends Requester {
     public lastSocketOpen: number;
 
     public requestFails: number;
+
+    runBound = this.run.bind(this);
 
     constructor() {
         super();
@@ -185,7 +181,9 @@ export class OnDemandRequester extends Requester {
         if (version !== expectedVersion) {
             return false;
         }
-        return crc32(data) === expectedCrc;
+        const buffer = new Int8Array(data);
+        const byteCrc = crc32(buffer.slice(0, buffer.length - 2));
+        return byteCrc === expectedCrc;
     }
 
     public async handleResp() {
@@ -394,25 +392,24 @@ export class OnDemandRequester extends Requester {
         if (this.fileVersions[type][id] === 0) {
             return;
         }
-        {
-            for (
-                let onDemandNode: OnDemandNode = this.immediateRequests1.first() as OnDemandNode;
-                onDemandNode != null;
-                onDemandNode = this.immediateRequests1.next() as OnDemandNode
-            ) {
-                if (onDemandNode.type === type && onDemandNode.id === id) {
-                    return;
-                }
+
+        for (
+            let onDemandNode: OnDemandNode = this.immediateRequests1.first() as OnDemandNode;
+            onDemandNode != null;
+            onDemandNode = this.immediateRequests1.next() as OnDemandNode
+        ) {
+            if (onDemandNode.type === type && onDemandNode.id === id) {
+                return;
             }
-            const onDemandNode: OnDemandNode = new OnDemandNode();
-            onDemandNode.type = type;
-            onDemandNode.id = id;
-            onDemandNode.immediate = true;
-            {
-                this.wanted.insertBack(onDemandNode);
-            }
-            this.immediateRequests1.push(onDemandNode);
         }
+
+        const onDemandNode: OnDemandNode = new OnDemandNode();
+        onDemandNode.type = type;
+        onDemandNode.id = id;
+        onDemandNode.immediate = true;
+
+        this.wanted.insertBack(onDemandNode);
+        this.immediateRequests1.push(onDemandNode);
     }
 
     public next(): OnDemandNode {
@@ -458,7 +455,7 @@ export class OnDemandRequester extends Requester {
                         break;
                     }
                     this.expectData = false;
-                    this.localComplete(true);
+                    this.localComplete();
                     await this.remainingRequest(0);
                     if (this.immediateRequestsSent === 0 && i >= 5) {
                         break;
@@ -529,7 +526,7 @@ export class OnDemandRequester extends Requester {
                 }
             }
             if (this.running) {
-                setTimeout(this.run.bind(this), toWait);
+                setTimeout(this.runBound, toWait);
             }
         } catch (exception) {
             console.error(exception);
@@ -581,8 +578,7 @@ export class OnDemandRequester extends Requester {
     }
 
     public immediateRequestsCount(): number {
-        const i: number = this.immediateRequests1.size();
-        return i;
+        return this.immediateRequests1.size();
     }
 
     public method334(i: number, flag: boolean): boolean {
@@ -629,13 +625,7 @@ export class OnDemandRequester extends Requester {
                 const data: number[] = archive.getFile(crcFiles[crc]);
                 const crcCount: number = (data.length / 4) | 0;
                 const buffer: Buffer = new Buffer(data);
-                this.fileCrc[crc] = (s => {
-                    const a = [];
-                    while (s-- > 0) {
-                        a.push(0);
-                    }
-                    return a;
-                })(crcCount);
+                this.fileCrc[crc] = Array(crcCount).fill(0);
                 for (let file: number = 0; file < crcCount; file++) {
                     this.fileCrc[crc][file] = buffer.getInt();
                 }
@@ -643,13 +633,8 @@ export class OnDemandRequester extends Requester {
         }
         let data: number[] = archive.getFile("model_index");
         let count: number = this.fileVersions[0].length;
-        this.modelIndex = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(count);
+        this.modelIndex = Array(count).fill(0);
+
         for (let i: number = 0; i < count; i++) {
             if (i < data.length) {
                 this.modelIndex[i] = data[i];
@@ -660,34 +645,10 @@ export class OnDemandRequester extends Requester {
         data = archive.getFile("map_index");
         let buffer: Buffer = new Buffer(data);
         count = (data.length / 7) | 0;
-        this.regHash = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(count);
-        this.regMapIndex = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(count);
-        this.regLandIndex = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(count);
-        this.regShouldPreload = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(count);
+        this.regHash = Array(count).fill(0);
+        this.regMapIndex = Array(count).fill(0);
+        this.regLandIndex = Array(count).fill(0);
+        this.regShouldPreload = Array(count).fill(0);
         for (let reg: number = 0; reg < count; reg++) {
             {
                 this.regHash[reg] = buffer.getUnsignedLEShort();
@@ -699,26 +660,14 @@ export class OnDemandRequester extends Requester {
         data = archive.getFile("anim_index");
         buffer = new Buffer(data);
         count = (data.length / 2) | 0;
-        this.animIndex = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(count);
+        this.animIndex = Array(count).fill(0);
         for (let i: number = 0; i < count; i++) {
             this.animIndex[i] = buffer.getUnsignedLEShort();
         }
         data = archive.getFile("midi_index");
         buffer = new Buffer(data);
         count = data.length;
-        this.midiIndex = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(count);
+        this.midiIndex = Array(count).fill(0);
         for (let i: number = 0; i < count; i++) {
             this.midiIndex[i] = buffer.getUnsignedByte();
         }
@@ -755,43 +704,31 @@ export class OnDemandRequester extends Requester {
         }
     }
 
-    public localComplete(flag: boolean) {
+    public localComplete() {
         let onDemandNode = this.wanted.removeFirst() as OnDemandNode;
 
-        if (!flag) {
-            for (let i: number = 1; i > 0; i++) {}
-        }
         while (onDemandNode != null && onDemandNode instanceof OnDemandNode) {
-            {
-                this.expectData = true;
-                let abyte0: number[] | null = null;
-                if (this.client.stores[0] != null) {
-                    if (onDemandNode.type === undefined) {
-                        console.log(onDemandNode);
-                    }
-                    abyte0 = this.client.stores[onDemandNode.type + 1].get(onDemandNode.id);
-                }
-                if (
-                    !this.verify(
-                        this.fileVersions[onDemandNode.type][onDemandNode.id],
-                        this.fileCrc[onDemandNode.type][onDemandNode.id],
-                        abyte0
-                    )
-                ) {
-                    abyte0 = null;
-                }
-                {
-                    if (abyte0 == null) {
-                        this.aClass6_1351.insertBack(onDemandNode);
-                    } else {
-                        onDemandNode.buffer = abyte0;
-                        {
-                            this.completed.insertBack(onDemandNode);
-                        }
-                    }
-                    onDemandNode = this.wanted.removeFirst() as OnDemandNode;
-                }
+            this.expectData = true;
+            let abyte0: number[] | null = null;
+            if (this.client.stores[0] != null) {
+                abyte0 = this.client.stores[onDemandNode.type + 1].get(onDemandNode.id);
             }
+            if (
+                !this.verify(
+                    this.fileVersions[onDemandNode.type][onDemandNode.id],
+                    this.fileCrc[onDemandNode.type][onDemandNode.id],
+                    abyte0
+                )
+            ) {
+                abyte0 = null;
+            }
+            if (abyte0 == null) {
+                this.aClass6_1351.insertBack(onDemandNode);
+            } else {
+                onDemandNode.buffer = abyte0;
+                this.completed.insertBack(onDemandNode);
+            }
+            onDemandNode = this.wanted.removeFirst() as OnDemandNode;
         }
     }
 

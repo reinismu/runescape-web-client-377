@@ -49,13 +49,7 @@ export class Archive {
     const uncompressed: number = buffer.get24BitInt();
     const compressed: number = buffer.get24BitInt();
     if (compressed !== uncompressed) {
-      const data: number[] = (s => {
-        const a = [];
-        while (s-- > 0) {
-          a.push(0);
-        }
-        return a;
-      })(uncompressed);
+      const data: number[] = Array(uncompressed).fill(0);
       BZip2Decompressor.decompress$byte_A$int$byte_A$int$int(
         data,
         uncompressed,
@@ -71,34 +65,10 @@ export class Archive {
       this.compressed = false;
     }
     this.dataSize = buffer.getUnsignedLEShort();
-    this.nameHashes = (s => {
-      const a = [];
-      while (s-- > 0) {
-        a.push(0);
-      }
-      return a;
-    })(this.dataSize);
-    this.uncompressedSizes = (s => {
-      const a = [];
-      while (s-- > 0) {
-        a.push(0);
-      }
-      return a;
-    })(this.dataSize);
-    this.compressedSizes = (s => {
-      const a = [];
-      while (s-- > 0) {
-        a.push(0);
-      }
-      return a;
-    })(this.dataSize);
-    this.startOffsets = (s => {
-      const a = [];
-      while (s-- > 0) {
-        a.push(0);
-      }
-      return a;
-    })(this.dataSize);
+    this.nameHashes = Array(this.dataSize).fill(0);
+    this.uncompressedSizes = Array(this.dataSize).fill(0);
+    this.compressedSizes = Array(this.dataSize).fill(0);
+    this.startOffsets = Array(this.dataSize).fill(0);
     let offset: number = buffer.currentPosition + this.dataSize * 10;
     for (let index: number = 0; index < this.dataSize; index++) {
       {
@@ -125,13 +95,7 @@ export class Archive {
       {
         if (this.nameHashes[index] === hash) {
           if (dataBuffer == null) {
-            dataBuffer = (s => {
-              const a = [];
-              while (s-- > 0) {
-                a.push(0);
-              }
-              return a;
-            })(this.uncompressedSizes[index]);
+            dataBuffer = Array(this.uncompressedSizes[index]).fill(0);
           }
           if (!this.compressed) {
             BZip2Decompressor.decompress$byte_A$int$byte_A$int$int(

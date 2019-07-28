@@ -33,13 +33,13 @@ import { Socket } from "./net/Socket";
 //     console.log(indexes[0]);
 //     const tileArchive = new Archive(indexes[0].get(1));
 //     const tileData = tileArchive.getFile("title.dat");
-//     const data = await pixels(new Uint8Array(tileData));
+//     const data = await pixels(new Int8Array(tileData));
 //     console.log(data);
 //     console.log(new Int32Array(data.data.buffer));
 //     // FFFFFFFFFF90968A FFFFFFFFFF3D4342
 //     (document.getElementById("preview") as HTMLImageElement).src =
 //         "data:image/jpg;base64," +
-//         btoa(String.fromCharCode.apply(null, new Uint8Array(tileData)));
+//         btoa(String.fromCharCode.apply(null, new Int8Array(tileData)));
 // }
 
 async function startGame() {

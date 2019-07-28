@@ -11,7 +11,7 @@ test("initialize correctly from", () => {
 // Useless to test on jest as different approach is used!
 // test("initialize correctly bytes", async () => {
 //     const bytes = readFileSync("test_files/index1.raw");
-//     const image = await ImageRGB.fromJpg(new Uint8Array(bytes));
+//     const image = await ImageRGB.fromJpg(new Int8Array(bytes));
 //     expect(image.pixels.length).toBe(192649);
 //     expect(image.width).toBe(383);
 //     expect(image.height).toBe(503);
