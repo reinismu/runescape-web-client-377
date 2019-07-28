@@ -418,7 +418,7 @@ export class OnDemandRequester extends Requester {
         if (onDemandNode.buffer == null) {
             return onDemandNode;
         }
-        this.deflateOut = Array.from(ungzip(onDemandNode.buffer));
+        this.deflateOut = Array.from(ungzip(new Uint8Array(onDemandNode.buffer)));
 
         onDemandNode.buffer = [...this.deflateOut];
 

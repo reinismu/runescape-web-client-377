@@ -1,4 +1,3 @@
-/* Generated from Java with JSweet 2.3.0 - http://www.jsweet.org */
 /**
  * Creates the random number generator with the specified seed.
  *
@@ -20,11 +19,12 @@ export class ISAACCipher {
     /**
      * The size of the result and memory arrays.
      */
-    public static SIZE: number;
+    public static SIZE: number = 1 << ISAACCipher.SIZEL;;
     /**
      * A mask for pseudorandom lookup.
      */
-    public static MASK: number; public static SIZE_$LI$(): number { if (ISAACCipher.SIZE == null) { ISAACCipher.SIZE = 1 << ISAACCipher.SIZEL; } return ISAACCipher.SIZE; }public static MASK_$LI$(): number { if (ISAACCipher.MASK == null) { ISAACCipher.MASK = (ISAACCipher.SIZE_$LI$() - 1) << 2; } return ISAACCipher.MASK; }
+    public static MASK: number = (ISAACCipher.SIZE - 1) << 2; 
+    
     /**
      * The count through the results in the results array.
      */
@@ -71,8 +71,8 @@ export class ISAACCipher {
             if (this.b === undefined) { this.b = 0; }
             if (this.c === undefined) { this.c = 0; }
             (() => {
-                this.mem = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(ISAACCipher.SIZE_$LI$());
-                this.rsl = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(ISAACCipher.SIZE_$LI$());
+                this.mem = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(ISAACCipher.SIZE);
+                this.rsl = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(ISAACCipher.SIZE);
                 for (let i: number = 0; i < seed.length; ++i) {{
                     this.rsl[i] = seed[i];
                 }}
@@ -93,8 +93,8 @@ export class ISAACCipher {
             if (this.b === undefined) { this.b = 0; }
             if (this.c === undefined) { this.c = 0; }
             (() => {
-                this.mem = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(ISAACCipher.SIZE_$LI$());
-                this.rsl = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(ISAACCipher.SIZE_$LI$());
+                this.mem = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(ISAACCipher.SIZE);
+                this.rsl = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(ISAACCipher.SIZE);
                 this.init(false);
             })();
         } else { throw new Error("invalid overload"); }
@@ -110,49 +110,49 @@ export class ISAACCipher {
         let x: number;
         let y: number;
         this.b += ++this.c;
-        for (i = 0, j = (ISAACCipher.SIZE_$LI$() / 2 | 0); i < (ISAACCipher.SIZE_$LI$() / 2 | 0); ) {{
+        for (i = 0, j = (ISAACCipher.SIZE / 2 | 0); i < (ISAACCipher.SIZE / 2 | 0); ) {{
             x = this.mem[i];
             this.a ^= this.a << 13;
             this.a += this.mem[j++];
-            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK_$LI$()) >> 2] + this.a + this.b;
-            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK_$LI$()) >> 2] + x;
+            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK) >> 2] + this.a + this.b;
+            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK) >> 2] + x;
             x = this.mem[i];
             this.a ^= this.a >>> 6;
             this.a += this.mem[j++];
-            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK_$LI$()) >> 2] + this.a + this.b;
-            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK_$LI$()) >> 2] + x;
+            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK) >> 2] + this.a + this.b;
+            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK) >> 2] + x;
             x = this.mem[i];
             this.a ^= this.a << 2;
             this.a += this.mem[j++];
-            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK_$LI$()) >> 2] + this.a + this.b;
-            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK_$LI$()) >> 2] + x;
+            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK) >> 2] + this.a + this.b;
+            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK) >> 2] + x;
             x = this.mem[i];
             this.a ^= this.a >>> 16;
             this.a += this.mem[j++];
-            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK_$LI$()) >> 2] + this.a + this.b;
-            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK_$LI$()) >> 2] + x;
+            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK) >> 2] + this.a + this.b;
+            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK) >> 2] + x;
         }}
-        for (j = 0; j < (ISAACCipher.SIZE_$LI$() / 2 | 0); ) {{
+        for (j = 0; j < (ISAACCipher.SIZE / 2 | 0); ) {{
             x = this.mem[i];
             this.a ^= this.a << 13;
             this.a += this.mem[j++];
-            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK_$LI$()) >> 2] + this.a + this.b;
-            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK_$LI$()) >> 2] + x;
+            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK) >> 2] + this.a + this.b;
+            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK) >> 2] + x;
             x = this.mem[i];
             this.a ^= this.a >>> 6;
             this.a += this.mem[j++];
-            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK_$LI$()) >> 2] + this.a + this.b;
-            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK_$LI$()) >> 2] + x;
+            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK) >> 2] + this.a + this.b;
+            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK) >> 2] + x;
             x = this.mem[i];
             this.a ^= this.a << 2;
             this.a += this.mem[j++];
-            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK_$LI$()) >> 2] + this.a + this.b;
-            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK_$LI$()) >> 2] + x;
+            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK) >> 2] + this.a + this.b;
+            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK) >> 2] + x;
             x = this.mem[i];
             this.a ^= this.a >>> 16;
             this.a += this.mem[j++];
-            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK_$LI$()) >> 2] + this.a + this.b;
-            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK_$LI$()) >> 2] + x;
+            this.mem[i] = y = this.mem[(x & ISAACCipher.MASK) >> 2] + this.a + this.b;
+            this.rsl[i++] = this.b = this.mem[((y >> ISAACCipher.SIZEL) & ISAACCipher.MASK) >> 2] + x;
         }}
     }
 
@@ -199,7 +199,7 @@ export class ISAACCipher {
             c += h;
             a += b;
         }}
-        for (i = 0; i < ISAACCipher.SIZE_$LI$(); i += 8) {{
+        for (i = 0; i < ISAACCipher.SIZE; i += 8) {{
             if (flag) {
                 a += this.rsl[i];
                 b += this.rsl[i + 1];
@@ -244,7 +244,7 @@ export class ISAACCipher {
             this.mem[i + 7] = h;
         }}
         if (flag) {
-            for (i = 0; i < ISAACCipher.SIZE_$LI$(); i += 8) {{
+            for (i = 0; i < ISAACCipher.SIZE; i += 8) {{
                 a += this.mem[i];
                 b += this.mem[i + 1];
                 c += this.mem[i + 2];
@@ -288,7 +288,7 @@ export class ISAACCipher {
             }}
         }
         this.isaac();
-        this.count = ISAACCipher.SIZE_$LI$();
+        this.count = ISAACCipher.SIZE;
     }
 
     /**
@@ -299,13 +299,8 @@ export class ISAACCipher {
     public nextInt(): number {
         if (0 === this.count--) {
             this.isaac();
-            this.count = ISAACCipher.SIZE_$LI$() - 1;
+            this.count = ISAACCipher.SIZE - 1;
         }
         return this.rsl[this.count];
     }
 }
-ISAACCipher.__class = "com.jagex.runescape.net.ISAACCipher";
-
-ISAACCipher.MASK_$LI$();
-
-ISAACCipher.SIZE_$LI$();

@@ -3,16 +3,17 @@ import { CacheableNode } from "./CacheableNode";
 export class Queue {
     public head: CacheableNode = new CacheableNode();
 
-    public current: CacheableNode;
+    public current: CacheableNode = null;
 
     public constructor() {
-        if (this.current === undefined) { this.current = null; }
         this.head.cacheNext = this.head;
         this.head.cachePrevious = this.head;
     }
 
     public push(node: CacheableNode) {
-        if (node.cachePrevious != null) { node.clear(); }
+        if (node.cachePrevious != null) { 
+            node.clear(); 
+        }
         node.cachePrevious = this.head.cachePrevious;
         node.cacheNext = this.head;
         node.cachePrevious.cacheNext = node;
