@@ -1,11 +1,12 @@
 import cacheData from "./../client_cache/*.dat";
 import cacheIndices from "./../client_cache/*.idx*";
-import { rs_hash_string } from "./../wasm/src/lib.rs";
+import { rs_encrypt_bytes } from "./../wasm/src/lib.rs";
 import { Index } from "./cache/Index";
 import { Archive } from "./cache/Archive";
 import pixels from "image-pixels";
 import { Game } from "./Game";
 import { Socket } from "./net/Socket";
+import { Configuration } from "./Configuration";
 
 // console.log("Hello");
 // console.log("Rust add: " + rs_hash_string("title.dat"));
@@ -69,3 +70,7 @@ startGame().then(() => {
 // testSocket().then(() => {
 //     console.log("socket tested");
 // });
+
+// const res = rs_encrypt_bytes(new Int8Array([1,2,3,4]), "119451785246034594318913466844897726485032978021771870857253652593456459656937408149171663305729099294408934560892059864142824573680823430259445420145626640471963783539799807337723403799309811004289973658204797289344515940319017904707123481018622649468116954230324555319775483054083583145719820778679015026209",
+//  "65537");
+// console.log(res);

@@ -5,6 +5,7 @@ authors = []
 
 [dependencies]
 wasm-bindgen = "0.2.48"
+num-bigint = "0.2.2"
 
 [lib]
 crate-type = ["cdylib"]

@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "@stardazed/crc32": "^1.0.0",
+    "@types/big-integer": "0.0.31",
     "@types/file-saver": "^2.0.1",
     "@types/pako": "^1.0.1",
     "@types/ws": "^6.0.1",

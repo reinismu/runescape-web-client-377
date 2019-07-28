@@ -733,7 +733,7 @@ export class Game extends GameShell {
                 this.outBuffer.putString(username);
                 this.outBuffer.putString(password);
                 if (Configuration.RSA_ENABLED) {
-                    // this.outBuffer.encrypt(Configuration.RSA_MODULUS, Configuration.RSA_PUBLIC_KEY);
+                    this.outBuffer.encrypt(Configuration.RSA_MODULUS, Configuration.RSA_PUBLIC_KEY);
                 }
                 this.tempBuffer.currentPosition = 0;
                 if (reconnecting) {
