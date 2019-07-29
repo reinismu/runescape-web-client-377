@@ -30,13 +30,21 @@ export class Socket {
         }
     }
 
+    public write$byte_A(bytes: number[] | Int8Array) {
+        if(bytes instanceof Int8Array) {
+            this.client.send(bytes.slice);
+        } else {
+            this.client.send(new Int8Array(bytes));
+        }
+    }
+
     public async read(): Promise<number> {
         if (this.lastArrayBufferReceived != null && this.lastArrayBufferReadIndex < this.lastArrayBufferReceived.length) {
             return this.lastArrayBufferReceived[this.lastArrayBufferReadIndex++];
         }
         const received = await this.client.receive();
         if (received instanceof Error) {
-            return -1;
+            throw received;
         }
         this.lastArrayBufferReceived = new Int8Array(received);
         this.lastArrayBufferReadIndex = 0;
@@ -64,9 +72,6 @@ export class Socket {
         let i = 1;
         for (; i < len; i++) {
             c = await this.read();
-            if (c == -1) {
-                break;
-            }
             b[off + i] = c;
         }
         return i;
