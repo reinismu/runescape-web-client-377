@@ -134,7 +134,11 @@ export class Game extends GameShell {
     static world: number = 10;
     static aBoolean963: boolean = true;
     static anInt1160: number = 0;
-    static fps: boolean = false;
+    static fps: boolean = true;
+    static anInt1237: number = 0;
+    static anInt1168: number = 0;
+    static anInt978: number = 0;
+    static anInt895: number = 0;
 
     titleArchive: Archive = null;
     fontSmall: TypeFace = null;
@@ -188,7 +192,7 @@ export class Game extends GameShell {
     anInt1048: number = 0;
     anInt1322: number = 0;
     aString1027: string = null;
-    aBoolean1243: boolean = false;
+    startedRenderingFlames: boolean = false;
     renderDelay: number = 0;
     currentSceneTileFlags: number[][][] = null;
     anIntArrayArrayArray891: number[][][] = null;
@@ -546,6 +550,42 @@ export class Game extends GameShell {
     anInt1187: number = 0;
     anInt1289: number = 0;
     chatboxInput: string = "";
+    anInt1236: number = 326;
+    anInt1107: number = 78;
+    aClass13_1249: Widget = new Widget();
+    anInt862: number = 0;
+    anInt865: number = 0;
+    aClass50_Sub1_Sub1_Sub1_1102: ImageRGB = null;
+    aClass50_Sub1_Sub1_Sub1_1103: ImageRGB = null;
+    anInt931: number = 0x23201b;
+    anInt1080: number = 0x4d4233;
+    anInt1135: number = 0x766654;
+    anInt921: number = 8;
+    anInt1287: number = 0x332d25;
+    anInt1138: number = 0;
+    anIntArrayArray886: number[][] = Array(104).fill(Array(104).fill(0));
+    anInt939: number = 0;
+    anInt932: number = -1;
+    anInt933: number = -1;
+    anInt940: number = 50;
+    anIntArray944: number[] = Array(this.anInt940).fill(0);
+    anIntArray943: number[] = Array(this.anInt940).fill(0);
+    anIntArray941: number[] = Array(this.anInt940).fill(0);
+    anIntArray942: number[] = Array(this.anInt940).fill(0);
+    anIntArray945: number[] = Array(this.anInt940).fill(0);
+    anIntArray946: number[] = Array(this.anInt940).fill(0);
+    anIntArray947: number[] = Array(this.anInt940).fill(0);
+    aStringArray948: string[] = Array(this.anInt940).fill(null);
+    anIntArray842: number[] = [0xffff00, 0xff0000, 65280, 65535, 0xff00ff, 0xffffff];
+    anInt1056: number = 3;
+    anIntArray1290: number[] = [17, 24, 34, 40];
+    aByteArray1245: number[] = Array(16384).fill(0);
+    aByte956: number = 1;
+    aString861: string = "";
+    aStringArray863: string[] = Array(100).fill(null);
+    aBoolean959: boolean = true;
+    anIntArray864: number[] = Array(100).fill(0);
+    anInt1119: number = -30658;
 
     public static getCombatLevelColour(user: number, opponent: number): string {
         const difference: number = user - opponent;
@@ -577,6 +617,34 @@ export class Game extends GameShell {
         }
     }
 
+    public static getShortenedAmountText(coins: number): string {
+        if (coins < 100000) { return /* valueOf */new String(coins).toString(); }
+        if (coins < 10000000) { return (coins / 1000 | 0) + "K"; } else { return (coins / 1000000 | 0) + "M"; }
+    }
+
+    public static setHighMemory() {
+        Scene.lowMemory = false;
+        Rasterizer3D.lowMemory = false;
+        Game.lowMemory = false;
+        Region.lowMemory = false;
+        GameObjectDefinition.lowMemory = false;
+    }
+
+    public static setLowMemory() {
+        Scene.lowMemory = true;
+        Rasterizer3D.lowMemory = true;
+        Game.lowMemory = true;
+        Region.lowMemory = true;
+        GameObjectDefinition.lowMemory = true;
+    }
+
+    public static getFullAmountText(amount: number): string {
+        let string: string = /* valueOf */new String(amount).toString();
+        for (let index: number = string.length - 3; index > 0; index -= 3) {string = string.substring(0, index) + "," + string.substring(index); }
+        if (string.length > 8) { string = "@gre@" + string.substring(0, string.length - 8) + " million @whi@(" + string + ")"; } else if (string.length > 4) { string = "@cya@" + string.substring(0, string.length - 4) + "K @whi@(" + string + ")"; }
+        return " " + string;
+    }
+
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
     }
@@ -587,7 +655,7 @@ export class Game extends GameShell {
         }
         Game.pulseCycle++;
         if (!this.loggedIn) {
-            this.method149(-724);
+            await this.method149(-724);
         } else {
             await this.processGame();
         }
@@ -608,10 +676,1763 @@ export class Game extends GameShell {
         this.anInt1094 = 0;
     }
 
-    method74(arg0: number) {
-        // throw new Error("Method not implemented.");
+    public method74(i: number) {
+        if (this.anInt1053 !== -1 && (this.loadingStage === 2 || this.imageProducer != null)) {
+            if (this.loadingStage === 2) {
+                this.method88(this.tickDelta, this.anInt1053, ((5 as number) | 0));
+                if (this.anInt960 !== -1) { this.method88(this.tickDelta, this.anInt960, ((5 as number) | 0)); }
+                this.tickDelta = 0;
+                this.method147(this.anInt1140);
+                this.imageProducer.createRasterizer();
+                Rasterizer3D.lineOffsets = this.anIntArray1003;
+                Rasterizer.resetPixels();
+                this.aBoolean1046 = true;
+                const class13: Widget = Widget.forId(this.anInt1053);
+                if (class13.width === 512 && class13.height === 334 && class13.type === 0) {
+                    class13.width = 765;
+                    class13.height = 503;
+                }
+                this.method142(0, 0, class13, 0, 8);
+                if (this.anInt960 !== -1) {
+                    const class13_1: Widget = Widget.forId(this.anInt960);
+                    if (class13_1.width === 512 && class13_1.height === 334 && class13_1.type === 0) {
+                        class13_1.width = 765;
+                        class13_1.height = 503;
+                    }
+                    this.method142(0, 0, class13_1, 0, 8);
+                }
+                if (!this.menuOpen) {
+                    this.processRightClick(-521);
+                    this.drawMenuTooltip();
+                } else {
+                    this.method128(false);
+                }
+            }
+            this.imageProducer.drawGraphics(0, 0, this.gameGraphics);
+            return;
+        }
+        if (this.aBoolean1046) {
+            this.method122();
+            this.aBoolean1046 = false;
+            this.aClass18_906.drawGraphics(0, 4, this.gameGraphics);
+            this.aClass18_907.drawGraphics(0, 357, this.gameGraphics);
+            this.aClass18_908.drawGraphics(722, 4, this.gameGraphics);
+            this.aClass18_909.drawGraphics(743, 205, this.gameGraphics);
+            this.aClass18_910.drawGraphics(0, 0, this.gameGraphics);
+            this.aClass18_911.drawGraphics(516, 4, this.gameGraphics);
+            this.aClass18_912.drawGraphics(516, 205, this.gameGraphics);
+            this.aClass18_913.drawGraphics(496, 357, this.gameGraphics);
+            this.aClass18_914.drawGraphics(0, 338, this.gameGraphics);
+            this.redrawTabArea = true;
+            this.redrawChatbox = true;
+            this.aBoolean950 = true;
+            this.aBoolean1212 = true;
+            if (this.loadingStage !== 2) {
+                this.aClass18_1158.drawGraphics(4, 4, this.gameGraphics);
+                this.aClass18_1157.drawGraphics(550, 4, this.gameGraphics);
+            }
+            Game.anInt1237++;
+            if (Game.anInt1237 > 85) {
+                Game.anInt1237 = 0;
+                this.outBuffer.putOpcode(168);
+            }
+        }
+        if (this.loadingStage === 2) { this.method151(2); }
+        if (this.menuOpen && this.anInt1304 === 1) { this.redrawTabArea = true; }
+        if (this.anInt1089 !== -1) {
+            const flag: boolean = this.method88(this.tickDelta, this.anInt1089, ((5 as number) | 0));
+            if (flag) { this.redrawTabArea = true; }
+        }
+        if (this.atInventoryInterfaceType === 2) { this.redrawTabArea = true; }
+        if (this.activeInterfaceType === 2) { this.redrawTabArea = true; }
+        if (this.redrawTabArea) {
+            this.method134(((7 as number) | 0));
+            this.redrawTabArea = false;
+        }
+        if (this.backDialogueId === -1 && this.inputType === 0) {
+            this.aClass13_1249.anInt231 = this.anInt1107 - this.anInt851 - 77;
+            if (this.mouseX > 448 && this.mouseX < 560 && this.mouseY > 332) { this.method42(this.anInt1107, 0, this.aClass13_1249, ((102 as number) | 0), this.mouseY - 357, -1, this.mouseX - 17, 77, 463); }
+            let j: number = this.anInt1107 - 77 - this.aClass13_1249.anInt231;
+            if (j < 0) { j = 0; }
+            if (j > this.anInt1107 - 77) { j = this.anInt1107 - 77; }
+            if (this.anInt851 !== j) {
+                this.anInt851 = j;
+                this.redrawChatbox = true;
+            }
+        }
+        if (this.backDialogueId === -1 && this.inputType === 3) {
+            const k: number = this.anInt862 * 14 + 7;
+            this.aClass13_1249.anInt231 = this.anInt865;
+            if (this.mouseX > 448 && this.mouseX < 560 && this.mouseY > 332) { this.method42(k, 0, this.aClass13_1249, ((102 as number) | 0), this.mouseY - 357, -1, this.mouseX - 17, 77, 463); }
+            let i1: number = this.aClass13_1249.anInt231;
+            if (i1 < 0) { i1 = 0; }
+            if (i1 > k - 77) { i1 = k - 77; }
+            if (this.anInt865 !== i1) {
+                this.anInt865 = i1;
+                this.redrawChatbox = true;
+            }
+        }
+        if (this.backDialogueId !== -1) {
+            const flag1: boolean = this.method88(this.tickDelta, this.backDialogueId, ((5 as number) | 0));
+            if (flag1) { this.redrawChatbox = true; }
+        }
+        if (this.atInventoryInterfaceType === 3) { this.redrawChatbox = true; }
+        if (this.activeInterfaceType === 3) { this.redrawChatbox = true; }
+        if (this.clickToContinueString != null) { this.redrawChatbox = true; }
+        if (this.menuOpen && this.anInt1304 === 2) { this.redrawChatbox = true; }
+        if (this.redrawChatbox) {
+            this.renderChatbox();
+            this.redrawChatbox = false;
+        }
+        if (this.loadingStage === 2) {
+            this.renderMinimap();
+            this.aClass18_1157.drawGraphics(550, 4, this.gameGraphics);
+        }
+        if (this.anInt1213 !== -1) { this.aBoolean950 = true; }
+        if (this.aBoolean950) {
+            if (this.anInt1213 !== -1 && this.anInt1213 === this.anInt1285) {
+                this.anInt1213 = -1;
+                this.outBuffer.putOpcode(119);
+                this.outBuffer.putByte(this.anInt1285);
+            }
+            this.aBoolean950 = false;
+            this.aClass18_1110.createRasterizer();
+            this.anIndexedImage1054.drawImage(0, 0);
+            if (this.anInt1089 === -1) {
+                if (this.anIntArray1081[this.anInt1285] !== -1) {
+                    if (this.anInt1285 === 0) { this.aClass50_Sub1_Sub1_Sub3_880.drawImage(22, 10); }
+                    if (this.anInt1285 === 1) { this.aClass50_Sub1_Sub1_Sub3_881.drawImage(54, 8); }
+                    if (this.anInt1285 === 2) { this.aClass50_Sub1_Sub1_Sub3_881.drawImage(82, 8); }
+                    if (this.anInt1285 === 3) { this.aClass50_Sub1_Sub1_Sub3_882.drawImage(110, 8); }
+                    if (this.anInt1285 === 4) { this.aClass50_Sub1_Sub1_Sub3_884.drawImage(153, 8); }
+                    if (this.anInt1285 === 5) { this.aClass50_Sub1_Sub1_Sub3_884.drawImage(181, 8); }
+                    if (this.anInt1285 === 6) { this.aClass50_Sub1_Sub1_Sub3_883.drawImage(209, 9); }
+                }
+                if (this.anIntArray1081[0] !== -1 && (this.anInt1213 !== 0 || Game.pulseCycle % 20 < 10)) { this.tabIcon[0].drawImage(29, 13); }
+                if (this.anIntArray1081[1] !== -1 && (this.anInt1213 !== 1 || Game.pulseCycle % 20 < 10)) { this.tabIcon[1].drawImage(53, 11); }
+                if (this.anIntArray1081[2] !== -1 && (this.anInt1213 !== 2 || Game.pulseCycle % 20 < 10)) { this.tabIcon[2].drawImage(82, 11); }
+                if (this.anIntArray1081[3] !== -1 && (this.anInt1213 !== 3 || Game.pulseCycle % 20 < 10)) { this.tabIcon[3].drawImage(115, 12); }
+                if (this.anIntArray1081[4] !== -1 && (this.anInt1213 !== 4 || Game.pulseCycle % 20 < 10)) { this.tabIcon[4].drawImage(153, 13); }
+                if (this.anIntArray1081[5] !== -1 && (this.anInt1213 !== 5 || Game.pulseCycle % 20 < 10)) { this.tabIcon[5].drawImage(180, 11); }
+                if (this.anIntArray1081[6] !== -1 && (this.anInt1213 !== 6 || Game.pulseCycle % 20 < 10)) { this.tabIcon[6].drawImage(208, 13); }
+            }
+            this.aClass18_1110.drawGraphics(516, 160, this.gameGraphics);
+            this.aClass18_1109.createRasterizer();
+            this.anIndexedImage1053.drawImage(0, 0);
+            if (this.anInt1089 === -1) {
+                if (this.anIntArray1081[this.anInt1285] !== -1) {
+                    if (this.anInt1285 === 7) { this.aClass50_Sub1_Sub1_Sub3_983.drawImage(42, 0); }
+                    if (this.anInt1285 === 8) { this.aClass50_Sub1_Sub1_Sub3_984.drawImage(74, 0); }
+                    if (this.anInt1285 === 9) { this.aClass50_Sub1_Sub1_Sub3_984.drawImage(102, 0); }
+                    if (this.anInt1285 === 10) { this.aClass50_Sub1_Sub1_Sub3_985.drawImage(130, 1); }
+                    if (this.anInt1285 === 11) { this.aClass50_Sub1_Sub1_Sub3_987.drawImage(173, 0); }
+                    if (this.anInt1285 === 12) { this.aClass50_Sub1_Sub1_Sub3_987.drawImage(201, 0); }
+                    if (this.anInt1285 === 13) { this.aClass50_Sub1_Sub1_Sub3_986.drawImage(229, 0); }
+                }
+                if (this.anIntArray1081[8] !== -1 && (this.anInt1213 !== 8 || Game.pulseCycle % 20 < 10)) { this.tabIcon[7].drawImage(74, 2); }
+                if (this.anIntArray1081[9] !== -1 && (this.anInt1213 !== 9 || Game.pulseCycle % 20 < 10)) { this.tabIcon[8].drawImage(102, 3); }
+                if (this.anIntArray1081[10] !== -1 && (this.anInt1213 !== 10 || Game.pulseCycle % 20 < 10)) { this.tabIcon[9].drawImage(137, 4); }
+                if (this.anIntArray1081[11] !== -1 && (this.anInt1213 !== 11 || Game.pulseCycle % 20 < 10)) { this.tabIcon[10].drawImage(174, 2); }
+                if (this.anIntArray1081[12] !== -1 && (this.anInt1213 !== 12 || Game.pulseCycle % 20 < 10)) { this.tabIcon[11].drawImage(201, 2); }
+                if (this.anIntArray1081[13] !== -1 && (this.anInt1213 !== 13 || Game.pulseCycle % 20 < 10)) { this.tabIcon[12].drawImage(226, 2); }
+            }
+            this.aClass18_1109.drawGraphics(496, 466, this.gameGraphics);
+            this.aClass18_1158.createRasterizer();
+            Rasterizer3D.lineOffsets = this.anIntArray1002;
+        }
+        if (this.aBoolean1212) {
+            this.aBoolean1212 = false;
+            this.aClass18_1108.createRasterizer();
+            this.anIndexedImage1052.drawImage(0, 0);
+            this.fontNormal.drawStringCenter("Public chat", 55, 28, 16777215, true);
+            if (this.publicChatMode === 0) { this.fontNormal.drawStringCenter("On", 55, 41, 65280, true); }
+            if (this.publicChatMode === 1) { this.fontNormal.drawStringCenter("Friends", 55, 41, 16776960, true); }
+            if (this.publicChatMode === 2) { this.fontNormal.drawStringCenter("Off", 55, 41, 16711680, true); }
+            if (this.publicChatMode === 3) { this.fontNormal.drawStringCenter("Hide", 55, 41, 65535, true); }
+            this.fontNormal.drawStringCenter("Private chat", 184, 28, 16777215, true);
+            if (this.privateChatMode === 0) { this.fontNormal.drawStringCenter("On", 184, 41, 65280, true); }
+            if (this.privateChatMode === 1) { this.fontNormal.drawStringCenter("Friends", 184, 41, 16776960, true); }
+            if (this.privateChatMode === 2) { this.fontNormal.drawStringCenter("Off", 184, 41, 16711680, true); }
+            this.fontNormal.drawStringCenter("Trade/compete", 324, 28, 16777215, true);
+            if (this.tradeMode === 0) { this.fontNormal.drawStringCenter("On", 324, 41, 65280, true); }
+            if (this.tradeMode === 1) { this.fontNormal.drawStringCenter("Friends", 324, 41, 16776960, true); }
+            if (this.tradeMode === 2) { this.fontNormal.drawStringCenter("Off", 324, 41, 16711680, true); }
+            this.fontNormal.drawStringCenter("Report abuse", 458, 33, 16777215, true);
+            this.aClass18_1108.drawGraphics(0, 453, this.gameGraphics);
+            this.aClass18_1158.createRasterizer();
+            Rasterizer3D.lineOffsets = this.anIntArray1002;
+        }
+        this.tickDelta = 0;
+        if (i !== 7) {
+            for (let l: number = 1; l > 0; l++) {}
+        }
     }
 
+    /*private*/ public renderMinimap() {
+        this.aClass18_1157.createRasterizer();
+        if (this.minimapState === 2) {
+            const mmBackgroundPixels: number[] = this.minimapBackgroundImage.pixels;
+            const rasterPixels: number[] = Rasterizer.pixels;
+            const pixelCount: number = mmBackgroundPixels.length;
+            for (let i: number = 0; i < pixelCount; i++) {if (mmBackgroundPixels[i] === 0) { rasterPixels[i] = 0; }}
+            this.minimapCompass.shapeImageToPixels$int$int$int$int$int_A$int$int$int$int_A$int(0, 33, 25, 33, this.anIntArray1286, 0, this.cameraHorizontal, 256, this.anIntArray1180, 25);
+            this.aClass18_1158.createRasterizer();
+            Rasterizer3D.lineOffsets = this.anIntArray1002;
+            return;
+        }
+        const angle: number = this.cameraHorizontal + this.anInt916 & 2047;
+        const centerX: number = 48 + (Game.localPlayer.worldX / 32 | 0);
+        const centerY: number = 464 - (Game.localPlayer.worldY / 32 | 0);
+        this.minimapImage.shapeImageToPixels$int$int$int$int$int_A$int$int$int$int_A$int(5, 151, centerX, 146, this.anIntArray920, 25, angle, 256 + this.anInt1233, this.anIntArray1019, centerY);
+        this.minimapCompass.shapeImageToPixels$int$int$int$int$int_A$int$int$int$int_A$int(0, 33, 25, 33, this.anIntArray1286, 0, this.cameraHorizontal, 256, this.anIntArray1180, 25);
+        for (let i: number = 0; i < this.minimapHintCount; i++) {{
+            const hintX: number = (this.minimapHintX[i] * 4 + 2) - (Game.localPlayer.worldX / 32 | 0);
+            const hintY: number = (this.minimapHintY[i] * 4 + 2) - (Game.localPlayer.worldY / 32 | 0);
+            this.drawOnMinimap(this.minimapHint[i], hintX, hintY);
+        }}
+        for (let x: number = 0; x < 104; x++) {{
+            for (let y: number = 0; y < 104; y++) {{
+                const itemList: LinkedList = this.groundItems[this.plane][x][y];
+                if (itemList != null) {
+                    const itemX: number = (x * 4 + 2) - (Game.localPlayer.worldX / 32 | 0);
+                    const itemY: number = (y * 4 + 2) - (Game.localPlayer.worldY / 32 | 0);
+                    this.drawOnMinimap(this.mapdotItem, itemX, itemY);
+                }
+            }}
+        }}
+        for (let i: number = 0; i < this.anInt1133; i++) {{
+            const npc: Npc = this.npcs[this.anIntArray1134[i]];
+            if (npc != null && npc.isVisible()) {
+                let definition: ActorDefinition = npc.npcDefinition;
+                if (definition.childrenIds != null) { definition = definition.getChildDefinition(); }
+                if (definition != null && definition.minimapVisible && definition.clickable) {
+                    const npcX: number = (npc.worldX / 32 | 0) - (Game.localPlayer.worldX / 32 | 0);
+                    const npcY: number = (npc.worldY / 32 | 0) - (Game.localPlayer.worldY / 32 | 0);
+                    this.drawOnMinimap(this.mapdotActor, npcX, npcY);
+                }
+            }
+        }}
+        for (let i: number = 0; i < this.localPlayerCount; i++) {{
+            const player: Player = this.players[this.playerList[i]];
+            if (player != null && player.isVisible()) {
+                const playerX: number = (player.worldX / 32 | 0) - (Game.localPlayer.worldX / 32 | 0);
+                const playerY: number = (player.worldY / 32 | 0) - (Game.localPlayer.worldY / 32 | 0);
+                const name: number = TextUtils.nameToLong(player.playerName);
+                let isFriend: boolean = false;
+                let isTeammate: boolean = false;
+                for (let x: number = 0; x < this.friendsCount; x++) {{
+                    if (name !== this.friends[x] || this.friendWorlds[x] === 0) { continue; }
+                    isFriend = true;
+                    break;
+                }}
+                if (Game.localPlayer.teamId !== 0 && player.teamId !== 0 && Game.localPlayer.teamId === player.teamId) { isTeammate = true; }
+                if (isFriend) { this.drawOnMinimap(this.mapdotFriend, playerX, playerY); } else if (isTeammate) { this.drawOnMinimap(this.mapdotTeammate, playerX, playerY); } else { this.drawOnMinimap(this.mapdotPlayer, playerX, playerY); }
+            }
+        }}
+        if (this.anInt1197 !== 0 && Game.pulseCycle % 20 < 10) {
+            if (this.anInt1197 === 1 && this.anInt1226 >= 0 && this.anInt1226 < this.npcs.length) {
+                const npc: Npc = this.npcs[this.anInt1226];
+                if (npc != null) {
+                    const npcX: number = (npc.worldX / 32 | 0) - (Game.localPlayer.worldX / 32 | 0);
+                    const npcY: number = (npc.worldY / 32 | 0) - (Game.localPlayer.worldY / 32 | 0);
+                    this.drawMinimap(this.aClass50_Sub1_Sub1_Sub1_1037, npcX, npcY);
+                }
+            }
+            if (this.anInt1197 === 2) {
+                const hintX: number = ((this.anInt844 - this.nextTopLeftTileX) * 4 + 2) - (Game.localPlayer.worldX / 32 | 0);
+                const hintY: number = ((this.anInt845 - this.nextTopRightTileY) * 4 + 2) - (Game.localPlayer.worldY / 32 | 0);
+                this.drawMinimap(this.aClass50_Sub1_Sub1_Sub1_1037, hintX, hintY);
+            }
+            if (this.anInt1197 === 10 && this.anInt1151 >= 0 && this.anInt1151 < this.players.length) {
+                const player: Player = this.players[this.anInt1151];
+                if (player != null) {
+                    const playerX: number = (player.worldX / 32 | 0) - (Game.localPlayer.worldX / 32 | 0);
+                    const playerY: number = (player.worldY / 32 | 0) - (Game.localPlayer.worldY / 32 | 0);
+                    this.drawMinimap(this.aClass50_Sub1_Sub1_Sub1_1037, playerX, playerY);
+                }
+            }
+        }
+        if (this.destinationX !== 0) {
+            const flagX: number = (this.destinationX * 4 + 2) - (Game.localPlayer.worldX / 32 | 0);
+            const flagY: number = (this.destinationY * 4 + 2) - (Game.localPlayer.worldY / 32 | 0);
+            this.drawOnMinimap(this.mapFlagMarker, flagX, flagY);
+        }
+        Rasterizer.drawFilledRectangle(97, 78, 3, 3, 16777215);
+        this.aClass18_1158.createRasterizer();
+        Rasterizer3D.lineOffsets = this.anIntArray1002;
+    }
+    
+    public drawMinimap(sprite: ImageRGB, x: number, y: number) {
+        const r: number = x * x + y * y;
+        if (r > 4225 && r < 90000) {
+            const theta: number = this.cameraHorizontal + this.anInt916 & 2047;
+            let sin: number = Model.SINE[theta];
+            let cos: number = Model.COSINE[theta];
+            sin = ((sin * 256) / (this.anInt1233 + 256) | 0);
+            cos = ((cos * 256) / (this.anInt1233 + 256) | 0);
+            const l1: number = y * sin + x * cos >> 16;
+            const i2: number = y * cos - x * sin >> 16;
+            const d: number = Math.atan2(l1, i2);
+            const j2: number = (((Math.sin(d) * 63.0) as number) | 0);
+            const k2: number = (((Math.cos(d) * 57.0) as number) | 0);
+            this.minimapEdge.method466(256, 15, (94 + j2 + 4) - 10, 15, 20, this.anInt1119, 20, d, 83 - k2 - 20);
+            return;
+        } else {
+            this.drawOnMinimap(sprite, x, y);
+            return;
+        }
+    }
+    
+    public drawOnMinimap(sprite: ImageRGB, x: number, y: number) {
+        if (sprite == null) { return; }
+        const k: number = this.cameraHorizontal + this.anInt916 & 2047;
+        const l: number = x * x + y * y;
+        if (l > 6400) { return; }
+        let i1: number = Model.SINE[k];
+        let j1: number = Model.COSINE[k];
+        i1 = ((i1 * 256) / (this.anInt1233 + 256) | 0);
+        j1 = ((j1 * 256) / (this.anInt1233 + 256) | 0);
+        const k1: number = y * i1 + x * j1 >> 16;
+        const l1: number = y * j1 - x * i1 >> 16;
+        if (l > 2500) {
+            sprite.method467(this.minimapBackgroundImage, 83 - l1 - (sprite.maxHeight / 2 | 0) - 4, -49993, ((94 + k1) - (sprite.maxWidth / 2 | 0)) + 4);
+            return;
+        } else {
+            sprite.drawImage(83 - l1 - (sprite.maxHeight / 2 | 0) - 4, ((94 + k1) - (sprite.maxWidth / 2 | 0)) + 4);
+            return;
+        }
+    }
+    
+    /*private*/ public renderChatbox() {
+        this.chatboxProducingGraphicsBuffer.createRasterizer();
+        Rasterizer3D.lineOffsets = this.chatboxLineOffsets;
+        this.chatboxBackgroundImage.drawImage(0, 0);
+        if (this.messagePromptRaised) {
+            this.fontBold.drawStringLeft(this.chatboxInputMessage, 239, 40, 0);
+            this.fontBold.drawStringLeft(this.chatMessage + "*", 239, 60, 128);
+        } else if (this.inputType === 1) {
+            this.fontBold.drawStringLeft("Enter amount:", 239, 40, 0);
+            this.fontBold.drawStringLeft(this.inputInputMessage + "*", 239, 60, 128);
+        } else if (this.inputType === 2) {
+            this.fontBold.drawStringLeft("Enter name:", 239, 40, 0);
+            this.fontBold.drawStringLeft(this.inputInputMessage + "*", 239, 60, 128);
+        } else if (this.inputType === 3) {
+            if (!/* equals */(((o1: any, o2: any) => { if (o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(this.inputInputMessage, this.aString861) as any)) {
+                this.method14(this.inputInputMessage, 2);
+                this.aString861 = this.inputInputMessage;
+            }
+            const typeFace: TypeFace = this.fontNormal;
+            Rasterizer.setCoordinates(0, 0, 77, 463);
+            for (let i: number = 0; i < this.anInt862; i++) {{
+                const y: number = (18 + i * 14) - this.anInt865;
+                if (y > 0 && y < 110) { typeFace.drawStringLeft(this.aStringArray863[i], 239, y, 0); }
+            }}
+            Rasterizer.resetCoordinates();
+            if (this.anInt862 > 5) { this.method56(true, this.anInt865, 463, 77, this.anInt862 * 14 + 7, 0); }
+            if (this.inputInputMessage.length === 0) { this.fontBold.drawStringLeft("Enter object name", 239, 40, 255); } else if (this.anInt862 === 0) { this.fontBold.drawStringLeft("No matching objects found, please shorten search", 239, 40, 0); }
+            typeFace.drawStringLeft(this.inputInputMessage + "*", 239, 90, 0);
+            Rasterizer.drawHorizontalLine(0, 77, 479, 0);
+        } else if (this.clickToContinueString != null) {
+            this.fontBold.drawStringLeft(this.clickToContinueString, 239, 40, 0);
+            this.fontBold.drawStringLeft("Click to continue", 239, 60, 128);
+        } else if (this.backDialogueId !== -1) {
+            this.method142(0, 0, Widget.forId(this.backDialogueId), 0, 8);
+        } else if (this.dialogueId !== -1) {
+            this.method142(0, 0, Widget.forId(this.dialogueId), 0, 8);
+        } else {
+            const typeFace: TypeFace = this.fontNormal;
+            let line: number = 0;
+            Rasterizer.setCoordinates(0, 0, 77, 463);
+            for (let i: number = 0; i < 100; i++) {{
+                if (this.chatMessages[i] != null) {
+                    let name: string = this.chatPlayerNames[i];
+                    const type: number = this.chatTypes[i];
+                    const y: number = (70 - line * 14) + this.anInt851;
+                    let privilege: number = 0;
+                    if (name != null && /* startsWith */((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(name, "@cr1@")) {
+                        name = name.substring(5);
+                        privilege = 1;
+                    }
+                    if (name != null && /* startsWith */((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(name, "@cr2@")) {
+                        name = name.substring(5);
+                        privilege = 2;
+                    }
+                    if (type === 0) {
+                        if (y > 0 && y < 110) { typeFace.drawString(this.chatMessages[i], 4, y, 0); }
+                        line++;
+                    }
+                    if ((type === 1 || type === 2) && (type === 1 || this.publicChatMode === 0 || this.publicChatMode === 1 && this.method148(13292, name))) {
+                        if (y > 0 && y < 110) {
+                            let x: number = 4;
+                            if (privilege === 1) {
+                                this.moderatorIcon[0].drawImage(x, y - 12);
+                                x += 14;
+                            }
+                            if (privilege === 2) {
+                                this.moderatorIcon[1].drawImage(x, y - 12);
+                                x += 14;
+                            }
+                            typeFace.drawString(name + ":", x, y, 0);
+                            x += typeFace.getStringEffectWidth(name) + 8;
+                            typeFace.drawString(this.chatMessages[i], x, y, 255);
+                        }
+                        line++;
+                    }
+                    if ((type === 3 || type === 7) && this.anInt1223 === 0 && (type === 7 || this.privateChatMode === 0 || this.privateChatMode === 1 && this.method148(13292, name))) {
+                        if (y > 0 && y < 110) {
+                            let x: number = 4;
+                            typeFace.drawString("From", x, y, 0);
+                            x += typeFace.getStringEffectWidth("From ");
+                            if (privilege === 1) {
+                                this.moderatorIcon[0].drawImage(x, y - 12);
+                                x += 14;
+                            }
+                            if (privilege === 2) {
+                                this.moderatorIcon[1].drawImage(x, y - 12);
+                                x += 14;
+                            }
+                            typeFace.drawString(name + ":", x, y, 0);
+                            x += typeFace.getStringEffectWidth(name) + 8;
+                            typeFace.drawString(this.chatMessages[i], x, y, 8388608);
+                        }
+                        line++;
+                    }
+                    if (type === 4 && (this.tradeMode === 0 || this.tradeMode === 1 && this.method148(13292, name))) {
+                        if (y > 0 && y < 110) { typeFace.drawString(name + " " + this.chatMessages[i], 4, y, 8388736); }
+                        line++;
+                    }
+                    if (type === 5 && this.anInt1223 === 0 && this.privateChatMode < 2) {
+                        if (y > 0 && y < 110) { typeFace.drawString(this.chatMessages[i], 4, y, 8388608); }
+                        line++;
+                    }
+                    if (type === 6 && this.anInt1223 === 0 && this.privateChatMode < 2) {
+                        if (y > 0 && y < 110) {
+                            typeFace.drawString("To " + name + ":", 4, y, 0);
+                            typeFace.drawString(this.chatMessages[i], 12 + typeFace.getStringEffectWidth("To " + name), y, 8388608);
+                        }
+                        line++;
+                    }
+                    if (type === 8 && (this.tradeMode === 0 || this.tradeMode === 1 && this.method148(13292, name))) {
+                        if (y > 0 && y < 110) { typeFace.drawString(name + " " + this.chatMessages[i], 4, y, 8270336); }
+                        line++;
+                    }
+                }
+            }}
+            Rasterizer.resetCoordinates();
+            this.anInt1107 = line * 14 + 7;
+            if (this.anInt1107 < 78) { this.anInt1107 = 78; }
+            this.method56(true, this.anInt1107 - this.anInt851 - 77, 463, 77, this.anInt1107, 0);
+            let name: string;
+            if (Game.localPlayer != null && Game.localPlayer.playerName != null) { name = Game.localPlayer.playerName; } else { name = TextUtils.formatName(this.username); }
+            typeFace.drawString(name + ":", 4, 90, 0);
+            typeFace.drawString(this.chatboxInput + "*", 6 + typeFace.getStringEffectWidth(name + ": "), 90, 255);
+            Rasterizer.drawHorizontalLine(0, 77, 479, 0);
+        }
+        if (this.menuOpen && this.anInt1304 === 2) { this.method128(false); }
+        this.chatboxProducingGraphicsBuffer.drawGraphics(17, 357, this.gameGraphics);
+        this.aClass18_1158.createRasterizer();
+        Rasterizer3D.lineOffsets = this.anIntArray1002;
+    }
+    
+    // TODO looks scetchy double check
+    public method14(s: string, i: number) {
+        if (s == null || s.length === 0) {
+            this.anInt862 = 0;
+            return;
+        }
+        let s1: string = s;
+        const as: string[] = ((s) => { const a = []; while (s-- > 0) { a.push(null); } return a; })(100);
+        let j: number = 0;
+        do {{
+            const k: number = s1.indexOf(" ");
+            if (k === -1) { break; }
+            const s2: string = s1.substring(0, k).trim();
+            if (s2.length > 0) { as[j++] = s2.toLowerCase(); }
+            s1 = s1.substring(k + 1);
+        }} while ((true));
+        s1 = s1.trim();
+        if (s1.length > 0) { as[j++] = s1.toLowerCase(); }
+        this.anInt862 = 0;
+        if (i !== 2) { this.aBoolean959 = !this.aBoolean959; }
+        label0: for (let l: number = 0; l < ItemDefinition.count; l++) {{
+            const class16: ItemDefinition = ItemDefinition.lookup(l);
+            if (class16.notedTemplateId !== -1 || class16.name == null) { continue; }
+            const s3: string = class16.name.toLowerCase();
+            for (let i1: number = 0; i1 < j; i1++) {if (s3.indexOf(as[i1]) === -1) { continue label0; }}
+            this.aStringArray863[this.anInt862] = s3;
+            this.anIntArray864[this.anInt862] = l;
+            this.anInt862++;
+            if (this.anInt862 >= this.aStringArray863.length) { return; }
+        }}
+    }
+    
+    public method134(byte0: number) {
+        this.aClass18_1156.createRasterizer();
+        Rasterizer3D.lineOffsets = this.anIntArray1001;
+        this.inventoryBackgroundImage.drawImage(0, 0);
+        if (this.anInt1089 !== -1) { this.method142(0, 0, Widget.forId(this.anInt1089), 0, 8); } else if (this.anIntArray1081[this.anInt1285] !== -1) { this.method142(0, 0, Widget.forId(this.anIntArray1081[this.anInt1285]), 0, 8); }
+        if (this.menuOpen && this.anInt1304 === 1) { this.method128(false); }
+        this.aClass18_1156.drawGraphics(553, 205, this.gameGraphics);
+        this.aClass18_1158.createRasterizer();
+        Rasterizer3D.lineOffsets = this.anIntArray1002;
+        if (byte0 === 7) {  }
+    }
+
+    public method151(i: number) {
+        this.anInt1138++;
+        this.processPlayerAdditions(true);
+        this.method57(751, true);
+        this.processPlayerAdditions(false);
+        this.method57(751, false);
+        this.method51(false);
+        this.method76(-992);
+        if (!this.oriented) {
+            let j: number = this.anInt1251;
+            if ((this.anInt1289 / 256 | 0) > j) { j = (this.anInt1289 / 256 | 0); }
+            if (this.aBooleanArray927[4] && this.anIntArray852[4] + 128 > j) { j = this.anIntArray852[4] + 128; }
+            const l: number = this.cameraHorizontal + this.anInt1255 & 2047;
+            this.setCameraPosition(this.anInt1262, this.anInt1263, this.method110(Game.localPlayer.worldY, Game.localPlayer.worldX, ((9 as number) | 0), this.plane) - 50, j, l);
+        }
+        let k: number;
+        if (!this.oriented) { k = this.method117(((1 as number) | 0)); } else { k = this.method118(-276); }
+        const i1: number = this.cameraX;
+        const j1: number = this.cameraZ;
+        const k1: number = this.cameraY;
+        const l1: number = this.anInt1219;
+        const i2: number = this.anInt1220;
+        if (i !== 2) { this.anInt1004 = this.incomingRandom.nextInt(); }
+        for (let j2: number = 0; j2 < 5; j2++) {if (this.aBooleanArray927[j2]) {
+            const k2: number = ((((Math.random() * (this.anIntArray1105[j2] * 2 + 1) as number - this.anIntArray1105[j2] as number) + Math.sin(this.quakeTimes[j2] as number * (this.anIntArray991[j2] as number / 100.0)) * this.anIntArray852[j2] as number) as number) | 0);
+            if (j2 === 0) { this.cameraX += k2; }
+            if (j2 === 1) { this.cameraZ += k2; }
+            if (j2 === 2) { this.cameraY += k2; }
+            if (j2 === 3) { this.anInt1220 = this.anInt1220 + k2 & 2047; }
+            if (j2 === 4) {
+                this.anInt1219 += k2;
+                if (this.anInt1219 < 128) { this.anInt1219 = 128; }
+                if (this.anInt1219 > 383) { this.anInt1219 = 383; }
+            }
+        }}
+        const l2: number = Rasterizer3D.anInt1547;
+        Model.aBoolean1705 = true;
+        Model.anInt1708 = 0;
+        Model.anInt1706 = this.mouseX - 4;
+        Model.anInt1707 = this.mouseY - 4;
+        Rasterizer.resetPixels();
+        this.currentScene.method280(this.cameraX, k, 0, this.cameraZ, this.cameraY, this.anInt1220, this.anInt1219);
+        this.currentScene.method255();
+        this.method121(false);
+        this.method127(true);
+        this.method65(l2);
+        this.renderGameView();
+        this.aClass18_1158.drawGraphics(4, 4, this.gameGraphics);
+        this.cameraX = i1;
+        this.cameraZ = j1;
+        this.cameraY = k1;
+        this.anInt1219 = l1;
+        this.anInt1220 = i2;
+    }
+
+    /*private*/ public renderGameView() {
+        this.renderSplitPrivateMessages();
+        if (this.crossType === 1) { this.cursorCross[(this.crossIndex / 100 | 0)].drawImage(this.anInt1021 - 8 - 4, this.anInt1020 - 8 - 4); }
+        if (this.crossType === 2) { this.cursorCross[4 + (this.crossIndex / 100 | 0)].drawImage(this.anInt1021 - 8 - 4, this.anInt1020 - 8 - 4); }
+        if (this.anInt1279 !== -1) {
+            this.method88(this.tickDelta, this.anInt1279, ((5 as number) | 0));
+            this.method142(0, 0, Widget.forId(this.anInt1279), 0, 8);
+        }
+        if (this.openInterfaceId !== -1) {
+            this.method88(this.tickDelta, this.openInterfaceId, ((5 as number) | 0));
+            this.method142(0, 0, Widget.forId(this.openInterfaceId), 0, 8);
+        }
+        this.setTutorialIslandFlag();
+        if (!this.menuOpen) {
+            this.processRightClick(-521);
+            this.drawMenuTooltip();
+        } else if (this.anInt1304 === 0) {
+            this.method128(false);
+        }
+        if (this.anInt1319 === 1) { this.aClass50_Sub1_Sub1_Sub1_1086.drawImage(296, 472); }
+        if (Game.fps) {
+            let y: number = 20;
+            let colour: number = 16776960;
+            if (this.fps < 30 && Game.lowMemory) { colour = 16711680; }
+            if (this.fps < 20 && !Game.lowMemory) { colour = 16711680; }
+            this.fontNormal.drawStringRight("Fps:" + this.fps, 507, y, colour);
+            y += 15;
+            // const runtime: java.lang.Runtime = java.lang.Runtime.getRuntime();
+            const memoryUsed: number = 1337; //(((((n) => n < 0 ? Math.ceil(n) : Math.floor(n))((runtime.totalMemory() - runtime.freeMemory()) / 1024)) as number) | 0);
+            colour = 16776960;
+            if (memoryUsed > 33554432 && Game.lowMemory) { colour = 16711680; }
+            if (memoryUsed > 67108864 && !Game.lowMemory) { colour = 16711680; }
+            this.fontNormal.drawStringRight("Mem:" + memoryUsed + "k", 507, y, colour);
+        }
+        if (this.systemUpdateTime !== 0) {
+            let seconds: number = (this.systemUpdateTime / 50 | 0);
+            const minutes: number = (seconds / 60 | 0);
+            seconds %= 60;
+            if (seconds < 10) { this.fontNormal.drawString("System update in: " + minutes + ":0" + seconds, 4, 329, 16776960); } else { this.fontNormal.drawString("System update in: " + minutes + ":" + seconds, 4, 329, 16776960); }
+            Game.anInt895++;
+            if (Game.anInt895 > 112) {
+                Game.anInt895 = 0;
+                this.outBuffer.putOpcode(197);
+                this.outBuffer.putInt(0);
+            }
+        }
+    }
+
+    public method128(flag: boolean) {
+        if (flag) { this.outBuffer.putByte(23); }
+        const i: number = this.menuClickX;
+        const j: number = this.menuClickY;
+        const k: number = this.anInt1307;
+        const l: number = this.anInt1308;
+        const i1: number = 6116423;
+        Rasterizer.drawFilledRectangle(i, j, k, l, i1);
+        Rasterizer.drawFilledRectangle(i + 1, j + 1, k - 2, 16, 0);
+        Rasterizer.drawUnfilledRectangle(i + 1, j + 18, k - 2, l - 19, 0);
+        this.fontBold.drawString("Choose Option", i + 3, j + 14, i1);
+        let j1: number = this.mouseX;
+        let k1: number = this.mouseY;
+        if (this.anInt1304 === 0) {
+            j1 -= 4;
+            k1 -= 4;
+        }
+        if (this.anInt1304 === 1) {
+            j1 -= 553;
+            k1 -= 205;
+        }
+        if (this.anInt1304 === 2) {
+            j1 -= 17;
+            k1 -= 357;
+        }
+        for (let l1: number = 0; l1 < this.menuActionRow; l1++) {{
+            const i2: number = j + 31 + (this.menuActionRow - 1 - l1) * 15;
+            let j2: number = 16777215;
+            if (j1 > i && j1 < i + k && k1 > i2 - 13 && k1 < i2 + 3) { j2 = 16776960; }
+            this.fontBold.drawShadowedString(this.menuActionTexts[l1], i + 3, i2, true, j2);
+        }}
+    }
+    
+    /*private*/ public setTutorialIslandFlag() {
+        const x: number = (Game.localPlayer.worldX >> 7) + this.nextTopLeftTileX;
+        const y: number = (Game.localPlayer.worldY >> 7) + this.nextTopRightTileY;
+        this.inTutorialIsland = false;
+        if (x >= 3053 && x <= 3156 && y >= 3056 && y <= 3136) { this.inTutorialIsland = true; }
+        if (x >= 3072 && x <= 3118 && y >= 9492 && y <= 9535) { this.inTutorialIsland = true; }
+        if (this.inTutorialIsland && x >= 3139 && x <= 3199 && y >= 3008 && y <= 3062) { this.inTutorialIsland = false; }
+    }
+    
+    /*private*/ public renderSplitPrivateMessages() {
+        if (this.anInt1223 === 0) { return; }
+        const typeFace: TypeFace = this.fontNormal;
+        let line: number = 0;
+        if (this.systemUpdateTime !== 0) { line = 1; }
+        for (let i: number = 0; i < 100; i++) {{
+            if (this.chatMessages[i] != null) {
+                const type: number = this.chatTypes[i];
+                let name: string = this.chatPlayerNames[i];
+                let privilege: number = 0;
+                if (name != null && /* startsWith */((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(name, "@cr1@")) {
+                    name = name.substring(5);
+                    privilege = 1;
+                }
+                if (name != null && /* startsWith */((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(name, "@cr2@")) {
+                    name = name.substring(5);
+                    privilege = 2;
+                }
+                if ((type === 3 || type === 7) && (type === 7 || this.privateChatMode === 0 || this.privateChatMode === 1 && this.method148(13292, name))) {
+                    const y: number = 329 - line * 13;
+                    let x: number = 4;
+                    typeFace.drawString("From", x, y, 0);
+                    typeFace.drawString("From", x, y - 1, 65535);
+                    x += typeFace.getStringEffectWidth("From ");
+                    if (privilege === 1) {
+                        this.moderatorIcon[0].drawImage(x, y - 12);
+                        x += 14;
+                    }
+                    if (privilege === 2) {
+                        this.moderatorIcon[1].drawImage(x, y - 12);
+                        x += 14;
+                    }
+                    typeFace.drawString(name + ": " + this.chatMessages[i], x, y, 0);
+                    typeFace.drawString(name + ": " + this.chatMessages[i], x, y - 1, 65535);
+                    if (++line >= 5) { return; }
+                }
+                if (type === 5 && this.privateChatMode < 2) {
+                    const y: number = 329 - line * 13;
+                    typeFace.drawString(this.chatMessages[i], 4, y, 0);
+                    typeFace.drawString(this.chatMessages[i], 4, y - 1, 65535);
+                    if (++line >= 5) { return; }
+                }
+                if (type === 6 && this.privateChatMode < 2) {
+                    const y: number = 329 - line * 13;
+                    typeFace.drawString("To " + name + ": " + this.chatMessages[i], 4, y, 0);
+                    typeFace.drawString("To " + name + ": " + this.chatMessages[i], 4, y - 1, 65535);
+                    if (++line >= 5) { return; }
+                }
+            }
+        }}
+    }
+
+    public method118(i: number): number {
+        const j: number = this.method110(this.cameraY, this.cameraX, ((9 as number) | 0), this.plane);
+        while ((i >= 0)) {this.opcode = this.buffer.getUnsignedByte(); }
+        if (j - this.cameraZ < 800 && (this.currentSceneTileFlags[this.plane][this.cameraX >> 7][this.cameraY >> 7] & 4) !== 0) { return this.plane; } else { return 3; }
+    }
+
+    public method117(byte0: number): number {
+        let i: number = 3;
+        if (byte0 === this.aByte956) { byte0 = 0; } else { this.startUp(); }
+        if (this.anInt1219 < 310) {
+            Game.anInt978++;
+            if (Game.anInt978 > 1457) {
+                Game.anInt978 = 0;
+                this.outBuffer.putOpcode(244);
+                this.outBuffer.putByte(0);
+                const j: number = this.outBuffer.currentPosition;
+                this.outBuffer.putByte(219);
+                this.outBuffer.putShort(37745);
+                this.outBuffer.putByte(61);
+                this.outBuffer.putShort(43756);
+                this.outBuffer.putShort((((Math.random() * 65536.0) as number) | 0));
+                this.outBuffer.putByte((((Math.random() * 256.0) as number) | 0));
+                this.outBuffer.putShort(51171);
+                if ((((Math.random() * 2.0) as number) | 0) === 0) { this.outBuffer.putShort(15808); }
+                this.outBuffer.putByte(97);
+                this.outBuffer.putByte((((Math.random() * 256.0) as number) | 0));
+                this.outBuffer.putLength(this.outBuffer.currentPosition - j);
+            }
+            let k: number = this.cameraX >> 7;
+            let l: number = this.cameraY >> 7;
+            const i1: number = Game.localPlayer.worldX >> 7;
+            const j1: number = Game.localPlayer.worldY >> 7;
+            if ((this.currentSceneTileFlags[this.plane][k][l] & 4) !== 0) { i = this.plane; }
+            let k1: number;
+            if (i1 > k) { k1 = i1 - k; } else { k1 = k - i1; }
+            let l1: number;
+            if (j1 > l) { l1 = j1 - l; } else { l1 = l - j1; }
+            if (k1 > l1) {
+                const i2: number = ((l1 * 65536) / k1 | 0);
+                let k2: number = 32768;
+                while ((k !== i1)) {{
+                    if (k < i1) { k++; } else if (k > i1) { k--; }
+                    if ((this.currentSceneTileFlags[this.plane][k][l] & 4) !== 0) { i = this.plane; }
+                    k2 += i2;
+                    if (k2 >= 65536) {
+                        k2 -= 65536;
+                        if (l < j1) { l++; } else if (l > j1) { l--; }
+                        if ((this.currentSceneTileFlags[this.plane][k][l] & 4) !== 0) { i = this.plane; }
+                    }
+                }}
+            } else {
+                const j2: number = ((k1 * 65536) / l1 | 0);
+                let l2: number = 32768;
+                while ((l !== j1)) {{
+                    if (l < j1) { l++; } else if (l > j1) { l--; }
+                    if ((this.currentSceneTileFlags[this.plane][k][l] & 4) !== 0) { i = this.plane; }
+                    l2 += j2;
+                    if (l2 >= 65536) {
+                        l2 -= 65536;
+                        if (k < i1) { k++; } else if (k > i1) { k--; }
+                        if ((this.currentSceneTileFlags[this.plane][k][l] & 4) !== 0) { i = this.plane; }
+                    }
+                }}
+            }
+        }
+        if ((this.currentSceneTileFlags[this.plane][Game.localPlayer.worldX >> 7][Game.localPlayer.worldY >> 7] & 4) !== 0) { i = this.plane; }
+        return i;
+    }
+
+    /*private*/ public setCameraPosition(x: number, y: number, z: number, pitch: number, yaw: number) {
+        const pitchDifference: number = 2048 - pitch & 2047;
+        const yawDifference: number = 2048 - yaw & 2047;
+        let xOffset: number = 0;
+        let zOffset: number = 0;
+        let yOffset: number = 600 + pitch * 3;
+        if (pitchDifference !== 0) {
+            const sine: number = Model.SINE[pitchDifference];
+            const cosine: number = Model.COSINE[pitchDifference];
+            const temp: number = zOffset * cosine - yOffset * sine >> 16;
+            yOffset = zOffset * sine + yOffset * cosine >> 16;
+            zOffset = temp;
+        }
+        if (yawDifference !== 0) {
+            const sine: number = Model.SINE[yawDifference];
+            const cosine: number = Model.COSINE[yawDifference];
+            const temp: number = yOffset * sine + xOffset * cosine >> 16;
+            yOffset = yOffset * cosine - xOffset * sine >> 16;
+            xOffset = temp;
+        }
+        this.cameraX = x - xOffset;
+        this.cameraZ = z - zOffset;
+        this.cameraY = y - yOffset;
+        this.anInt1219 = pitch;
+        this.anInt1220 = yaw;
+    }
+    
+    public method76(i: number) {
+        while ((i >= 0)) {this.groundItems = null; }
+        for (let gameAnimableObject: GameAnimableObject = this.aClass6_1210.first() as GameAnimableObject; gameAnimableObject != null; gameAnimableObject = this.aClass6_1210.next() as GameAnimableObject) {if (gameAnimableObject.plane !== this.plane || gameAnimableObject.transformCompleted) { gameAnimableObject.remove(); } else if (Game.pulseCycle >= gameAnimableObject.loopCycle) {
+            gameAnimableObject.nextFrame(this.tickDelta);
+            if (gameAnimableObject.transformCompleted) { gameAnimableObject.remove(); } else { this.currentScene.addEntity(-1, gameAnimableObject, gameAnimableObject.x, gameAnimableObject.z, false, 0, gameAnimableObject.plane, 60, gameAnimableObject.y, 0); }
+        }}
+    }
+    
+    public method65(i: number) {
+        if (!Game.lowMemory) {
+            for (let k: number = 0; k < this.anIntArray1290.length; k++) {{
+                const l: number = this.anIntArray1290[k];
+                if (Rasterizer3D.anIntArray1546[l] >= i) {
+                    const class50_sub1_sub1_sub3: IndexedImage = Rasterizer3D.aClass50_Sub1_Sub1_Sub3Array1540[l];
+                    const i1: number = class50_sub1_sub1_sub3.width * class50_sub1_sub1_sub3.height - 1;
+                    const j1: number = class50_sub1_sub1_sub3.width * this.tickDelta * 2;
+                    const abyte0: number[] = class50_sub1_sub1_sub3.pixels;
+                    const abyte1: number[] = this.aByteArray1245;
+                    for (let k1: number = 0; k1 <= i1; k1++) {abyte1[k1] = abyte0[k1 - j1 & i1]; }
+                    class50_sub1_sub1_sub3.pixels = abyte1;
+                    this.aByteArray1245 = abyte0;
+                    Rasterizer3D.method499(l, 9);
+                }
+            }}
+        }
+    }
+
+    public method127(flag: boolean) {
+        if (!flag) { this.anInt1056 = this.incomingRandom.nextInt(); }
+        if (this.anInt1197 !== 2) { return; }
+        this.method137((this.anInt844 - this.nextTopLeftTileX << 7) + this.anInt847, this.anInt846 * 2, (this.anInt845 - this.nextTopRightTileY << 7) + this.anInt848, -214);
+        if (this.anInt932 > -1 && Game.pulseCycle % 20 < 10) { this.aClass50_Sub1_Sub1_Sub1Array954[0].drawImage(this.anInt933 - 28, this.anInt932 - 12); }
+    }
+    
+    public method51(flag: boolean) {
+        let class50_sub1_sub4_sub2: Projectile = this.aClass6_1282.first() as Projectile;
+        if (flag) { this.anInt1328 = 153; }
+        for (; class50_sub1_sub4_sub2 != null; class50_sub1_sub4_sub2 = this.aClass6_1282.next() as Projectile) {if (class50_sub1_sub4_sub2.sceneId !== this.plane || Game.pulseCycle > class50_sub1_sub4_sub2.endCycle) { class50_sub1_sub4_sub2.remove(); } else if (Game.pulseCycle >= class50_sub1_sub4_sub2.delay) {
+            if (class50_sub1_sub4_sub2.targetedEntityId > 0) {
+                const class50_sub1_sub4_sub3_sub1: Npc = this.npcs[class50_sub1_sub4_sub2.targetedEntityId - 1];
+                if (class50_sub1_sub4_sub3_sub1 != null && class50_sub1_sub4_sub3_sub1.worldX >= 0 && class50_sub1_sub4_sub3_sub1.worldX < 13312 && class50_sub1_sub4_sub3_sub1.worldY >= 0 && class50_sub1_sub4_sub3_sub1.worldY < 13312) { class50_sub1_sub4_sub2.trackTarget(class50_sub1_sub4_sub3_sub1.worldX, class50_sub1_sub4_sub3_sub1.worldY, this.method110(class50_sub1_sub4_sub3_sub1.worldY, class50_sub1_sub4_sub3_sub1.worldX, ((9 as number) | 0), class50_sub1_sub4_sub2.sceneId) - class50_sub1_sub4_sub2.endHeight, Game.pulseCycle); }
+            }
+            if (class50_sub1_sub4_sub2.targetedEntityId < 0) {
+                const i: number = -class50_sub1_sub4_sub2.targetedEntityId - 1;
+                let class50_sub1_sub4_sub3_sub2: Player;
+                if (i === this.thisPlayerServerId) { class50_sub1_sub4_sub3_sub2 = Game.localPlayer; } else { class50_sub1_sub4_sub3_sub2 = this.players[i]; }
+                if (class50_sub1_sub4_sub3_sub2 != null && class50_sub1_sub4_sub3_sub2.worldX >= 0 && class50_sub1_sub4_sub3_sub2.worldX < 13312 && class50_sub1_sub4_sub3_sub2.worldY >= 0 && class50_sub1_sub4_sub3_sub2.worldY < 13312) { class50_sub1_sub4_sub2.trackTarget(class50_sub1_sub4_sub3_sub2.worldX, class50_sub1_sub4_sub3_sub2.worldY, this.method110(class50_sub1_sub4_sub3_sub2.worldY, class50_sub1_sub4_sub3_sub2.worldX, ((9 as number) | 0), class50_sub1_sub4_sub2.sceneId) - class50_sub1_sub4_sub2.endHeight, Game.pulseCycle); }
+            }
+            class50_sub1_sub4_sub2.move(this.tickDelta);
+            this.currentScene.addEntity(-1, class50_sub1_sub4_sub2, ((class50_sub1_sub4_sub2.currentX as number) | 0), ((class50_sub1_sub4_sub2.currentHeight as number) | 0), false, 0, this.plane, 60, ((class50_sub1_sub4_sub2.currentY as number) | 0), class50_sub1_sub4_sub2.anInt1562);
+        }}
+        Game.anInt1168++;
+        if (Game.anInt1168 > 51) {
+            Game.anInt1168 = 0;
+            this.outBuffer.putOpcode(248);
+        }
+    }
+    
+    public method57(i: number, flag: boolean) {
+        i = (26 / i | 0);
+        for (let j: number = 0; j < this.anInt1133; j++) {{
+            const class50_sub1_sub4_sub3_sub1: Npc = this.npcs[this.anIntArray1134[j]];
+            let k: number = 536870912 + (this.anIntArray1134[j] << 14);
+            if (class50_sub1_sub4_sub3_sub1 == null || !class50_sub1_sub4_sub3_sub1.isVisible() || class50_sub1_sub4_sub3_sub1.npcDefinition.visible !== flag || !class50_sub1_sub4_sub3_sub1.npcDefinition.method360()) { continue; }
+            const l: number = class50_sub1_sub4_sub3_sub1.worldX >> 7;
+            const i1: number = class50_sub1_sub4_sub3_sub1.worldY >> 7;
+            if (l < 0 || l >= 104 || i1 < 0 || i1 >= 104) { continue; }
+            if (class50_sub1_sub4_sub3_sub1.boundaryDimension === 1 && (class50_sub1_sub4_sub3_sub1.worldX & 127) === 64 && (class50_sub1_sub4_sub3_sub1.worldY & 127) === 64) {
+                if (this.anIntArrayArray886[l][i1] === this.anInt1138) { continue; }
+                this.anIntArrayArray886[l][i1] = this.anInt1138;
+            }
+            if (!class50_sub1_sub4_sub3_sub1.npcDefinition.clickable) { k += -2147483648; }
+            this.currentScene.addEntity(k, class50_sub1_sub4_sub3_sub1, class50_sub1_sub4_sub3_sub1.worldX, this.method110(class50_sub1_sub4_sub3_sub1.worldY, class50_sub1_sub4_sub3_sub1.worldX, ((9 as number) | 0), this.plane), class50_sub1_sub4_sub3_sub1.aBoolean1592, 0, this.plane, (class50_sub1_sub4_sub3_sub1.boundaryDimension - 1) * 64 + 60, class50_sub1_sub4_sub3_sub1.worldY, class50_sub1_sub4_sub3_sub1.anInt1612);
+        }}
+    }
+
+    public method121(flag: boolean) {
+        this.anInt939 = 0;
+        for (let i: number = -1; i < this.localPlayerCount + this.anInt1133; i++) {{
+            let obj: any;
+            if (i === -1) { obj = Game.localPlayer; } else if (i < this.localPlayerCount) { obj = this.players[this.playerList[i]]; } else { obj = this.npcs[this.anIntArray1134[i - this.localPlayerCount]]; }
+            if (obj == null || !((obj) as Actor).isVisible()) { continue; }
+            if (obj != null && obj instanceof Npc as any) {
+                let class37: ActorDefinition = (obj as Npc).npcDefinition;
+                if (class37.childrenIds != null) { class37 = class37.getChildDefinition(); }
+                if (class37 == null) { continue; }
+            }
+            if (i < this.localPlayerCount) {
+                let k: number = 30;
+                const class50_sub1_sub4_sub3_sub2: Player = obj as Player;
+                if (class50_sub1_sub4_sub3_sub2.anInt1756 !== -1 || class50_sub1_sub4_sub3_sub2.anInt1748 !== -1) {
+                    this.method136(((obj) as Actor), false, ((obj) as Actor).modelHeight + 15);
+                    if (this.anInt932 > -1) {
+                        if (class50_sub1_sub4_sub3_sub2.anInt1756 !== -1) {
+                            this.aClass50_Sub1_Sub1_Sub1Array1288[class50_sub1_sub4_sub3_sub2.anInt1756].drawImage(this.anInt933 - k, this.anInt932 - 12);
+                            k += 25;
+                        }
+                        if (class50_sub1_sub4_sub3_sub2.anInt1748 !== -1) {
+                            this.aClass50_Sub1_Sub1_Sub1Array1079[class50_sub1_sub4_sub3_sub2.anInt1748].drawImage(this.anInt933 - k, this.anInt932 - 12);
+                            k += 25;
+                        }
+                    }
+                }
+                if (i >= 0 && this.anInt1197 === 10 && this.anInt1151 === this.playerList[i]) {
+                    this.method136(((obj) as Actor), false, ((obj) as Actor).modelHeight + 15);
+                    if (this.anInt932 > -1) { this.aClass50_Sub1_Sub1_Sub1Array954[1].drawImage(this.anInt933 - k, this.anInt932 - 12); }
+                }
+            } else {
+                const class37_1: ActorDefinition = (obj as Npc).npcDefinition;
+                if (class37_1.headIcon >= 0 && class37_1.headIcon < this.aClass50_Sub1_Sub1_Sub1Array1079.length) {
+                    this.method136(((obj) as Actor), false, ((obj) as Actor).modelHeight + 15);
+                    if (this.anInt932 > -1) { this.aClass50_Sub1_Sub1_Sub1Array1079[class37_1.headIcon].drawImage(this.anInt933 - 30, this.anInt932 - 12); }
+                }
+                if (this.anInt1197 === 1 && this.anInt1226 === this.anIntArray1134[i - this.localPlayerCount] && Game.pulseCycle % 20 < 10) {
+                    this.method136(((obj) as Actor), false, ((obj) as Actor).modelHeight + 15);
+                    if (this.anInt932 > -1) { this.aClass50_Sub1_Sub1_Sub1Array954[0].drawImage(this.anInt933 - 28, this.anInt932 - 12); }
+                }
+            }
+            if (((obj) as Actor).forcedChat != null && (i >= this.localPlayerCount || this.publicChatMode === 0 || this.publicChatMode === 3 || this.publicChatMode === 1 && this.method148(13292, (obj as Player).playerName))) {
+                this.method136(((obj) as Actor), false, ((obj) as Actor).modelHeight);
+                if (this.anInt932 > -1 && this.anInt939 < this.anInt940) {
+                    this.anIntArray944[this.anInt939] = (this.fontBold.getStringWidth(((obj) as Actor).forcedChat) / 2 | 0);
+                    this.anIntArray943[this.anInt939] = this.fontBold.characterDefaultHeight;
+                    this.anIntArray941[this.anInt939] = this.anInt932;
+                    this.anIntArray942[this.anInt939] = this.anInt933;
+                    this.anIntArray945[this.anInt939] = ((obj) as Actor).textColour;
+                    this.anIntArray946[this.anInt939] = ((obj) as Actor).textEffect;
+                    this.anIntArray947[this.anInt939] = ((obj) as Actor).textCycle;
+                    this.aStringArray948[this.anInt939++] = ((obj) as Actor).forcedChat;
+                    if (this.anInt998 === 0 && ((obj) as Actor).textEffect >= 1 && ((obj) as Actor).textEffect <= 3) {
+                        this.anIntArray943[this.anInt939] += 10;
+                        this.anIntArray942[this.anInt939] += 5;
+                    }
+                    if (this.anInt998 === 0 && ((obj) as Actor).textEffect === 4) { this.anIntArray944[this.anInt939] = 60; }
+                    if (this.anInt998 === 0 && ((obj) as Actor).textEffect === 5) { this.anIntArray943[this.anInt939] += 5; }
+                }
+            }
+            if (((obj) as Actor).endCycle > Game.pulseCycle) {
+                this.method136(((obj) as Actor), false, ((obj) as Actor).modelHeight + 15);
+                if (this.anInt932 > -1) {
+                    let l: number = ((((obj) as Actor).anInt1596 * 30) / ((obj) as Actor).anInt1597 | 0);
+                    if (l > 30) { l = 30; }
+                    Rasterizer.drawFilledRectangle(this.anInt932 - 15, this.anInt933 - 3, l, 5, 65280);
+                    Rasterizer.drawFilledRectangle((this.anInt932 - 15) + l, this.anInt933 - 3, 30 - l, 5, 16711680);
+                }
+            }
+            for (let i1: number = 0; i1 < 4; i1++) {if (((obj) as Actor).hitCycles[i1] > Game.pulseCycle) {
+                this.method136(((obj) as Actor), false, (((obj) as Actor).modelHeight / 2 | 0));
+                if (this.anInt932 > -1) {
+                    if (i1 === 1) { this.anInt933 -= 20; }
+                    if (i1 === 2) {
+                        this.anInt932 -= 15;
+                        this.anInt933 -= 10;
+                    }
+                    if (i1 === 3) {
+                        this.anInt932 += 15;
+                        this.anInt933 -= 10;
+                    }
+                    this.aClass50_Sub1_Sub1_Sub1Array1182[((obj) as Actor).hitTypes[i1]].drawImage(this.anInt933 - 12, this.anInt932 - 12);
+                    this.fontSmall.drawStringLeft(/* valueOf */new String(((obj) as Actor).hitDamages[i1]).toString(), this.anInt932, this.anInt933 + 4, 0);
+                    this.fontSmall.drawStringLeft(/* valueOf */new String(((obj) as Actor).hitDamages[i1]).toString(), this.anInt932 - 1, this.anInt933 + 3, 16777215);
+                }
+            }}
+        }}
+        for (let j: number = 0; j < this.anInt939; j++) {{
+            const j1: number = this.anIntArray941[j];
+            let k1: number = this.anIntArray942[j];
+            const l1: number = this.anIntArray944[j];
+            const i2: number = this.anIntArray943[j];
+            let flag1: boolean = true;
+            while ((flag1)) {{
+                flag1 = false;
+                for (let j2: number = 0; j2 < j; j2++) {if (k1 + 2 > this.anIntArray942[j2] - this.anIntArray943[j2] && k1 - i2 < this.anIntArray942[j2] + 2 && j1 - l1 < this.anIntArray941[j2] + this.anIntArray944[j2] && j1 + l1 > this.anIntArray941[j2] - this.anIntArray944[j2] && this.anIntArray942[j2] - this.anIntArray943[j2] < k1) {
+                    k1 = this.anIntArray942[j2] - this.anIntArray943[j2];
+                    flag1 = true;
+                }}
+            }}
+            this.anInt932 = this.anIntArray941[j];
+            this.anInt933 = this.anIntArray942[j] = k1;
+            const s: string = this.aStringArray948[j];
+            if (this.anInt998 === 0) {
+                let k2: number = 16776960;
+                if (this.anIntArray945[j] < 6) { k2 = this.anIntArray842[this.anIntArray945[j]]; }
+                if (this.anIntArray945[j] === 6) { k2 = this.anInt1138 % 20 >= 10 ? 16776960 : 16711680; }
+                if (this.anIntArray945[j] === 7) { k2 = this.anInt1138 % 20 >= 10 ? 65535 : 255; }
+                if (this.anIntArray945[j] === 8) { k2 = this.anInt1138 % 20 >= 10 ? 8454016 : 45056; }
+                if (this.anIntArray945[j] === 9) {
+                    const l2: number = 150 - this.anIntArray947[j];
+                    if (l2 < 50) { k2 = 16711680 + 1280 * l2; } else if (l2 < 100) { k2 = 16776960 - 327680 * (l2 - 50); } else if (l2 < 150) { k2 = 65280 + 5 * (l2 - 100); }
+                }
+                if (this.anIntArray945[j] === 10) {
+                    const i3: number = 150 - this.anIntArray947[j];
+                    if (i3 < 50) { k2 = 16711680 + 5 * i3; } else if (i3 < 100) { k2 = 16711935 - 327680 * (i3 - 50); } else if (i3 < 150) { k2 = (255 + 327680 * (i3 - 100)) - 5 * (i3 - 100); }
+                }
+                if (this.anIntArray945[j] === 11) {
+                    const j3: number = 150 - this.anIntArray947[j];
+                    if (j3 < 50) { k2 = 16777215 - 327685 * j3; } else if (j3 < 100) { k2 = 65280 + 327685 * (j3 - 50); } else if (j3 < 150) { k2 = 16777215 - 327680 * (j3 - 100); }
+                }
+                if (this.anIntArray946[j] === 0) {
+                    this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933 + 1, 0);
+                    this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933, k2);
+                }
+                if (this.anIntArray946[j] === 1) {
+                    this.fontBold.drawCenteredStringWaveY(s, this.anInt932, this.anInt933 + 1, this.anInt1138, 0);
+                    this.fontBold.drawCenteredStringWaveY(s, this.anInt932, this.anInt933, this.anInt1138, k2);
+                }
+                if (this.anIntArray946[j] === 2) {
+                    this.fontBold.drawCeneteredStringWaveXY(s, this.anInt932, this.anInt933 + 1, this.anInt1138, 0);
+                    this.fontBold.drawCeneteredStringWaveXY(s, this.anInt932, this.anInt933, this.anInt1138, k2);
+                }
+                if (this.anIntArray946[j] === 3) {
+                    this.fontBold.drawCenteredStringWaveXYMove(s, this.anInt932, this.anInt933 + 1, this.anInt1138, 150 - this.anIntArray947[j], 0);
+                    this.fontBold.drawCenteredStringWaveXYMove(s, this.anInt932, this.anInt933, this.anInt1138, 150 - this.anIntArray947[j], k2);
+                }
+                if (this.anIntArray946[j] === 4) {
+                    const k3: number = this.fontBold.getStringWidth(s);
+                    const i4: number = (((150 - this.anIntArray947[j]) * (k3 + 100)) / 150 | 0);
+                    Rasterizer.setCoordinates(0, this.anInt932 - 50, 334, this.anInt932 + 50);
+                    this.fontBold.drawString(s, (this.anInt932 + 50) - i4, this.anInt933 + 1, 0);
+                    this.fontBold.drawString(s, (this.anInt932 + 50) - i4, this.anInt933, k2);
+                    Rasterizer.resetCoordinates();
+                }
+                if (this.anIntArray946[j] === 5) {
+                    const l3: number = 150 - this.anIntArray947[j];
+                    let j4: number = 0;
+                    if (l3 < 25) { j4 = l3 - 25; } else if (l3 > 125) { j4 = l3 - 125; }
+                    Rasterizer.setCoordinates(this.anInt933 - this.fontBold.characterDefaultHeight - 1, 0, this.anInt933 + 5, 512);
+                    this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933 + 1 + j4, 0);
+                    this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933 + j4, k2);
+                    Rasterizer.resetCoordinates();
+                }
+            } else {
+                this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933 + 1, 0);
+                this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933, 16776960);
+            }
+        }}
+        if (flag) { this.opcode = -1; }
+    }
+    
+    public method136(class50_sub1_sub4_sub3: Actor, flag: boolean, i: number) {
+        this.method137(class50_sub1_sub4_sub3.worldX, i, class50_sub1_sub4_sub3.worldY, -214);
+        if (!flag) {  }
+    }
+
+    public method137(i: number, j: number, k: number, l: number) {
+        if (i < 128 || k < 128 || i > 13056 || k > 13056) {
+            this.anInt932 = -1;
+            this.anInt933 = -1;
+            return;
+        }
+        let i1: number = this.method110(k, i, ((9 as number) | 0), this.plane) - j;
+        i -= this.cameraX;
+        i1 -= this.cameraZ;
+        k -= this.cameraY;
+        const j1: number = Model.SINE[this.anInt1219];
+        const k1: number = Model.COSINE[this.anInt1219];
+        const l1: number = Model.SINE[this.anInt1220];
+        const i2: number = Model.COSINE[this.anInt1220];
+        let j2: number = k * l1 + i * i2 >> 16;
+        k = k * i2 - i * l1 >> 16;
+        i = j2;
+        j2 = i1 * k1 - k * j1 >> 16;
+        k = i1 * j1 + k * k1 >> 16;
+        while ((l >= 0)) {this.opcode = -1; }
+        i1 = j2;
+        if (k >= 50) {
+            this.anInt932 = Rasterizer3D.centerX + ((i << 9) / k | 0);
+            this.anInt933 = Rasterizer3D.centerY + ((i1 << 9) / k | 0);
+            return;
+        } else {
+            this.anInt932 = -1;
+            this.anInt933 = -1;
+            return;
+        }
+    }
+    
+    public processPlayerAdditions(priority: boolean) {
+        if (Game.localPlayer.worldX >> 7 === this.destinationX && Game.localPlayer.worldY >> 7 === this.destinationY) { this.destinationX = 0; }
+        let count: number = this.localPlayerCount;
+        if (priority) { count = 1; }
+        for (let index: number = 0; index < count; index++) {{
+            let player: Player;
+            let key: number;
+            if (priority) {
+                player = Game.localPlayer;
+                key = this.thisPlayerId << 14;
+            } else {
+                player = this.players[this.playerList[index]];
+                key = this.playerList[index] << 14;
+            }
+            if (player == null || !player.isVisible()) { continue; }
+            player.aBoolean1763 = false;
+            if ((Game.lowMemory && this.localPlayerCount > 50 || this.localPlayerCount > 200) && !priority && player.movementAnimation === player.idleAnimation) { player.aBoolean1763 = true; }
+            const viewportX: number = player.worldX >> 7;
+            const viewportY: number = player.worldY >> 7;
+            if (viewportX < 0 || viewportX >= 104 || viewportY < 0 || viewportY >= 104) { continue; }
+            if (player.playerModel != null && Game.pulseCycle >= player.objectAppearanceStartTick && Game.pulseCycle < player.objectAppearanceEndTick) {
+                player.aBoolean1763 = false;
+                player.anInt1750 = this.method110(player.worldY, player.worldX, ((9 as number) | 0), this.plane);
+                this.currentScene.addRenderable(player.anInt1750, player.anInt1769, 60, 7, player, player.anInt1768, player.worldY, player.anInt1771, player.worldX, player.anInt1612, player.anInt1770, this.plane, key);
+                continue;
+            }
+            if ((player.worldX & 127) === 64 && (player.worldY & 127) === 64) {
+                if (this.anIntArrayArray886[viewportX][viewportY] === this.anInt1138) { continue; }
+                this.anIntArrayArray886[viewportX][viewportY] = this.anInt1138;
+            }
+            player.anInt1750 = this.method110(player.worldY, player.worldX, ((9 as number) | 0), this.plane);
+            this.currentScene.addEntity(key, player, player.worldX, player.anInt1750, player.aBoolean1592, 0, this.plane, 60, player.worldY, player.anInt1612);
+        }}
+    }
+    
+    /*private*/ public drawMenuTooltip() {
+        if (this.menuActionRow < 2 && this.itemSelected === 0 && this.widgetSelected === 0) { return; }
+        let str: string;
+        if (this.itemSelected === 1 && this.menuActionRow < 2) { str = "Use " + this.aString1150 + " with..."; } else if (this.widgetSelected === 1 && this.menuActionRow < 2) { str = this.selectedWidgetName + "..."; } else { str = this.menuActionTexts[this.menuActionRow - 1]; }
+        if (this.menuActionRow > 2) { str = str + "@whi@ / " + (this.menuActionRow - 2) + " more options"; }
+        this.fontBold.drawShadowedSeededAlphaString(str, 4, 15, 16777215, (Game.pulseCycle / 1000 | 0));
+    }
+
+    public method142(i: number, j: number, class13: Widget, k: number, l: number) {
+        if (class13.type !== 0 || class13.children == null) { return; }
+        if (class13.hiddenUntilHovered && this.anInt1302 !== class13.id && this.anInt1280 !== class13.id && this.anInt1106 !== class13.id) { return; }
+        const i1: number = Rasterizer.topX;
+        const j1: number = Rasterizer.topY;
+        const k1: number = Rasterizer.bottomX;
+        const l1: number = Rasterizer.bottomY;
+        Rasterizer.setCoordinates(i, j, i + class13.height, j + class13.width);
+        const i2: number = class13.children.length;
+        if (l !== 8) { this.opcode = -1; }
+        for (let j2: number = 0; j2 < i2; j2++) {{
+            let k2: number = class13.childrenX[j2] + j;
+            let l2: number = (class13.childrenY[j2] + i) - k;
+            const child: Widget = Widget.forId(class13.children[j2]);
+            k2 += child.anInt228;
+            l2 += child.anInt259;
+            if (child.contentType > 0) { this.method103(((2 as number) | 0), child); }
+            if (child.type === 0) {
+                if (child.anInt231 > child.scrollLimit - child.height) { child.anInt231 = child.scrollLimit - child.height; }
+                if (child.anInt231 < 0) { child.anInt231 = 0; }
+                this.method142(l2, k2, child, child.anInt231, 8);
+                if (child.scrollLimit > child.height) { this.method56(true, child.anInt231, k2 + child.width, child.height, child.scrollLimit, l2); }
+            } else if (child.type !== 1) { if (child.type === 2) {
+                let i3: number = 0;
+                for (let i4: number = 0; i4 < child.height; i4++) {{
+                    for (let j5: number = 0; j5 < child.width; j5++) {{
+                        let i6: number = k2 + j5 * (32 + child.itemSpritePadsX);
+                        let l6: number = l2 + i4 * (32 + child.itemSpritePadsY);
+                        if (i3 < 20) {
+                            i6 += child.imageX[i3];
+                            l6 += child.imageY[i3];
+                        }
+                        if (child.items[i3] > 0) {
+                            let i7: number = 0;
+                            let j8: number = 0;
+                            const l10: number = child.items[i3] - 1;
+                            if (i6 > Rasterizer.topX - 32 && i6 < Rasterizer.bottomX && l6 > Rasterizer.topY - 32 && l6 < Rasterizer.bottomY || this.activeInterfaceType !== 0 && this.selectedInventorySlot === i3) {
+                                let k11: number = 0;
+                                if (this.itemSelected === 1 && this.anInt1147 === i3 && this.anInt1148 === child.id) { k11 = 16777215; }
+                                const class50_sub1_sub1_sub1_2: ImageRGB = ItemDefinition.sprite(l10, child.itemAmounts[i3], k11);
+                                if (class50_sub1_sub1_sub1_2 != null) {
+                                    if (this.activeInterfaceType !== 0 && this.selectedInventorySlot === i3 && this.modifiedWidgetId === child.id) {
+                                        i7 = this.mouseX - this.anInt1114;
+                                        j8 = this.mouseY - this.anInt1115;
+                                        if (i7 < 5 && i7 > -5) { i7 = 0; }
+                                        if (j8 < 5 && j8 > -5) { j8 = 0; }
+                                        if (this.anInt1269 < 5) {
+                                            i7 = 0;
+                                            j8 = 0;
+                                        }
+                                        class50_sub1_sub1_sub1_2.drawImageAlpha(i6 + i7, l6 + j8, 128);
+                                        if (l6 + j8 < Rasterizer.topY && class13.anInt231 > 0) {
+                                            let i12: number = ((this.tickDelta * (Rasterizer.topY - l6 - j8)) / 3 | 0);
+                                            if (i12 > this.tickDelta * 10) { i12 = this.tickDelta * 10; }
+                                            if (i12 > class13.anInt231) { i12 = class13.anInt231; }
+                                            class13.anInt231 -= i12;
+                                            this.anInt1115 += i12;
+                                        }
+                                        if (l6 + j8 + 32 > Rasterizer.bottomY && class13.anInt231 < class13.scrollLimit - class13.height) {
+                                            let j12: number = ((this.tickDelta * ((l6 + j8 + 32) - Rasterizer.bottomY)) / 3 | 0);
+                                            if (j12 > this.tickDelta * 10) { j12 = this.tickDelta * 10; }
+                                            if (j12 > class13.scrollLimit - class13.height - class13.anInt231) { j12 = class13.scrollLimit - class13.height - class13.anInt231; }
+                                            class13.anInt231 += j12;
+                                            this.anInt1115 -= j12;
+                                        }
+                                    } else if (this.atInventoryInterfaceType !== 0 && this.anInt1331 === i3 && this.anInt1330 === child.id) { class50_sub1_sub1_sub1_2.drawImageAlpha(i6, l6, 128); } else { class50_sub1_sub1_sub1_2.drawImage(l6, i6); }
+                                    if (class50_sub1_sub1_sub1_2.maxWidth === 33 || child.itemAmounts[i3] !== 1) {
+                                        const k12: number = child.itemAmounts[i3];
+                                        this.fontSmall.drawString(Game.getShortenedAmountText(k12), i6 + 1 + i7, l6 + 10 + j8, 0);
+                                        this.fontSmall.drawString(Game.getShortenedAmountText(k12), i6 + i7, l6 + 9 + j8, 16776960);
+                                    }
+                                }
+                            }
+                        } else if (child.images != null && i3 < 20) {
+                            const class50_sub1_sub1_sub1_1: ImageRGB = child.images[i3];
+                            if (class50_sub1_sub1_sub1_1 != null) { class50_sub1_sub1_sub1_1.drawImage(l6, i6); }
+                        }
+                        i3++;
+                    }}
+                }}
+            } else if (child.type === 3) {
+                let flag: boolean = false;
+                if (this.anInt1106 === child.id || this.anInt1280 === child.id || this.anInt1302 === child.id) { flag = true; }
+                let j3: number;
+                if (this.method95(child, -693)) {
+                    j3 = child.enabledColor;
+                    if (flag && child.enabledHoveredColor !== 0) { j3 = child.enabledHoveredColor; }
+                } else {
+                    j3 = child.disabledColor;
+                    if (flag && child.disabledHoveredColor !== 0) { j3 = child.disabledHoveredColor; }
+                }
+                if (child.alpha === 0) {
+                    if (child.filled) { Rasterizer.drawFilledRectangle(k2, l2, child.width, child.height, j3); } else { Rasterizer.drawUnfilledRectangle(k2, l2, child.width, child.height, j3); }
+                } else if (child.filled) { Rasterizer.drawFilledRectangleAlhpa(k2, l2, child.width, child.height, j3, 256 - (child.alpha & 255)); } else { Rasterizer.drawUnfilledRectangleAlpha(k2, l2, child.width, child.height, j3, 256 - (child.alpha & 255)); }
+            } else if (child.type === 4) {
+                const class50_sub1_sub1_sub2: TypeFace = child.typeFaces;
+                let s: string = child.disabledText;
+                let flag1: boolean = false;
+                if (this.anInt1106 === child.id || this.anInt1280 === child.id || this.anInt1302 === child.id) { flag1 = true; }
+                let j4: number;
+                if (this.method95(child, -693)) {
+                    j4 = child.enabledColor;
+                    if (flag1 && child.enabledHoveredColor !== 0) { j4 = child.enabledHoveredColor; }
+                    if (child.enabledText.length > 0) { s = child.enabledText; }
+                } else {
+                    j4 = child.disabledColor;
+                    if (flag1 && child.disabledHoveredColor !== 0) { j4 = child.disabledHoveredColor; }
+                }
+                if (child.actionType === 6 && this.aBoolean1239) {
+                    s = "Please wait...";
+                    j4 = child.disabledColor;
+                }
+                if (Rasterizer.width === 479) {
+                    if (j4 === 16776960) { j4 = 255; }
+                    if (j4 === 49152) { j4 = 16777215; }
+                }
+                for (let j7: number = l2 + class50_sub1_sub1_sub2.characterDefaultHeight; s.length > 0; j7 += class50_sub1_sub1_sub2.characterDefaultHeight) {{
+                    if (s.indexOf("%") !== -1) {
+                        do {{
+                            const k8: number = s.indexOf("%1");
+                            if (k8 === -1) { break; }
+                            s = s.substring(0, k8) + this.method89(this.method129(3, 0, child), 8) + s.substring(k8 + 2);
+                        }} while ((true));
+                        do {{
+                            const l8: number = s.indexOf("%2");
+                            if (l8 === -1) { break; }
+                            s = s.substring(0, l8) + this.method89(this.method129(3, 1, child), 8) + s.substring(l8 + 2);
+                        }} while ((true));
+                        do {{
+                            const i9: number = s.indexOf("%3");
+                            if (i9 === -1) { break; }
+                            s = s.substring(0, i9) + this.method89(this.method129(3, 2, child), 8) + s.substring(i9 + 2);
+                        }} while ((true));
+                        do {{
+                            const j9: number = s.indexOf("%4");
+                            if (j9 === -1) { break; }
+                            s = s.substring(0, j9) + this.method89(this.method129(3, 3, child), 8) + s.substring(j9 + 2);
+                        }} while ((true));
+                        do {{
+                            const k9: number = s.indexOf("%5");
+                            if (k9 === -1) { break; }
+                            s = s.substring(0, k9) + this.method89(this.method129(3, 4, child), 8) + s.substring(k9 + 2);
+                        }} while ((true));
+                    }
+                    const l9: number = s.indexOf("\\n");
+                    let s3: string;
+                    if (l9 !== -1) {
+                        s3 = s.substring(0, l9);
+                        s = s.substring(l9 + 2);
+                    } else {
+                        s3 = s;
+                        s = "";
+                    }
+                    if (child.typeFaceCentered) { class50_sub1_sub1_sub2.drawStringCenter(s3, k2 + (child.width / 2 | 0), j7, j4, child.typeFaceShadowed); } else { class50_sub1_sub1_sub2.drawShadowedString(s3, k2, j7, child.typeFaceShadowed, j4); }
+                }}
+            } else if (child.type === 5) {
+                let class50_sub1_sub1_sub1: ImageRGB;
+                if (this.method95(child, -693)) { class50_sub1_sub1_sub1 = child.enabledImage; } else { class50_sub1_sub1_sub1 = child.disabledImage; }
+                switch ((child.id)) {
+                case 1164:
+                case 1167:
+                case 1170:
+                case 1174:
+                case 1540:
+                case 1541:
+                case 7455:
+                    class50_sub1_sub1_sub1 = child.enabledImage;
+                    break;
+                default:
+                    break;
+                }
+                if (class50_sub1_sub1_sub1 != null) { class50_sub1_sub1_sub1.drawImage(l2, k2); }
+            } else if (child.type === 6) {
+                const k3: number = Rasterizer3D.centerX;
+                const k4: number = Rasterizer3D.centerY;
+                Rasterizer3D.centerX = k2 + (child.width / 2 | 0);
+                Rasterizer3D.centerY = l2 + (child.height / 2 | 0);
+                const k5: number = Rasterizer3D.SINE[child.rotationX] * child.zoom >> 16;
+                const j6: number = Rasterizer3D.COSINE[child.rotationX] * child.zoom >> 16;
+                const flag2: boolean = this.method95(child, -693);
+                let k7: number;
+                if (flag2) { k7 = child.enabledAnimation; } else { k7 = child.disabledAnimation; }
+                let class50_sub1_sub4_sub4: Model;
+                if (k7 === -1) {
+                    class50_sub1_sub4_sub4 = child.getAnimatedModel(-1, -1, flag2);
+                } else {
+                    const class14: AnimationSequence = AnimationSequence.animations[k7];
+                    class50_sub1_sub4_sub4 = child.getAnimatedModel(class14.frame1Ids[child.anInt235], class14.getPrimaryFrame[child.anInt235], flag2);
+                }
+                if (class50_sub1_sub4_sub4 != null) { class50_sub1_sub4_sub4.render(0, child.rotationY, 0, child.rotationX, 0, k5, j6); }
+                Rasterizer3D.centerX = k3;
+                Rasterizer3D.centerY = k4;
+            } else {
+                if (child.type === 7) {
+                    const class50_sub1_sub1_sub2_1: TypeFace = child.typeFaces;
+                    let l4: number = 0;
+                    for (let l5: number = 0; l5 < child.height; l5++) {{
+                        for (let k6: number = 0; k6 < child.width; k6++) {{
+                            if (child.items[l4] > 0) {
+                                const class16: ItemDefinition = ItemDefinition.lookup(child.items[l4] - 1);
+                                let s6: string = /* valueOf */new String(class16.name).toString();
+                                if (class16.stackable || child.itemAmounts[l4] !== 1) { s6 = s6 + " x" + Game.getFullAmountText(child.itemAmounts[l4]); }
+                                const i10: number = k2 + k6 * (115 + child.itemSpritePadsX);
+                                const i11: number = l2 + l5 * (12 + child.itemSpritePadsY);
+                                if (child.typeFaceCentered) { class50_sub1_sub1_sub2_1.drawStringCenter(s6, i10 + (child.width / 2 | 0), i11, child.disabledColor, child.typeFaceShadowed); } else { class50_sub1_sub1_sub2_1.drawShadowedString(s6, i10, i11, child.typeFaceShadowed, child.disabledColor); }
+                            }
+                            l4++;
+                        }}
+                    }}
+                }
+                if (child.type === 8 && (this.anInt1284 === child.id || this.anInt1044 === child.id || this.anInt1129 === child.id) && this.anInt893 === 100) {
+                    let l3: number = 0;
+                    let i5: number = 0;
+                    const class50_sub1_sub1_sub2_2: TypeFace = this.fontNormal;
+                    for (let s1: string = child.disabledText; s1.length > 0; ) {{
+                        const l7: number = s1.indexOf("\\n");
+                        let s4: string;
+                        if (l7 !== -1) {
+                            s4 = s1.substring(0, l7);
+                            s1 = s1.substring(l7 + 2);
+                        } else {
+                            s4 = s1;
+                            s1 = "";
+                        }
+                        const j10: number = class50_sub1_sub1_sub2_2.getStringEffectWidth(s4);
+                        if (j10 > l3) { l3 = j10; }
+                        i5 += class50_sub1_sub1_sub2_2.characterDefaultHeight + 1;
+                    }}
+                    l3 += 6;
+                    i5 += 7;
+                    let i8: number = (k2 + child.width) - 5 - l3;
+                    let k10: number = l2 + child.height + 5;
+                    if (i8 < k2 + 5) { i8 = k2 + 5; }
+                    if (i8 + l3 > j + class13.width) { i8 = (j + class13.width) - l3; }
+                    if (k10 + i5 > i + class13.height) { k10 = (i + class13.height) - i5; }
+                    Rasterizer.drawFilledRectangle(i8, k10, l3, i5, 16777120);
+                    Rasterizer.drawUnfilledRectangle(i8, k10, l3, i5, 0);
+                    let s2: string = child.disabledText;
+                    for (let j11: number = k10 + class50_sub1_sub1_sub2_2.characterDefaultHeight + 2; s2.length > 0; j11 += class50_sub1_sub1_sub2_2.characterDefaultHeight + 1) {{
+                        const l11: number = s2.indexOf("\\n");
+                        let s5: string;
+                        if (l11 !== -1) {
+                            s5 = s2.substring(0, l11);
+                            s2 = s2.substring(l11 + 2);
+                        } else {
+                            s5 = s2;
+                            s2 = "";
+                        }
+                        class50_sub1_sub1_sub2_2.drawShadowedString(s5, i8 + 3, j11, false, 0);
+                    }}
+                }
+            }
+ }
+        }}
+        Rasterizer.setCoordinates(j1, i1, l1, k1);
+    }
+
+    public method89(i: number, j: number): string {
+        if (j < 8 || j > 8) { throw Error("NullPointerException"); }
+        if (i < 999999999) { return /* valueOf */new String(i).toString(); } else { return "*"; }
+    }
+
+    public method56(flag: boolean, i: number, j: number, k: number, l: number, i1: number) {
+        this.scrollbarUp.drawImage(j, i1);
+        this.scrollbarDown.drawImage(j, (i1 + k) - 16);
+        Rasterizer.drawFilledRectangle(j, i1 + 16, 16, k - 32, this.anInt931);
+        let j1: number = (((k - 32) * k) / l | 0);
+        if (j1 < 8) { j1 = 8; }
+        const k1: number = (((k - 32 - j1) * i) / (l - k) | 0);
+        Rasterizer.drawFilledRectangle(j, i1 + 16 + k1, 16, j1, this.anInt1080);
+        Rasterizer.drawVerticalLine(j, i1 + 16 + k1, j1, this.anInt1135);
+        Rasterizer.drawVerticalLine(j + 1, i1 + 16 + k1, j1, this.anInt1135);
+        if (!flag) { this.anInt921 = -136; }
+        Rasterizer.drawHorizontalLine(j, i1 + 16 + k1, 16, this.anInt1135);
+        Rasterizer.drawHorizontalLine(j, i1 + 17 + k1, 16, this.anInt1135);
+        Rasterizer.drawVerticalLine(j + 15, i1 + 16 + k1, j1, this.anInt1287);
+        Rasterizer.drawVerticalLine(j + 14, i1 + 17 + k1, j1 - 1, this.anInt1287);
+        Rasterizer.drawHorizontalLine(j, i1 + 15 + k1 + j1, 16, this.anInt1287);
+        Rasterizer.drawHorizontalLine(j + 1, i1 + 14 + k1 + j1, 15, this.anInt1287);
+    }
+    
+    public method103(byte0: number, class13: Widget) {
+        if (byte0 === 2) { byte0 = 0; } else { this.anInt1004 = -82; }
+        let i: number = class13.contentType;
+        if (i >= 1 && i <= 100 || i >= 701 && i <= 800) {
+            if (i === 1 && this.friendListStatus === 0) {
+                class13.disabledText = "Loading friend list";
+                class13.actionType = 0;
+                return;
+            }
+            if (i === 1 && this.friendListStatus === 1) {
+                class13.disabledText = "Connecting to friendserver";
+                class13.actionType = 0;
+                return;
+            }
+            if (i === 2 && this.friendListStatus !== 2) {
+                class13.disabledText = "Please wait...";
+                class13.actionType = 0;
+                return;
+            }
+            let j: number = this.friendsCount;
+            if (this.friendListStatus !== 2) { j = 0; }
+            if (i > 700) { i -= 601; } else { i--; }
+            if (i >= j) {
+                class13.disabledText = "";
+                class13.actionType = 0;
+                return;
+            } else {
+                class13.disabledText = this.friendUsernames[i];
+                class13.actionType = 1;
+                return;
+            }
+        }
+        if (i >= 101 && i <= 200 || i >= 801 && i <= 900) {
+            let k: number = this.friendsCount;
+            if (this.friendListStatus !== 2) { k = 0; }
+            if (i > 800) { i -= 701; } else { i -= 101; }
+            if (i >= k) {
+                class13.disabledText = "";
+                class13.actionType = 0;
+                return;
+            }
+            if (this.friendWorlds[i] === 0) { class13.disabledText = "@red@Offline"; } else if (this.friendWorlds[i] < 200) {
+                if (this.friendWorlds[i] === Game.world) { class13.disabledText = "@gre@World" + (this.friendWorlds[i] - 9); } else { class13.disabledText = "@yel@World" + (this.friendWorlds[i] - 9); }
+            } else if (this.friendWorlds[i] === Game.world) { class13.disabledText = "@gre@Classic" + (this.friendWorlds[i] - 219); } else { class13.disabledText = "@yel@Classic" + (this.friendWorlds[i] - 219); }
+            class13.actionType = 1;
+            return;
+        }
+        if (i === 203) {
+            let l: number = this.friendsCount;
+            if (this.friendListStatus !== 2) { l = 0; }
+            class13.scrollLimit = l * 15 + 20;
+            if (class13.scrollLimit <= class13.height) { class13.scrollLimit = class13.height + 1; }
+            return;
+        }
+        if (i >= 401 && i <= 500) {
+            if ((i -= 401) === 0 && this.friendListStatus === 0) {
+                class13.disabledText = "Loading ignore list";
+                class13.actionType = 0;
+                return;
+            }
+            if (i === 1 && this.friendListStatus === 0) {
+                class13.disabledText = "Please wait...";
+                class13.actionType = 0;
+                return;
+            }
+            let i1: number = this.ignoresCount;
+            if (this.friendListStatus === 0) { i1 = 0; }
+            if (i >= i1) {
+                class13.disabledText = "";
+                class13.actionType = 0;
+                return;
+            } else {
+                class13.disabledText = TextUtils.formatName(TextUtils.longToName(this.ignores[i]));
+                class13.actionType = 1;
+                return;
+            }
+        }
+        if (i === 503) {
+            class13.scrollLimit = this.ignoresCount * 15 + 20;
+            if (class13.scrollLimit <= class13.height) { class13.scrollLimit = class13.height + 1; }
+            return;
+        }
+        if (i === 327) {
+            class13.rotationX = 150;
+            class13.rotationY = (((Math.sin(Game.pulseCycle as number / 40.0) * 256.0) as number) | 0) & 2047;
+            if (this.aBoolean1277) {
+                for (let j1: number = 0; j1 < 7; j1++) {{
+                    const i2: number = this.characterEditIdentityKits[j1];
+                    if (i2 >= 0 && !IdentityKit.cache[i2].isBodyModelCached()) { return; }
+                }}
+                this.aBoolean1277 = false;
+                const aclass50_sub1_sub4_sub4: Model[] = [null, null, null, null, null, null, null];
+                let j2: number = 0;
+                for (let k2: number = 0; k2 < 7; k2++) {{
+                    const l2: number = this.characterEditIdentityKits[k2];
+                    if (l2 >= 0) { aclass50_sub1_sub4_sub4[j2++] = IdentityKit.cache[l2].getBodyModel(); }
+                }}
+                const class50_sub1_sub4_sub4: Model = new Model(j2, aclass50_sub1_sub4_sub4);
+                for (let i3: number = 0; i3 < 5; i3++) {if (this.characterEditColors[i3] !== 0) {
+                    class50_sub1_sub4_sub4.replaceColor(Game.playerColours[i3][0], Game.playerColours[i3][this.characterEditColors[i3]]);
+                    if (i3 === 1) { class50_sub1_sub4_sub4.replaceColor(Game.SKIN_COLOURS[0], Game.SKIN_COLOURS[this.characterEditColors[i3]]); }
+                }}
+                class50_sub1_sub4_sub4.createBones();
+                class50_sub1_sub4_sub4.applyTransform(AnimationSequence.animations[Game.localPlayer.idleAnimation].getPrimaryFrame[0]);
+                class50_sub1_sub4_sub4.applyLighting(64, 850, -30, -50, -30, true);
+                class13.modelType = 5;
+                class13.modelId = 0;
+                Widget.setModel(5, class50_sub1_sub4_sub4, 0);
+            }
+            return;
+        }
+        if (i === 324) {
+            if (this.aClass50_Sub1_Sub1_Sub1_1102 == null) {
+                this.aClass50_Sub1_Sub1_Sub1_1102 = class13.disabledImage;
+                this.aClass50_Sub1_Sub1_Sub1_1103 = class13.enabledImage;
+            }
+            if (this.characterEditChangeGenger) {
+                class13.disabledImage = this.aClass50_Sub1_Sub1_Sub1_1103;
+                return;
+            } else {
+                class13.disabledImage = this.aClass50_Sub1_Sub1_Sub1_1102;
+                return;
+            }
+        }
+        if (i === 325) {
+            if (this.aClass50_Sub1_Sub1_Sub1_1102 == null) {
+                this.aClass50_Sub1_Sub1_Sub1_1102 = class13.disabledImage;
+                this.aClass50_Sub1_Sub1_Sub1_1103 = class13.enabledImage;
+            }
+            if (this.characterEditChangeGenger) {
+                class13.disabledImage = this.aClass50_Sub1_Sub1_Sub1_1102;
+                return;
+            } else {
+                class13.disabledImage = this.aClass50_Sub1_Sub1_Sub1_1103;
+                return;
+            }
+        }
+        if (i === 600) {
+            class13.disabledText = this.reportedName;
+            if (Game.pulseCycle % 20 < 10) {
+                class13.disabledText += "|";
+                return;
+            } else {
+                class13.disabledText += " ";
+                return;
+            }
+        }
+        if (i === 620) { if (this.playerRights >= 1) {
+            if (this.reportMutePlayer) {
+                class13.disabledColor = 16711680;
+                class13.disabledText = "Moderator option: Mute player for 48 hours: <ON>";
+            } else {
+                class13.disabledColor = 16777215;
+                class13.disabledText = "Moderator option: Mute player for 48 hours: <OFF>";
+            }
+        } else {
+            class13.disabledText = "";
+        }
+        }
+        if (i === 660) {
+            const k1: number = this.anInt1170 - this.anInt1215;
+            let s1: string;
+            if (k1 <= 0) { s1 = "earlier today"; } else if (k1 === 1) { s1 = "yesterday"; } else { s1 = k1 + " days ago"; }
+            class13.disabledText = "You last logged in @red@" + s1 + "@bla@ from: @red@" + SignLink.dns;
+        }
+        if (i === 661) { if (this.anInt1034 === 0) { class13.disabledText = "\\nYou have not yet set any recovery questions.\\nIt is @lre@strongly@yel@ recommended that you do so.\\n\\nIf you don\'t you will be @lre@unable to recover your\\n@lre@password@yel@ if you forget it, or it is stolen."; } else if (this.anInt1034 <= this.anInt1170) {
+            class13.disabledText = "\\n\\nRecovery Questions Last Set:\\n@gre@" + this.getDate(this.anInt1034);
+        } else {
+            const l1: number = (this.anInt1170 + 14) - this.anInt1034;
+            let s2: string;
+            if (l1 <= 0) { s2 = "Earlier today"; } else if (l1 === 1) { s2 = "Yesterday"; } else { s2 = l1 + " days ago"; }
+            class13.disabledText = s2 + " you requested@lre@ new recovery\\n@lre@questions.@yel@ The requested change will occur\\non: @lre@" + this.getDate(this.anInt1034) + "\\n\\nIf you do not remember making this request\\ncancel it immediately, and change your password.";
+        }
+        }
+        if (i === 662) {
+            let s: string;
+            if (this.anInt1273 === 0) { s = "@yel@0 unread messages"; } else if (this.anInt1273 === 1) { s = "@gre@1 unread message"; } else { s = "@gre@" + this.anInt1273 + " unread messages"; }
+            class13.disabledText = "You have " + s + "\\nin your message centre.";
+        }
+        if (i === 663) { if (this.anInt1083 <= 0 || this.anInt1083 > this.anInt1170 + 10) { class13.disabledText = "Last password change:\\n@gre@Never changed"; } else { class13.disabledText = "Last password change:\\n@gre@" + this.getDate(this.anInt1083); } }
+        if (i === 665) { if (this.anInt992 > 2 && !Game.memberServer) { class13.disabledText = "This is a non-members\\nworld. To enjoy your\\nmembers benefits we\\nrecommend you play on a\\nmembers world instead."; } else if (this.anInt992 > 2) { class13.disabledText = "\\n\\nYou have @gre@" + this.anInt992 + "@yel@ days of\\nmember credit remaining."; } else if (this.anInt992 > 0) { class13.disabledText = "You have @gre@" + this.anInt992 + "@yel@ days of\\nmember credit remaining.\\n\\n@lre@Credit low! Renew now\\n@lre@to avoid losing members."; } else { class13.disabledText = "You are not a member.\\n\\nChoose to subscribe and\\nyou\'ll get loads of extra\\nbenefits and features."; } }
+        if (i === 667) { if (this.anInt992 > 2 && !Game.memberServer) { class13.disabledText = "To switch to a members-only world:\\n1) Logout and return to the world selection page.\\n2) Choose one of the members world with a gold star next to it\'s name.\\n\\nIf you prefer you can continue to use this world,\\nbut members only features will be unavailable here."; } else if (this.anInt992 > 0) { class13.disabledText = "To extend or cancel a subscription:\\n1) Logout and return to the frontpage of this website.\\n2)Choose the relevant option from the \'membership\' section.\\n\\nNote: If you are a credit card subscriber a top-up payment will\\nautomatically be taken when 3 days credit remain.\\n(unless you cancel your subscription, which can be done at any time.)"; } else { class13.disabledText = "To initializeApplication a subscripton:\\n1) Logout and return to the frontpage of this website.\\n2) Choose \'Start a new subscription\'"; } }
+        if (i === 668) {
+            if (this.anInt1034 > this.anInt1170) {
+                class13.disabledText = "To cancel this request:\\n1) Logout and return to the frontpage of this website.\\n2) Choose \'Cancel recovery questions\'.";
+                return;
+            }
+            class13.disabledText = "To change your recovery questions:\\n1) Logout and return to the frontpage of this website.\\n2) Choose \'Set new recovery questions\'.";
+        }
+    }
+
+    /*private*/ public getDate(time: number): string {
+        if (time > this.anInt1170 + 10) {
+            return "Unknown";
+        } else {
+            const date: Date = new Date((((n) => n < 0 ? Math.ceil(n) : Math.floor(n))(time as number) + 11745) * 86400000);
+            const day = date.getDay();
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            const monthNames: string[] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return day + "-" + monthNames[month] + "-" + year;
+        }
+    }
+    
+    public method147(i: number) {
+        if (this.imageProducer != null) { return; }
+        this.method141();
+        this.aClass18_1198 = null;
+        this.aClass18_1199 = null;
+        this.aClass18_1200 = null;
+        if (i >= 0) { this.anInt1004 = -4; }
+        this.flameLeftBackground = null;
+        this.flameRightBackground = null;
+        this.aClass18_1203 = null;
+        this.aClass18_1204 = null;
+        this.aClass18_1205 = null;
+        this.aClass18_1206 = null;
+        this.chatboxProducingGraphicsBuffer = null;
+        this.aClass18_1157 = null;
+        this.aClass18_1156 = null;
+        this.aClass18_1158 = null;
+        this.aClass18_1108 = null;
+        this.aClass18_1109 = null;
+        this.aClass18_1110 = null;
+        this.imageProducer = new ProducingGraphicsBuffer(765, 503);
+        this.aBoolean1046 = true;
+    }
+
+    public method88(i: number, j: number, byte0: number): boolean {
+        let flag: boolean = false;
+        const class13: Widget = Widget.forId(j);
+        for (let k: number = 0; k < class13.children.length; k++) {{
+            if (class13.children[k] === -1) { break; }
+            const class13_1: Widget = Widget.forId(class13.children[k]);
+            if (class13_1.type === 0) { flag = this.method88(i, class13_1.id, ((5 as number) | 0)) || flag; }
+            if (class13_1.type === 6 && (class13_1.disabledAnimation !== -1 || class13_1.enabledAnimation !== -1)) {
+                const flag1: boolean = this.method95(class13_1, -693);
+                let i1: number;
+                if (flag1) { i1 = class13_1.enabledAnimation; } else { i1 = class13_1.disabledAnimation; }
+                if (i1 !== -1) {
+                    const class14: AnimationSequence = AnimationSequence.animations[i1];
+                    for (class13_1.anInt227 += i; class13_1.anInt227 > class14.getFrameLength(class13_1.anInt235); ) {{
+                        class13_1.anInt227 -= class14.getFrameLength(class13_1.anInt235);
+                        class13_1.anInt235++;
+                        if (class13_1.anInt235 >= class14.frameCount) {
+                            class13_1.anInt235 -= class14.frameStep;
+                            if (class13_1.anInt235 < 0 || class13_1.anInt235 >= class14.frameCount) { class13_1.anInt235 = 0; }
+                        }
+                        flag = true;
+                    }}
+                }
+            }
+            if (class13_1.type === 6 && class13_1.anInt218 !== 0) {
+                let l: number = class13_1.anInt218 >> 16;
+                let j1: number = (class13_1.anInt218 << 16) >> 16;
+                l *= i;
+                j1 *= i;
+                class13_1.rotationX = class13_1.rotationX + l & 2047;
+                class13_1.rotationY = class13_1.rotationY + j1 & 2047;
+                flag = true;
+            }
+        }}
+        if (byte0 === 5) { byte0 = 0; } else { this.anInt1236 = -424; }
+        return flag;
+    }
+
+    public method95(class13: Widget, i: number): boolean {
+        if (i >= 0) { this.anInt1175 = 276; }
+        if (class13.conditionTypes == null) { return false; }
+        for (let j: number = 0; j < class13.conditionTypes.length; j++) {{
+            const k: number = this.method129(3, j, class13);
+            const l: number = class13.conditionValues[j];
+            if (class13.conditionTypes[j] === 2) {
+                if (k >= l) { return false; }
+            } else if (class13.conditionTypes[j] === 3) {
+                if (k <= l) { return false; }
+            } else if (class13.conditionTypes[j] === 4) {
+                if (k === l) { return false; }
+            } else if (k !== l) { return false; }
+        }}
+        return true;
+    }
+
+
+    public method129(i: number, j: number, class13: Widget): number {
+        if (i !== 3) { return this.anInt1222; }
+        if (class13.opcodes == null || j >= class13.opcodes.length) { return -2; }
+        try {
+            const ai: number[] = class13.opcodes[j];
+            let k: number = 0;
+            let l: number = 0;
+            let i1: number = 0;
+            do {{
+                const j1: number = ai[l++];
+                let k1: number = 0;
+                let byte0: number = 0;
+                if (j1 === 0) { return k; }
+                if (j1 === 1) { k1 = this.anIntArray1029[ai[l++]]; }
+                if (j1 === 2) { k1 = this.anIntArray1054[ai[l++]]; }
+                if (j1 === 3) { k1 = this.anIntArray843[ai[l++]]; }
+                if (j1 === 4) {
+                    const class13_1: Widget = Widget.forId(ai[l++]);
+                    const k2: number = ai[l++];
+                    if (k2 >= 0 && k2 < ItemDefinition.count && (!ItemDefinition.lookup(k2).members || Game.memberServer)) {
+                        for (let j3: number = 0; j3 < class13_1.items.length; j3++) {if (class13_1.items[j3] === k2 + 1) { k1 += class13_1.itemAmounts[j3]; }}
+                    }
+                }
+                if (j1 === 5) { k1 = this.widgetSettings[ai[l++]]; }
+                if (j1 === 6) { k1 = Game.SKILL_EXPERIENCE[this.anIntArray1054[ai[l++]] - 1]; }
+                if (j1 === 7) { k1 = ((this.widgetSettings[ai[l++]] * 100) / 46875 | 0); }
+                if (j1 === 8) { k1 = Game.localPlayer.combatLevel; }
+                if (j1 === 9) {
+                    for (let l1: number = 0; l1 < SkillConstants.SKILL_COUNT; l1++) {if (SkillConstants.SKILL_TOGGLES[l1]) { k1 += this.anIntArray1054[l1]; }}
+                }
+                if (j1 === 10) {
+                    const class13_2: Widget = Widget.forId(ai[l++]);
+                    const l2: number = ai[l++] + 1;
+                    if (l2 >= 0 && l2 < ItemDefinition.count && (!ItemDefinition.lookup(l2).members || Game.memberServer)) {
+                        for (let k3: number = 0; k3 < class13_2.items.length; k3++) {{
+                            if (class13_2.items[k3] !== l2) { continue; }
+                            k1 = 999999999;
+                            break;
+                        }}
+                    }
+                }
+                if (j1 === 11) { k1 = this.anInt1324; }
+                if (j1 === 12) { k1 = this.anInt1030; }
+                if (j1 === 13) {
+                    const i2: number = this.widgetSettings[ai[l++]];
+                    const i3: number = ai[l++];
+                    k1 = (i2 & 1 << i3) === 0 ? 0 : 1;
+                }
+                if (j1 === 14) {
+                    const j2: number = ai[l++];
+                    const class49: Varbit = Varbit.cache[j2];
+                    const l3: number = class49.configId;
+                    const i4: number = class49.leastSignificantBit;
+                    const j4: number = class49.mostSignificantBit;
+                    const k4: number = Game.BITFIELD_MAX_VALUE[j4 - i4];
+                    k1 = this.widgetSettings[l3] >> i4 & k4;
+                }
+                if (j1 === 15) { byte0 = 1; }
+                if (j1 === 16) { byte0 = 2; }
+                if (j1 === 17) { byte0 = 3; }
+                if (j1 === 18) { k1 = (Game.localPlayer.worldX >> 7) + this.nextTopLeftTileX; }
+                if (j1 === 19) { k1 = (Game.localPlayer.worldY >> 7) + this.nextTopRightTileY; }
+                if (j1 === 20) { k1 = ai[l++]; }
+                if (byte0 === 0) {
+                    if (i1 === 0) { k += k1; }
+                    if (i1 === 1) { k -= k1; }
+                    if (i1 === 2 && k1 !== 0) { k = ((n) => n < 0 ? Math.ceil(n) : Math.floor(n))(k / k1); }
+                    if (i1 === 3) { k *= k1; }
+                    i1 = 0;
+                } else {
+                    i1 = byte0;
+                }
+            }} while ((true));
+        } catch (_ex) {
+            return -1;
+        }
+    }
+    
     public drawLoginScreen(flag: boolean) {
         this.resetTitleScreen();
         this.aClass18_1200.createRasterizer();
@@ -765,7 +2586,7 @@ export class Game extends GameShell {
         g.fillRect(0, 0, 765, 503);
         this.setFrameRate(1);
         if (this.startUpError) {
-            this.aBoolean1243 = false;
+            this.startedRenderingFlames = false;
             g.setFont(new Font("Helvetica", 1, 16));
             g.setColor(Color.yellow);
             let j: number = 35;
@@ -787,7 +2608,7 @@ export class Game extends GameShell {
             g.drawString("5: Try selecting a different version of Java from the play-game menu", 30, j);
         }
         if (this.aBoolean1097) {
-            this.aBoolean1243 = false;
+            this.startedRenderingFlames = false;
             g.setFont(new Font("Helvetica", 1, 20));
             g.setColor(Color.white);
             g.drawString("Error - unable to load game!", 50, 50);
@@ -795,7 +2616,7 @@ export class Game extends GameShell {
             g.drawString("http://www.runescape.com", 50, 150);
         }
         if (this.aBoolean1016) {
-            this.aBoolean1243 = false;
+            this.startedRenderingFlames = false;
             g.setColor(Color.yellow);
             let k: number = 35;
             g.drawString("Error a copy of RuneScape already appears to be loaded", 30, k);
@@ -8008,10 +9829,10 @@ export class Game extends GameShell {
     }
 
     public async method141() {
-        this.aBoolean1243 = false;
+        this.startedRenderingFlames = false;
         while (this.aBoolean1320) {
             {
-                this.aBoolean1243 = false;
+                this.startedRenderingFlames = false;
                 try {
                     await sleep(50);
                 } catch (_ex) {}
@@ -8737,7 +10558,7 @@ export class Game extends GameShell {
         this.aClass18_1200.drawGraphics(202, 171, this.gameGraphics);
         if (this.aBoolean1046) {
             this.aBoolean1046 = false;
-            if (!this.aBoolean1243) {
+            if (!this.startedRenderingFlames) {
                 this.flameLeftBackground.drawGraphics(0, 0, this.gameGraphics);
                 this.flameRightBackground.drawGraphics(637, 0, this.gameGraphics);
             }
