@@ -1,5 +1,4 @@
 import { Archive } from "../../cache/Archive";
-import { Queue } from "../../collection/Queue";
 import { Game } from "../../Game";
 import { LinkedList } from "../../util/LinkedList";
 import { Buffer } from "../Buffer";
