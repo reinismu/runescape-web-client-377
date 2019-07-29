@@ -40,7 +40,8 @@ export class Socket {
 
     public async read(): Promise<number> {
         if (this.lastArrayBufferReceived != null && this.lastArrayBufferReadIndex < this.lastArrayBufferReceived.length) {
-            return this.lastArrayBufferReceived[this.lastArrayBufferReadIndex++];
+            // if last byte in array then reset lastArrayBufferReadIndex
+            return this.readFromLastArray();
         }
         const received = await this.client.receive();
         if (received instanceof Error) {
@@ -48,18 +49,17 @@ export class Socket {
         }
         this.lastArrayBufferReceived = new Int8Array(received);
         this.lastArrayBufferReadIndex = 0;
-        return this.lastArrayBufferReceived[this.lastArrayBufferReadIndex++];
+        return this.readFromLastArray();
     }
 
-    public readReceivedOnly(): number {
-        if (this.lastArrayBufferReceived != null && this.lastArrayBufferReadIndex < this.lastArrayBufferReceived.length) {
-            return this.lastArrayBufferReceived[this.lastArrayBufferReadIndex++];
+    readFromLastArray(): number {
+        // if last byte in array then reset lastArrayBufferReadIndex
+        if(this.lastArrayBufferReadIndex == this.lastArrayBufferReceived.length -1) {
+            const lastByte = this.lastArrayBufferReceived[this.lastArrayBufferReadIndex];
+            this.lastArrayBufferReadIndex = 0;
+            this.lastArrayBufferReceived = null;
+            return lastByte;
         }
-        if (this.client.dataAvailable <= 0) {
-            return -1;
-        }
-        this.lastArrayBufferReadIndex = 0;
-        this.lastArrayBufferReceived = new Int8Array(this.client.receiveLocal());
         return this.lastArrayBufferReceived[this.lastArrayBufferReadIndex++];
     }
 

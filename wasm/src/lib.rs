@@ -1,7 +1,7 @@
 extern crate wasm_bindgen;
 extern crate num_bigint;
 
-use num_bigint::{BigInt, ParseBigIntError};
+use num_bigint::{BigInt};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -27,11 +27,6 @@ pub fn rs_encrypt_bytes(bytes: &[u8], modulus: &str, public_key: &str) -> Box<[u
     let modul = modulus.parse().unwrap();
     let pk = public_key.parse().unwrap();
     let value = BigInt::from_signed_bytes_be(bytes);
-    let mut i = 0;
-//    for  b in value.modpow(&pk, &modul).to_signed_bytes_be() {
-//        out_bytes[i] = b;
-//        i+=1;
-//    }
     return value.modpow(&pk, &modul).to_signed_bytes_be().into_boxed_slice();
 
 }

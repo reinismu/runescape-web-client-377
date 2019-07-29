@@ -164,6 +164,7 @@ export class SignLink {
 
     public static reportError(error: string) {
         console.info("Error: " + error);
+        // throw Error("reportError");
     }
 
     /*private*/ public curPosition: Position;

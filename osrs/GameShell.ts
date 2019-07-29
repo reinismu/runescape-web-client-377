@@ -191,7 +191,7 @@ export class GameShell {
                 this.clickY = this.eventClickY;
                 this.clickTime = this.lastClick;
                 this.eventMouseButtonPressed = 0;
-                this.doLogic();
+                await this.doLogic();
                 this.readIndex = this.writeIndex;
             }
         }
@@ -464,7 +464,7 @@ export class GameShell {
 
     public async startUp() {}
 
-    public doLogic() {}
+    public async doLogic() {}
 
     public shutdown() {}
 

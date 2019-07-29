@@ -133,6 +133,8 @@ export class Game extends GameShell {
     static anInt1082: number = 0;
     static world: number = 10;
     static aBoolean963: boolean = true;
+    static anInt1160: number = 0;
+    static fps: boolean = false;
 
     titleArchive: Archive = null;
     fontSmall: TypeFace = null;
@@ -348,7 +350,8 @@ export class Game extends GameShell {
     soundType: number[] = Array(50).fill(0);
     soundDelay: number[] = Array(50).fill(0);
     aBoolean1301: boolean = true;
-    anIntArray1005: number[] = Array(2000).fill(0);currentSong: number;
+    anIntArray1005: number[] = Array(2000).fill(0);
+    currentSong: number;
     previousSong: number = 0;
     anInt1300: number = 0;
     anInt998: number = 0;
@@ -404,7 +407,7 @@ export class Game extends GameShell {
     anIntArray852: number[] = Array(5).fill(0);
     anIntArray991: number[] = Array(5).fill(0);
     quakeTimes: number[] = Array(5).fill(0);
-    friends: number[] = Array(200).fill(0);// TODO fix longs
+    friends: number[] = Array(200).fill(0); // TODO fix longs
     friendWorlds: number[] = Array(200).fill(0);
     friendUsernames: string[] = Array(200).fill(null);
     anIntArray1032: number[] = [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3];
@@ -424,7 +427,7 @@ export class Game extends GameShell {
     anInt878: number = 0;
     aBoolean1038: boolean = true;
     ignoresCount: number = 0;
-    ignores: number[] = Array(100).fill(0);// TODO fix longs
+    ignores: number[] = Array(100).fill(0); // TODO fix longs
     anIntArray1081: number[] = [1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
     playerMembers: number = 0;
     removePlayerCount: number = 0;
@@ -513,13 +516,72 @@ export class Game extends GameShell {
     aString1150: string = null;
     selectedWidgetName: string = null;
     anInt1173: number = 0;
+    anIntArrayArray885: number[][] = Array(104).fill(Array(104).fill(0));
+    cost: number[][] = Array(104).fill(Array(104).fill(0));
+    anIntArray1123: number[] = Array(4000).fill(0);
+    anIntArray1124: number[] = Array(4000).fill(0);
+    anInt1126: number = 0;
+    aBoolean1014: boolean = false;
+    anInt851: number = 0;
+    anInt1304: number = 0;
+    menuClickX: number = 0;
+    menuClickY: number = 0;
+    anInt1307: number = 0;
+    anInt1308: number = 0;
+    anInt1330: number = 0;
+    anInt1331: number = 0;
+    anInt1149: number = 0;
+    anInt1172: number = 0;
+    reportedName: string = "";
+    reportMutePlayer: boolean = false;
+    reportAbuseInterfaceID: number = -1;
+    chatMessage: string = "";
+    friendsListAction: number = 0;
+    aLong1141: number = 0; // TODO fix long
+    chatboxInputMessage: string = "";
+    anInt1154: number = -916;
+    anInt1262: number = 0;
+    anInt1263: number = 0;
+    anInt1186: number = 0;
+    anInt1187: number = 0;
+    anInt1289: number = 0;
+    chatboxInput: string = "";
 
+    public static getCombatLevelColour(user: number, opponent: number): string {
+        const difference: number = user - opponent;
+        if (difference < -9) {
+            return "@red@";
+        }
+        if (difference < -6) {
+            return "@or3@";
+        }
+        if (difference < -3) {
+            return "@or2@";
+        }
+        if (difference < 0) {
+            return "@or1@";
+        }
+        if (difference > 9) {
+            return "@gre@";
+        }
+        if (difference > 6) {
+            return "@gr3@";
+        }
+        if (difference > 3) {
+            return "@gr2@";
+        }
+        if (difference > 0) {
+            return "@gr1@";
+        } else {
+            return "@yel@";
+        }
+    }
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas);
     }
 
-    public doLogic() {
+    public async doLogic() {
         if (this.aBoolean1016 || this.startUpError || this.aBoolean1097) {
             return;
         }
@@ -527,7 +589,7 @@ export class Game extends GameShell {
         if (!this.loggedIn) {
             this.method149(-724);
         } else {
-            this.processGame();
+            await this.processGame();
         }
         this.method77(false);
     }
@@ -1232,11 +1294,21 @@ export class Game extends GameShell {
         this.statusLineTwo = "Error connecting to server.";
     }
 
-    public processGame() {
-        if (this.systemUpdateTime > 1) { this.systemUpdateTime--; }
-        if (this.anInt873 > 0) { this.anInt873--; }
-        for (let i: number = 0; i < 5; i++) {if (!this.parseIncomingPacket()) { break; }}
-        if (!this.loggedIn) { return; }
+    public async processGame() {
+        if (this.systemUpdateTime > 1) {
+            this.systemUpdateTime--;
+        }
+        if (this.anInt873 > 0) {
+            this.anInt873--;
+        }
+        for (let i: number = 0; i < 5; i++) {
+            if (!await this.parseIncomingPacket()) {
+                break;
+            }
+        }
+        if (!this.loggedIn) {
+            return;
+        }
         {
             if (Game.accountFlagged) {
                 if (this.clickType !== 0 || this.mouseCapturer.coord >= 40) {
@@ -1244,49 +1316,65 @@ export class Game extends GameShell {
                     this.outBuffer.putByte(0);
                     const i2: number = this.outBuffer.currentPosition;
                     let i3: number = 0;
-                    for (let i4: number = 0; i4 < this.mouseCapturer.coord; i4++) {{
-                        if (i2 - this.outBuffer.currentPosition >= 240) { break; }
-                        i3++;
-                        let k4: number = this.mouseCapturer.coordsY[i4];
-                        if (k4 < 0) { k4 = 0; } else if (k4 > 502) { k4 = 502; }
-                        let j5: number = this.mouseCapturer.coordsX[i4];
-                        if (j5 < 0) { j5 = 0; } else if (j5 > 764) { j5 = 764; }
-                        let l5: number = k4 * 765 + j5;
-                        if (this.mouseCapturer.coordsY[i4] === -1 && this.mouseCapturer.coordsX[i4] === -1) {
-                            j5 = -1;
-                            k4 = -1;
-                            l5 = 524287;
-                        }
-                        if (j5 === this.anInt1011 && k4 === this.anInt1012) {
-                            if (this.duplicateClickCount < 2047) { this.duplicateClickCount++; }
-                        } else {
-                            let i6: number = j5 - this.anInt1011;
-                            this.anInt1011 = j5;
-                            let j6: number = k4 - this.anInt1012;
-                            this.anInt1012 = k4;
-                            if (this.duplicateClickCount < 8 && i6 >= -32 && i6 <= 31 && j6 >= -32 && j6 <= 31) {
-                                i6 += 32;
-                                j6 += 32;
-                                this.outBuffer.putShort((this.duplicateClickCount << 12) + (i6 << 6) + j6);
-                                this.duplicateClickCount = 0;
-                            } else if (this.duplicateClickCount < 8) {
-                                this.outBuffer.putTriByte(8388608 + (this.duplicateClickCount << 19) + l5);
-                                this.duplicateClickCount = 0;
+                    for (let i4: number = 0; i4 < this.mouseCapturer.coord; i4++) {
+                        {
+                            if (i2 - this.outBuffer.currentPosition >= 240) {
+                                break;
+                            }
+                            i3++;
+                            let k4: number = this.mouseCapturer.coordsY[i4];
+                            if (k4 < 0) {
+                                k4 = 0;
+                            } else if (k4 > 502) {
+                                k4 = 502;
+                            }
+                            let j5: number = this.mouseCapturer.coordsX[i4];
+                            if (j5 < 0) {
+                                j5 = 0;
+                            } else if (j5 > 764) {
+                                j5 = 764;
+                            }
+                            let l5: number = k4 * 765 + j5;
+                            if (this.mouseCapturer.coordsY[i4] === -1 && this.mouseCapturer.coordsX[i4] === -1) {
+                                j5 = -1;
+                                k4 = -1;
+                                l5 = 524287;
+                            }
+                            if (j5 === this.anInt1011 && k4 === this.anInt1012) {
+                                if (this.duplicateClickCount < 2047) {
+                                    this.duplicateClickCount++;
+                                }
                             } else {
-                                this.outBuffer.putInt(-1073741824 + (this.duplicateClickCount << 19) + l5);
-                                this.duplicateClickCount = 0;
+                                let i6: number = j5 - this.anInt1011;
+                                this.anInt1011 = j5;
+                                let j6: number = k4 - this.anInt1012;
+                                this.anInt1012 = k4;
+                                if (this.duplicateClickCount < 8 && i6 >= -32 && i6 <= 31 && j6 >= -32 && j6 <= 31) {
+                                    i6 += 32;
+                                    j6 += 32;
+                                    this.outBuffer.putShort((this.duplicateClickCount << 12) + (i6 << 6) + j6);
+                                    this.duplicateClickCount = 0;
+                                } else if (this.duplicateClickCount < 8) {
+                                    this.outBuffer.putTriByte(8388608 + (this.duplicateClickCount << 19) + l5);
+                                    this.duplicateClickCount = 0;
+                                } else {
+                                    this.outBuffer.putInt(-1073741824 + (this.duplicateClickCount << 19) + l5);
+                                    this.duplicateClickCount = 0;
+                                }
                             }
                         }
-                    }}
+                    }
                     this.outBuffer.putLength(this.outBuffer.currentPosition - i2);
                     if (i3 >= this.mouseCapturer.coord) {
                         this.mouseCapturer.coord = 0;
                     } else {
                         this.mouseCapturer.coord -= i3;
-                        for (let l4: number = 0; l4 < this.mouseCapturer.coord; l4++) {{
-                            this.mouseCapturer.coordsX[l4] = this.mouseCapturer.coordsX[l4 + i3];
-                            this.mouseCapturer.coordsY[l4] = this.mouseCapturer.coordsY[l4 + i3];
-                        }}
+                        for (let l4: number = 0; l4 < this.mouseCapturer.coord; l4++) {
+                            {
+                                this.mouseCapturer.coordsX[l4] = this.mouseCapturer.coordsX[l4 + i3];
+                                this.mouseCapturer.coordsY[l4] = this.mouseCapturer.coordsY[l4 + i3];
+                            }
+                        }
                     }
                 }
             } else {
@@ -1294,22 +1382,38 @@ export class Game extends GameShell {
             }
         }
         if (this.clickType !== 0) {
-            let l: number = ((n) => n < 0 ? Math.ceil(n) : Math.floor(n))((this.clickTime - this.aLong902) / 50);
-            if (l > 4095) { l = 4095; }
+            let l: number = (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))((this.clickTime - this.aLong902) / 50);
+            if (l > 4095) {
+                l = 4095;
+            }
             this.aLong902 = this.clickTime;
             let j2: number = this.clickY;
-            if (j2 < 0) { j2 = 0; } else if (j2 > 502) { j2 = 502; }
+            if (j2 < 0) {
+                j2 = 0;
+            } else if (j2 > 502) {
+                j2 = 502;
+            }
             let j3: number = this.clickX;
-            if (j3 < 0) { j3 = 0; } else if (j3 > 764) { j3 = 764; }
+            if (j3 < 0) {
+                j3 = 0;
+            } else if (j3 > 764) {
+                j3 = 764;
+            }
             const j4: number = j2 * 765 + j3;
             let i5: number = 0;
-            if (this.clickType === 2) { i5 = 1; }
-            const k5: number = ((l as number) | 0);
+            if (this.clickType === 2) {
+                i5 = 1;
+            }
+            const k5: number = (l as number) | 0;
             this.outBuffer.putOpcode(19);
             this.outBuffer.putInt((k5 << 20) + (i5 << 19) + j4);
         }
-        if (this.anInt1264 > 0) { this.anInt1264--; }
-        if (this.keyStatus[1] === 1 || this.keyStatus[2] === 1 || this.keyStatus[3] === 1 || this.keyStatus[4] === 1) { this.aBoolean1265 = true; }
+        if (this.anInt1264 > 0) {
+            this.anInt1264--;
+        }
+        if (this.keyStatus[1] === 1 || this.keyStatus[2] === 1 || this.keyStatus[3] === 1 || this.keyStatus[4] === 1) {
+            this.aBoolean1265 = true;
+        }
         if (this.aBoolean1265 && this.anInt1264 <= 0) {
             this.anInt1264 = 20;
             this.aBoolean1265 = false;
@@ -1327,42 +1431,68 @@ export class Game extends GameShell {
             this.outBuffer.putOpcode(187);
             this.outBuffer.putByte(0);
         }
-        this.method143(((-40 as number) | 0));
+        this.method143((-40 as number) | 0);
         this.method36(16220);
         this.method152();
         this.timeoutCounter++;
-        if (this.timeoutCounter > 750) { this.dropClient(); }
+        if (this.timeoutCounter > 750) {
+            this.dropClient();
+        }
         this.method100(0);
         this.method67(-37214);
         this.processActorOverheadText();
         this.tickDelta++;
         if (this.crossType !== 0) {
             this.crossIndex += 20;
-            if (this.crossIndex >= 400) { this.crossType = 0; }
+            if (this.crossIndex >= 400) {
+                this.crossType = 0;
+            }
         }
         if (this.atInventoryInterfaceType !== 0) {
             this.atInventoryLoopCycle++;
             if (this.atInventoryLoopCycle >= 15) {
-                if (this.atInventoryInterfaceType === 2) { this.redrawTabArea = true; }
-                if (this.atInventoryInterfaceType === 3) { this.redrawChatbox = true; }
+                if (this.atInventoryInterfaceType === 2) {
+                    this.redrawTabArea = true;
+                }
+                if (this.atInventoryInterfaceType === 3) {
+                    this.redrawChatbox = true;
+                }
                 this.atInventoryInterfaceType = 0;
             }
         }
         if (this.activeInterfaceType !== 0) {
             this.anInt1269++;
-            if (this.mouseX > this.anInt1114 + 5 || this.mouseX < this.anInt1114 - 5 || this.mouseY > this.anInt1115 + 5 || this.mouseY < this.anInt1115 - 5) { this.aBoolean1155 = true; }
+            if (
+                this.mouseX > this.anInt1114 + 5 ||
+                this.mouseX < this.anInt1114 - 5 ||
+                this.mouseY > this.anInt1115 + 5 ||
+                this.mouseY < this.anInt1115 - 5
+            ) {
+                this.aBoolean1155 = true;
+            }
             if (this.mouseButtonPressed === 0) {
-                if (this.activeInterfaceType === 2) { this.redrawTabArea = true; }
-                if (this.activeInterfaceType === 3) { this.redrawChatbox = true; }
+                if (this.activeInterfaceType === 2) {
+                    this.redrawTabArea = true;
+                }
+                if (this.activeInterfaceType === 3) {
+                    this.redrawChatbox = true;
+                }
                 this.activeInterfaceType = 0;
                 if (this.aBoolean1155 && this.anInt1269 >= 5) {
                     this.lastActiveInvInterface = -1;
                     this.processRightClick(-521);
-                    if (this.lastActiveInvInterface === this.modifiedWidgetId && this.mouseInvInterfaceIndex !== this.selectedInventorySlot) {
+                    if (
+                        this.lastActiveInvInterface === this.modifiedWidgetId &&
+                        this.mouseInvInterfaceIndex !== this.selectedInventorySlot
+                    ) {
                         const childInterface: Widget = Widget.forId(this.modifiedWidgetId);
                         let i1: number = 0;
-                        if (this.anInt955 === 1 && childInterface.contentType === 206) { i1 = 1; }
-                        if (childInterface.items[this.mouseInvInterfaceIndex] <= 0) { i1 = 0; }
+                        if (this.anInt955 === 1 && childInterface.contentType === 206) {
+                            i1 = 1;
+                        }
+                        if (childInterface.items[this.mouseInvInterfaceIndex] <= 0) {
+                            i1 = 0;
+                        }
                         if (childInterface.itemDeletesDraged) {
                             const k2: number = this.selectedInventorySlot;
                             const k3: number = this.mouseInvInterfaceIndex;
@@ -1372,13 +1502,15 @@ export class Game extends GameShell {
                             childInterface.itemAmounts[k2] = 0;
                         } else if (i1 === 1) {
                             let l2: number = this.selectedInventorySlot;
-                            for (const l3: number = this.mouseInvInterfaceIndex; l2 !== l3; ) {if (l2 > l3) {
-                                childInterface.swapItems(l2, l2 - 1);
-                                l2--;
-                            } else if (l2 < l3) {
-                                childInterface.swapItems(l2, l2 + 1);
-                                l2++;
-                            }}
+                            for (const l3: number = this.mouseInvInterfaceIndex; l2 !== l3; ) {
+                                if (l2 > l3) {
+                                    childInterface.swapItems(l2, l2 - 1);
+                                    l2--;
+                                } else if (l2 < l3) {
+                                    childInterface.swapItems(l2, l2 + 1);
+                                    l2++;
+                                }
+                            }
                         } else {
                             childInterface.swapItems(this.selectedInventorySlot, this.mouseInvInterfaceIndex);
                         }
@@ -1388,7 +1520,14 @@ export class Game extends GameShell {
                         this.outBuffer.putShortAdded(this.modifiedWidgetId);
                         this.outBuffer.putLEShortDup(this.selectedInventorySlot);
                     }
-                } else if ((this.anInt1300 === 1 || this.menuHasAddFriend(this.menuActionRow - 1, this.aByte1161)) && this.menuActionRow > 2) { this.determineMenuSize(); } else if (this.menuActionRow > 0) { this.processMenuActions(this.menuActionRow - 1); }
+                } else if (
+                    (this.anInt1300 === 1 || this.menuHasAddFriend(this.menuActionRow - 1, this.aByte1161)) &&
+                    this.menuActionRow > 2
+                ) {
+                    this.determineMenuSize();
+                } else if (this.menuActionRow > 0) {
+                    this.processMenuActions(this.menuActionRow - 1);
+                }
                 this.atInventoryLoopCycle = 10;
                 this.clickType = 0;
             }
@@ -1396,7 +1535,20 @@ export class Game extends GameShell {
         if (Scene.clickedTileX !== -1) {
             const dstX: number = Scene.clickedTileX;
             const dstY: number = Scene.anInt486;
-            const flag: boolean = this.walk(true, false, dstY, Game.localPlayer.pathY[0], 0, 0, 0, 0, dstX, 0, 0, Game.localPlayer.pathX[0]);
+            const flag: boolean = this.walk(
+                true,
+                false,
+                dstY,
+                Game.localPlayer.pathY[0],
+                0,
+                0,
+                0,
+                0,
+                dstX,
+                0,
+                0,
+                Game.localPlayer.pathX[0]
+            );
             Scene.clickedTileX = -1;
             if (flag) {
                 this.anInt1020 = this.clickX;
@@ -1412,23 +1564,37 @@ export class Game extends GameShell {
         }
         this.processMenuClick();
         if (this.anInt1053 === -1) {
-            this.method146(((4 as number) | 0));
+            this.method146((4 as number) | 0);
             this.method21(false);
             this.method39(true);
         }
-        if (this.mouseButtonPressed === 1 || this.clickType === 1) { this.anInt1094++; }
+        if (this.mouseButtonPressed === 1 || this.clickType === 1) {
+            this.anInt1094++;
+        }
         if (this.anInt1284 !== 0 || this.anInt1044 !== 0 || this.anInt1129 !== 0) {
             if (this.anInt893 < 100) {
                 this.anInt893++;
                 if (this.anInt893 === 100) {
-                    if (this.anInt1284 !== 0) { this.redrawChatbox = true; }
-                    if (this.anInt1044 !== 0) { this.redrawTabArea = true; }
+                    if (this.anInt1284 !== 0) {
+                        this.redrawChatbox = true;
+                    }
+                    if (this.anInt1044 !== 0) {
+                        this.redrawTabArea = true;
+                    }
                 }
             }
-        } else if (this.anInt893 > 0) { this.anInt893--; }
-        if (this.loadingStage === 2) { this.checkForGameUsages(409); }
-        if (this.loadingStage === 2 && this.oriented) { this.calculateCameraPosition(); }
-        for (let k: number = 0; k < 5; k++) {this.quakeTimes[k]++; }
+        } else if (this.anInt893 > 0) {
+            this.anInt893--;
+        }
+        if (this.loadingStage === 2) {
+            this.checkForGameUsages(409);
+        }
+        if (this.loadingStage === 2 && this.oriented) {
+            this.calculateCameraPosition();
+        }
+        for (let k: number = 0; k < 5; k++) {
+            this.quakeTimes[k]++;
+        }
         this.manageTextInputs();
         this.idleTime++;
         if (this.idleTime > 4500) {
@@ -1439,30 +1605,62 @@ export class Game extends GameShell {
         this.anInt1118++;
         if (this.anInt1118 > 500) {
             this.anInt1118 = 0;
-            const k1: number = (((Math.random() * 8.0) as number) | 0);
-            if ((k1 & 1) === 1) { this.anInt853 += this.anInt854; }
-            if ((k1 & 2) === 2) { this.anInt1009 += this.anInt1010; }
-            if ((k1 & 4) === 4) { this.anInt1255 += this.anInt1256; }
+            const k1: number = ((Math.random() * 8.0) as number) | 0;
+            if ((k1 & 1) === 1) {
+                this.anInt853 += this.anInt854;
+            }
+            if ((k1 & 2) === 2) {
+                this.anInt1009 += this.anInt1010;
+            }
+            if ((k1 & 4) === 4) {
+                this.anInt1255 += this.anInt1256;
+            }
         }
-        if (this.anInt853 < -50) { this.anInt854 = 2; }
-        if (this.anInt853 > 50) { this.anInt854 = -2; }
-        if (this.anInt1009 < -55) { this.anInt1010 = 2; }
-        if (this.anInt1009 > 55) { this.anInt1010 = -2; }
-        if (this.anInt1255 < -40) { this.anInt1256 = 1; }
-        if (this.anInt1255 > 40) { this.anInt1256 = -1; }
+        if (this.anInt853 < -50) {
+            this.anInt854 = 2;
+        }
+        if (this.anInt853 > 50) {
+            this.anInt854 = -2;
+        }
+        if (this.anInt1009 < -55) {
+            this.anInt1010 = 2;
+        }
+        if (this.anInt1009 > 55) {
+            this.anInt1010 = -2;
+        }
+        if (this.anInt1255 < -40) {
+            this.anInt1256 = 1;
+        }
+        if (this.anInt1255 > 40) {
+            this.anInt1256 = -1;
+        }
         this.anInt1045++;
         if (this.anInt1045 > 500) {
             this.anInt1045 = 0;
-            const l1: number = (((Math.random() * 8.0) as number) | 0);
-            if ((l1 & 1) === 1) { this.anInt916 += this.anInt917; }
-            if ((l1 & 2) === 2) { this.anInt1233 += this.anInt1234; }
+            const l1: number = ((Math.random() * 8.0) as number) | 0;
+            if ((l1 & 1) === 1) {
+                this.anInt916 += this.anInt917;
+            }
+            if ((l1 & 2) === 2) {
+                this.anInt1233 += this.anInt1234;
+            }
         }
-        if (this.anInt916 < -60) { this.anInt917 = 2; }
-        if (this.anInt916 > 60) { this.anInt917 = -2; }
-        if (this.anInt1233 < -20) { this.anInt1234 = 1; }
-        if (this.anInt1233 > 10) { this.anInt1234 = -1; }
+        if (this.anInt916 < -60) {
+            this.anInt917 = 2;
+        }
+        if (this.anInt916 > 60) {
+            this.anInt917 = -2;
+        }
+        if (this.anInt1233 < -20) {
+            this.anInt1234 = 1;
+        }
+        if (this.anInt1233 > 10) {
+            this.anInt1234 = -1;
+        }
         this.anInt872++;
-        if (this.anInt872 > 50) { this.outBuffer.putOpcode(40); }
+        if (this.anInt872 > 50) {
+            this.outBuffer.putOpcode(40);
+        }
         try {
             if (this.gameConnection != null && this.outBuffer.currentPosition > 0) {
                 this.gameConnection.write(this.outBuffer.currentPosition, 0, this.outBuffer.buffer);
@@ -1476,23 +1674,993 @@ export class Game extends GameShell {
             //     return;
 
             // }
-            if (__e != null && __e instanceof Error as any) {
+            if (__e != null && ((__e instanceof Error) as any)) {
                 const exception: Error = __e as Error;
                 this.logout();
-
             }
         }
     }
 
-    public walk(flag: boolean, flag1: boolean, dstY: number, srcY: number, k: number, l: number, packetType: number, j1: number, dstX: number, l1: number, i2: number, srcX: number): boolean {
+    public method138() {
+        console.info("============");
+        console.info("flame-cycle:" + this.flameCycle);
+        if (this.onDemandRequester != null) {
+            console.info("Od-cycle:" + this.onDemandRequester.cycle);
+        }
+        console.info("loop-cycle:" + Game.pulseCycle);
+        console.info("draw-cycle:" + Game.anInt1309);
+        console.info("ptype:" + this.opcode);
+        console.info("psize:" + this.packetSize);
+        if (this.gameConnection != null) {
+            this.gameConnection.printDebug();
+        }
+        this.dumpRequested = true;
+    }
+
+    public manageTextInputs() {
+        while (true) {
+            {
+                const key: number = this.readCharacter();
+                if (key === -1) {
+                    break;
+                }
+                if (this.openInterfaceId !== -1 && this.openInterfaceId === this.reportAbuseInterfaceID) {
+                    if (key === 8 && this.reportedName.length > 0) {
+                        this.reportedName = this.reportedName.substring(0, this.reportedName.length - 1);
+                    }
+                    if (
+                        ((key >= 97 && key <= 122) || (key >= 65 && key <= 90) || (key >= 48 && key <= 57) || key === 32) &&
+                        this.reportedName.length < 12
+                    ) {
+                        this.reportedName += String.fromCharCode(key);
+                    }
+                } else if (this.messagePromptRaised) {
+                    if (key >= 32 && key <= 122 && this.chatMessage.length < 80) {
+                        this.chatMessage += String.fromCharCode(key);
+                        this.redrawChatbox = true;
+                    }
+                    if (key === 8 && this.chatMessage.length > 0) {
+                        this.chatMessage = this.chatMessage.substring(0, this.chatMessage.length - 1);
+                        this.redrawChatbox = true;
+                    }
+                    if (key === 13 || key === 10) {
+                        this.messagePromptRaised = false;
+                        this.redrawChatbox = true;
+                        if (this.friendsListAction === 1) {
+                            const l: number = TextUtils.nameToLong(this.chatMessage);
+                            this.addFriend(l);
+                        }
+                        if (this.friendsListAction === 2 && this.friendsCount > 0) {
+                            const l1: number = TextUtils.nameToLong(this.chatMessage);
+                            this.removeFriend(l1);
+                        }
+                        if (this.friendsListAction === 3 && this.chatMessage.length > 0) {
+                            this.outBuffer.putOpcode(227);
+                            this.outBuffer.putByte(0);
+                            const j: number = this.outBuffer.currentPosition;
+                            this.outBuffer.putLong(this.aLong1141);
+                            ChatEncoder.put(this.chatMessage, this.outBuffer);
+                            this.outBuffer.putLength(this.outBuffer.currentPosition - j);
+                            this.chatMessage = ChatEncoder.formatChatMessage(this.chatMessage);
+                            this.addChatMessage(TextUtils.formatName(TextUtils.longToName(this.aLong1141)), this.chatMessage, 6);
+                            if (this.privateChatMode === 2) {
+                                this.privateChatMode = 1;
+                                this.aBoolean1212 = true;
+                                this.outBuffer.putOpcode(176);
+                                this.outBuffer.putByte(this.publicChatMode);
+                                this.outBuffer.putByte(this.privateChatMode);
+                                this.outBuffer.putByte(this.tradeMode);
+                            }
+                        }
+                        if (this.friendsListAction === 4 && this.ignoresCount < 100) {
+                            const l2: number = TextUtils.nameToLong(this.chatMessage);
+                            this.addIgnore(this.anInt1154, l2);
+                        }
+                        if (this.friendsListAction === 5 && this.ignoresCount > 0) {
+                            const l3: number = TextUtils.nameToLong(this.chatMessage);
+                            this.removeIgnore(325, l3);
+                        }
+                    }
+                } else if (this.inputType === 1) {
+                    if (key >= 48 && key <= 57 && this.inputInputMessage.length < 10) {
+                        this.inputInputMessage += String.fromCharCode(key);
+                        this.redrawChatbox = true;
+                    }
+                    if (key === 8 && this.inputInputMessage.length > 0) {
+                        this.inputInputMessage = this.inputInputMessage.substring(0, this.inputInputMessage.length - 1);
+                        this.redrawChatbox = true;
+                    }
+                    if (key === 13 || key === 10) {
+                        if (this.inputInputMessage.length > 0) {
+                            let k: number = 0;
+                            try {
+                                k = parseInt(this.inputInputMessage);
+                            } catch (_ex) {}
+                            this.outBuffer.putOpcode(75);
+                            this.outBuffer.putInt(k);
+                        }
+                        this.inputType = 0;
+                        this.redrawChatbox = true;
+                    }
+                } else if (this.inputType === 2) {
+                    if (key >= 32 && key <= 122 && this.inputInputMessage.length < 12) {
+                        this.inputInputMessage += String.fromCharCode(key);
+                        this.redrawChatbox = true;
+                    }
+                    if (key === 8 && this.inputInputMessage.length > 0) {
+                        this.inputInputMessage = this.inputInputMessage.substring(0, this.inputInputMessage.length - 1);
+                        this.redrawChatbox = true;
+                    }
+                    if (key === 13 || key === 10) {
+                        if (this.inputInputMessage.length > 0) {
+                            this.outBuffer.putOpcode(206);
+                            this.outBuffer.putLong(TextUtils.nameToLong(this.inputInputMessage));
+                        }
+                        this.inputType = 0;
+                        this.redrawChatbox = true;
+                    }
+                } else if (this.inputType === 3) {
+                    if (key >= 32 && key <= 122 && this.inputInputMessage.length < 40) {
+                        this.inputInputMessage += String.fromCharCode(key);
+                        this.redrawChatbox = true;
+                    }
+                    if (key === 8 && this.inputInputMessage.length > 0) {
+                        this.inputInputMessage = this.inputInputMessage.substring(0, this.inputInputMessage.length - 1);
+                        this.redrawChatbox = true;
+                    }
+                } else if (this.backDialogueId === -1 && this.anInt1053 === -1) {
+                    if (key >= 32 && key <= 122 && this.chatboxInput.length < 80) {
+                        this.chatboxInput += String.fromCharCode(key);
+                        this.redrawChatbox = true;
+                    }
+                    if (key === 8 && this.chatboxInput.length > 0) {
+                        this.chatboxInput = this.chatboxInput.substring(0, this.chatboxInput.length - 1);
+                        this.redrawChatbox = true;
+                    }
+                    if ((key === 13 || key === 10) && this.chatboxInput.length > 0) {
+                        if (this.playerRights === 2) {
+                            if (
+                                /* equals */ ((o1: any, o2: any) => {
+                                    if (o1 && o1.equals) {
+                                        return o1.equals(o2);
+                                    } else {
+                                        return o1 === o2;
+                                    }
+                                })(this.chatboxInput, "::clientdrop") as any
+                            ) {
+                                this.dropClient();
+                            }
+                            if (
+                                /* equals */ ((o1: any, o2: any) => {
+                                    if (o1 && o1.equals) {
+                                        return o1.equals(o2);
+                                    } else {
+                                        return o1 === o2;
+                                    }
+                                })(this.chatboxInput, "::lag") as any
+                            ) {
+                                this.method138();
+                            }
+                            if (
+                                /* equals */ ((o1: any, o2: any) => {
+                                    if (o1 && o1.equals) {
+                                        return o1.equals(o2);
+                                    } else {
+                                        return o1 === o2;
+                                    }
+                                })(this.chatboxInput, "::prefetchmusic") as any
+                            ) {
+                                for (let i_417_: number = 0; i_417_ < this.onDemandRequester.fileCount(2); i_417_++) {
+                                    this.onDemandRequester.setPriority((1 as number) | 0, 2, i_417_);
+                                }
+                            }
+                            if (
+                                /* equals */ ((o1: any, o2: any) => {
+                                    if (o1 && o1.equals) {
+                                        return o1.equals(o2);
+                                    } else {
+                                        return o1 === o2;
+                                    }
+                                })(this.chatboxInput, "::fpson") as any
+                            ) {
+                                Game.fps = true;
+                            }
+                            if (
+                                /* equals */ ((o1: any, o2: any) => {
+                                    if (o1 && o1.equals) {
+                                        return o1.equals(o2);
+                                    } else {
+                                        return o1 === o2;
+                                    }
+                                })(this.chatboxInput, "::fpsoff") as any
+                            ) {
+                                Game.fps = false;
+                            }
+                            if (
+                                /* equals */ ((o1: any, o2: any) => {
+                                    if (o1 && o1.equals) {
+                                        return o1.equals(o2);
+                                    } else {
+                                        return o1 === o2;
+                                    }
+                                })(this.chatboxInput, "::noclip") as any
+                            ) {
+                                for (let j1: number = 0; j1 < 4; j1++) {
+                                    {
+                                        for (let k1: number = 1; k1 < 103; k1++) {
+                                            {
+                                                for (let j2: number = 1; j2 < 103; j2++) {
+                                                    this.currentCollisionMap[j1].adjacency[k1][j2] = 0;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (
+                            /* startsWith */ ((str, searchString, position = 0) =>
+                                str.substr(position, searchString.length) === searchString)(this.chatboxInput, "::")
+                        ) {
+                            this.outBuffer.putOpcode(56);
+                            this.outBuffer.putByte(this.chatboxInput.length - 1);
+                            this.outBuffer.putString(this.chatboxInput.substring(2));
+                        } else {
+                            let s: string = this.chatboxInput.toLowerCase();
+                            let colourCode: number = 0;
+                            if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "yellow:")
+                            ) {
+                                colourCode = 0;
+                                this.chatboxInput = this.chatboxInput.substring(7);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "red:")
+                            ) {
+                                colourCode = 1;
+                                this.chatboxInput = this.chatboxInput.substring(4);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "green:")
+                            ) {
+                                colourCode = 2;
+                                this.chatboxInput = this.chatboxInput.substring(6);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "cyan:")
+                            ) {
+                                colourCode = 3;
+                                this.chatboxInput = this.chatboxInput.substring(5);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "purple:")
+                            ) {
+                                colourCode = 4;
+                                this.chatboxInput = this.chatboxInput.substring(7);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "white:")
+                            ) {
+                                colourCode = 5;
+                                this.chatboxInput = this.chatboxInput.substring(6);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "flash1:")
+                            ) {
+                                colourCode = 6;
+                                this.chatboxInput = this.chatboxInput.substring(7);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "flash2:")
+                            ) {
+                                colourCode = 7;
+                                this.chatboxInput = this.chatboxInput.substring(7);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "flash3:")
+                            ) {
+                                colourCode = 8;
+                                this.chatboxInput = this.chatboxInput.substring(7);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "glow1:")
+                            ) {
+                                colourCode = 9;
+                                this.chatboxInput = this.chatboxInput.substring(6);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "glow2:")
+                            ) {
+                                colourCode = 10;
+                                this.chatboxInput = this.chatboxInput.substring(6);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "glow3:")
+                            ) {
+                                colourCode = 11;
+                                this.chatboxInput = this.chatboxInput.substring(6);
+                            }
+                            s = this.chatboxInput.toLowerCase();
+                            let effectCode: number = 0;
+                            if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "wave:")
+                            ) {
+                                effectCode = 1;
+                                this.chatboxInput = this.chatboxInput.substring(5);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "wave2:")
+                            ) {
+                                effectCode = 2;
+                                this.chatboxInput = this.chatboxInput.substring(6);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "shake:")
+                            ) {
+                                effectCode = 3;
+                                this.chatboxInput = this.chatboxInput.substring(6);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "scroll:")
+                            ) {
+                                effectCode = 4;
+                                this.chatboxInput = this.chatboxInput.substring(7);
+                            } else if (
+                                /* startsWith */ ((str, searchString, position = 0) =>
+                                    str.substr(position, searchString.length) === searchString)(s, "slide:")
+                            ) {
+                                effectCode = 5;
+                                this.chatboxInput = this.chatboxInput.substring(6);
+                            }
+                            this.outBuffer.putOpcode(49);
+                            this.outBuffer.putByte(0);
+                            const bufPos: number = this.outBuffer.currentPosition;
+                            this.outBuffer.putByteNegated(colourCode);
+                            this.outBuffer.putByteAdded(effectCode);
+                            this.chatBuffer.currentPosition = 0;
+                            ChatEncoder.put(this.chatboxInput, this.chatBuffer);
+                            this.outBuffer.putBytes(this.chatBuffer.buffer, 0, this.chatBuffer.currentPosition);
+                            this.outBuffer.putLength(this.outBuffer.currentPosition - bufPos);
+                            this.chatboxInput = ChatEncoder.formatChatMessage(this.chatboxInput);
+                            this.chatboxInput = ChatCensor.censorString(this.chatboxInput);
+                            Game.localPlayer.forcedChat = this.chatboxInput;
+                            Game.localPlayer.textColour = colourCode;
+                            Game.localPlayer.textEffect = effectCode;
+                            Game.localPlayer.textCycle = 150;
+                            if (this.playerRights === 2) {
+                                this.addChatMessage("@cr2@" + Game.localPlayer.playerName, Game.localPlayer.forcedChat, 2);
+                            } else if (this.playerRights === 1) {
+                                this.addChatMessage("@cr1@" + Game.localPlayer.playerName, Game.localPlayer.forcedChat, 2);
+                            } else {
+                                this.addChatMessage(Game.localPlayer.playerName, Game.localPlayer.forcedChat, 2);
+                            }
+                            if (this.publicChatMode === 2) {
+                                this.publicChatMode = 3;
+                                this.aBoolean1212 = true;
+                                this.outBuffer.putOpcode(176);
+                                this.outBuffer.putByte(this.publicChatMode);
+                                this.outBuffer.putByte(this.privateChatMode);
+                                this.outBuffer.putByte(this.tradeMode);
+                            }
+                        }
+                        this.chatboxInput = "";
+                        this.redrawChatbox = true;
+                    }
+                }
+            }
+        }
+    }
+
+    public calculateCameraPosition() {
+        let i: number = this.anInt874 * 128 + 64;
+        let j: number = this.anInt875 * 128 + 64;
+        let k: number = this.method110(j, i, (9 as number) | 0, this.plane) - this.anInt876;
+        if (this.cameraX < i) {
+            this.cameraX += this.anInt877 + ((((i - this.cameraX) * this.anInt878) / 1000) | 0);
+            if (this.cameraX > i) {
+                this.cameraX = i;
+            }
+        }
+        if (this.cameraX > i) {
+            this.cameraX -= this.anInt877 + ((((this.cameraX - i) * this.anInt878) / 1000) | 0);
+            if (this.cameraX < i) {
+                this.cameraX = i;
+            }
+        }
+        if (this.cameraZ < k) {
+            this.cameraZ += this.anInt877 + ((((k - this.cameraZ) * this.anInt878) / 1000) | 0);
+            if (this.cameraZ > k) {
+                this.cameraZ = k;
+            }
+        }
+        if (this.cameraZ > k) {
+            this.cameraZ -= this.anInt877 + ((((this.cameraZ - k) * this.anInt878) / 1000) | 0);
+            if (this.cameraZ < k) {
+                this.cameraZ = k;
+            }
+        }
+        if (this.cameraY < j) {
+            this.cameraY += this.anInt877 + ((((j - this.cameraY) * this.anInt878) / 1000) | 0);
+            if (this.cameraY > j) {
+                this.cameraY = j;
+            }
+        }
+        if (this.cameraY > j) {
+            this.cameraY -= this.anInt877 + ((((this.cameraY - j) * this.anInt878) / 1000) | 0);
+            if (this.cameraY < j) {
+                this.cameraY = j;
+            }
+        }
+        i = this.anInt993 * 128 + 64;
+        j = this.anInt994 * 128 + 64;
+        k = this.method110(j, i, (9 as number) | 0, this.plane) - this.anInt995;
+        const l: number = i - this.cameraX;
+        const i1: number = k - this.cameraZ;
+        const j1: number = j - this.cameraY;
+        const k1: number = (Math.sqrt(l * l + j1 * j1) as number) | 0;
+        let l1: number = (((Math.atan2(i1, k1) * 325.949) as number) | 0) & 2047;
+        const j2: number = (((Math.atan2(l, j1) * -325.949) as number) | 0) & 2047;
+        if (l1 < 128) {
+            l1 = 128;
+        }
+        if (l1 > 383) {
+            l1 = 383;
+        }
+        if (this.anInt1219 < l1) {
+            this.anInt1219 += this.anInt996 + ((((l1 - this.anInt1219) * this.anInt997) / 1000) | 0);
+            if (this.anInt1219 > l1) {
+                this.anInt1219 = l1;
+            }
+        }
+        if (this.anInt1219 > l1) {
+            this.anInt1219 -= this.anInt996 + ((((this.anInt1219 - l1) * this.anInt997) / 1000) | 0);
+            if (this.anInt1219 < l1) {
+                this.anInt1219 = l1;
+            }
+        }
+        let k2: number = j2 - this.anInt1220;
+        if (k2 > 1024) {
+            k2 -= 2048;
+        }
+        if (k2 < -1024) {
+            k2 += 2048;
+        }
+        if (k2 > 0) {
+            this.anInt1220 += this.anInt996 + (((k2 * this.anInt997) / 1000) | 0);
+            this.anInt1220 &= 2047;
+        }
+        if (k2 < 0) {
+            this.anInt1220 -= this.anInt996 + (((-k2 * this.anInt997) / 1000) | 0);
+            this.anInt1220 &= 2047;
+        }
+        let l2: number = j2 - this.anInt1220;
+        if (l2 > 1024) {
+            l2 -= 2048;
+        }
+        if (l2 < -1024) {
+            l2 += 2048;
+        }
+        if ((l2 < 0 && k2 > 0) || (l2 > 0 && k2 < 0)) {
+            this.anInt1220 = j2;
+        }
+    }
+
+    public checkForGameUsages(i: number) {
+        i = (61 / i) | 0;
+        try {
+            const j: number = Game.localPlayer.worldX + this.anInt853;
+            const k: number = Game.localPlayer.worldY + this.anInt1009;
+            if (this.anInt1262 - j < -500 || this.anInt1262 - j > 500 || this.anInt1263 - k < -500 || this.anInt1263 - k > 500) {
+                this.anInt1262 = j;
+                this.anInt1263 = k;
+            }
+            if (this.anInt1262 !== j) {
+                this.anInt1262 += ((j - this.anInt1262) / 16) | 0;
+            }
+            if (this.anInt1263 !== k) {
+                this.anInt1263 += ((k - this.anInt1263) / 16) | 0;
+            }
+            if (this.keyStatus[1] === 1) {
+                this.anInt1186 += ((-24 - this.anInt1186) / 2) | 0;
+            } else if (this.keyStatus[2] === 1) {
+                this.anInt1186 += ((24 - this.anInt1186) / 2) | 0;
+            } else {
+                this.anInt1186 = (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(this.anInt1186 / 2);
+            }
+            if (this.keyStatus[3] === 1) {
+                this.anInt1187 += ((12 - this.anInt1187) / 2) | 0;
+            } else if (this.keyStatus[4] === 1) {
+                this.anInt1187 += ((-12 - this.anInt1187) / 2) | 0;
+            } else {
+                this.anInt1187 = (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(this.anInt1187 / 2);
+            }
+            this.cameraHorizontal = (this.cameraHorizontal + ((this.anInt1186 / 2) | 0)) & 2047;
+            this.anInt1251 += (this.anInt1187 / 2) | 0;
+            if (this.anInt1251 < 128) {
+                this.anInt1251 = 128;
+            }
+            if (this.anInt1251 > 383) {
+                this.anInt1251 = 383;
+            }
+            const l: number = this.anInt1262 >> 7;
+            const i1: number = this.anInt1263 >> 7;
+            const j1: number = this.method110(this.anInt1263, this.anInt1262, (9 as number) | 0, this.plane);
+            let k1: number = 0;
+            if (l > 3 && i1 > 3 && l < 100 && i1 < 100) {
+                for (let l1: number = l - 4; l1 <= l + 4; l1++) {
+                    {
+                        for (let j2: number = i1 - 4; j2 <= i1 + 4; j2++) {
+                            {
+                                let k2: number = this.plane;
+                                if (k2 < 3 && (this.currentSceneTileFlags[1][l1][j2] & 2) === 2) {
+                                    k2++;
+                                }
+                                const l2: number = j1 - this.anIntArrayArrayArray891[k2][l1][j2];
+                                if (l2 > k1) {
+                                    k1 = l2;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            let i2: number = k1 * 192;
+            if (i2 > 98048) {
+                i2 = 98048;
+            }
+            if (i2 < 32768) {
+                i2 = 32768;
+            }
+            if (i2 > this.anInt1289) {
+                this.anInt1289 += ((i2 - this.anInt1289) / 24) | 0;
+                return;
+            }
+            if (i2 < this.anInt1289) {
+                this.anInt1289 += ((i2 - this.anInt1289) / 80) | 0;
+                return;
+            }
+        } catch (_ex) {
+            SignLink.reportError(
+                "glfc_ex " +
+                    Game.localPlayer.worldX +
+                    "," +
+                    Game.localPlayer.worldY +
+                    "," +
+                    this.anInt1262 +
+                    "," +
+                    this.anInt1263 +
+                    "," +
+                    this.chunkX +
+                    "," +
+                    this.chunkY +
+                    "," +
+                    this.nextTopLeftTileX +
+                    "," +
+                    this.nextTopRightTileY
+            );
+            throw Error("eek");
+        }
+    }
+
+    public method39(flag: boolean) {
+        if (!flag) {
+            this.groundItems = null;
+        }
+        if (this.clickType === 1) {
+            if (this.clickX >= 6 && this.clickX <= 106 && this.clickY >= 467 && this.clickY <= 499) {
+                this.publicChatMode = (this.publicChatMode + 1) % 4;
+                this.aBoolean1212 = true;
+                this.redrawChatbox = true;
+                this.outBuffer.putOpcode(176);
+                this.outBuffer.putByte(this.publicChatMode);
+                this.outBuffer.putByte(this.privateChatMode);
+                this.outBuffer.putByte(this.tradeMode);
+            }
+            if (this.clickX >= 135 && this.clickX <= 235 && this.clickY >= 467 && this.clickY <= 499) {
+                this.privateChatMode = (this.privateChatMode + 1) % 3;
+                this.aBoolean1212 = true;
+                this.redrawChatbox = true;
+                this.outBuffer.putOpcode(176);
+                this.outBuffer.putByte(this.publicChatMode);
+                this.outBuffer.putByte(this.privateChatMode);
+                this.outBuffer.putByte(this.tradeMode);
+            }
+            if (this.clickX >= 273 && this.clickX <= 373 && this.clickY >= 467 && this.clickY <= 499) {
+                this.tradeMode = (this.tradeMode + 1) % 3;
+                this.aBoolean1212 = true;
+                this.redrawChatbox = true;
+                this.outBuffer.putOpcode(176);
+                this.outBuffer.putByte(this.publicChatMode);
+                this.outBuffer.putByte(this.privateChatMode);
+                this.outBuffer.putByte(this.tradeMode);
+            }
+            if (this.clickX >= 412 && this.clickX <= 512 && this.clickY >= 467 && this.clickY <= 499) {
+                if (this.openInterfaceId === -1) {
+                    this.closeWidgets();
+                    this.reportedName = "";
+                    this.reportMutePlayer = false;
+                    this.reportAbuseInterfaceID = this.openInterfaceId = Widget.anInt246;
+                } else {
+                    this.addChatMessage("", "Please close the interface you have open before using 'report abuse'", 0);
+                }
+
+                Game.anInt1160++;
+                if (Game.anInt1160 > 161) {
+                    Game.anInt1160 = 0;
+                    this.outBuffer.putOpcode(22);
+                    this.outBuffer.putShort(38304);
+                }
+            }
+        }
+    }
+
+    public method21(flag: boolean) {
+        if (flag) {
+            return;
+        }
+        if (this.clickType === 1) {
+            if (this.clickX >= 539 && this.clickX <= 573 && this.clickY >= 169 && this.clickY < 205 && this.anIntArray1081[0] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 0;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 569 && this.clickX <= 599 && this.clickY >= 168 && this.clickY < 205 && this.anIntArray1081[1] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 1;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 597 && this.clickX <= 627 && this.clickY >= 168 && this.clickY < 205 && this.anIntArray1081[2] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 2;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 625 && this.clickX <= 669 && this.clickY >= 168 && this.clickY < 203 && this.anIntArray1081[3] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 3;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 666 && this.clickX <= 696 && this.clickY >= 168 && this.clickY < 205 && this.anIntArray1081[4] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 4;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 694 && this.clickX <= 724 && this.clickY >= 168 && this.clickY < 205 && this.anIntArray1081[5] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 5;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 722 && this.clickX <= 756 && this.clickY >= 169 && this.clickY < 205 && this.anIntArray1081[6] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 6;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 540 && this.clickX <= 574 && this.clickY >= 466 && this.clickY < 502 && this.anIntArray1081[7] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 7;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 572 && this.clickX <= 602 && this.clickY >= 466 && this.clickY < 503 && this.anIntArray1081[8] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 8;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 599 && this.clickX <= 629 && this.clickY >= 466 && this.clickY < 503 && this.anIntArray1081[9] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 9;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 627 && this.clickX <= 671 && this.clickY >= 467 && this.clickY < 502 && this.anIntArray1081[10] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 10;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 669 && this.clickX <= 699 && this.clickY >= 466 && this.clickY < 503 && this.anIntArray1081[11] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 11;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 696 && this.clickX <= 726 && this.clickY >= 466 && this.clickY < 503 && this.anIntArray1081[12] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 12;
+                this.aBoolean950 = true;
+            }
+            if (this.clickX >= 724 && this.clickX <= 758 && this.clickY >= 466 && this.clickY < 502 && this.anIntArray1081[13] !== -1) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 13;
+                this.aBoolean950 = true;
+            }
+        }
+    }
+
+    public method146(byte0: number) {
+        if (byte0 !== 4) {
+            return;
+        }
+        if (this.minimapState !== 0) {
+            return;
+        }
+        if (this.clickType === 1) {
+            let i: number = this.clickX - 25 - 550;
+            let j: number = this.clickY - 5 - 4;
+            if (i >= 0 && j >= 0 && i < 146 && j < 151) {
+                i -= 73;
+                j -= 75;
+                const k: number = (this.cameraHorizontal + this.anInt916) & 2047;
+                let l: number = Rasterizer3D.SINE[k];
+                let i1: number = Rasterizer3D.COSINE[k];
+                l = (l * (this.anInt1233 + 256)) >> 8;
+                i1 = (i1 * (this.anInt1233 + 256)) >> 8;
+                const j1: number = (j * l + i * i1) >> 11;
+                const k1: number = (j * i1 - i * l) >> 11;
+                const l1: number = (Game.localPlayer.worldX + j1) >> 7;
+                const i2: number = (Game.localPlayer.worldY - k1) >> 7;
+                const flag: boolean = this.walk(
+                    true,
+                    false,
+                    i2,
+                    Game.localPlayer.pathY[0],
+                    0,
+                    0,
+                    1,
+                    0,
+                    l1,
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                if (flag) {
+                    this.outBuffer.putByte(i);
+                    this.outBuffer.putByte(j);
+                    this.outBuffer.putShort(this.cameraHorizontal);
+                    this.outBuffer.putByte(57);
+                    this.outBuffer.putByte(this.anInt916);
+                    this.outBuffer.putByte(this.anInt1233);
+                    this.outBuffer.putByte(89);
+                    this.outBuffer.putShort(Game.localPlayer.worldX);
+                    this.outBuffer.putShort(Game.localPlayer.worldY);
+                    this.outBuffer.putByte(this.anInt1126);
+                    this.outBuffer.putByte(63);
+                }
+            }
+        }
+    }
+
+    public processMenuClick() {
+        if (this.activeInterfaceType !== 0) {
+            return;
+        }
+        let meta: number = this.clickType;
+        if (this.widgetSelected === 1 && this.clickX >= 516 && this.clickY >= 160 && this.clickX <= 765 && this.clickY <= 205) {
+            meta = 0;
+        }
+        if (this.menuOpen) {
+            if (meta !== 1) {
+                let x: number = this.mouseX;
+                let y: number = this.mouseY;
+                if (this.anInt1304 === 0) {
+                    x -= 4;
+                    y -= 4;
+                }
+                if (this.anInt1304 === 1) {
+                    x -= 553;
+                    y -= 205;
+                }
+                if (this.anInt1304 === 2) {
+                    x -= 17;
+                    y -= 357;
+                }
+                if (
+                    x < this.menuClickX - 10 ||
+                    x > this.menuClickX + this.anInt1307 + 10 ||
+                    y < this.menuClickY - 10 ||
+                    y > this.menuClickY + this.anInt1308 + 10
+                ) {
+                    this.menuOpen = false;
+                    if (this.anInt1304 === 1) {
+                        this.redrawTabArea = true;
+                    }
+                    if (this.anInt1304 === 2) {
+                        this.redrawChatbox = true;
+                    }
+                }
+            }
+            if (meta === 1) {
+                const menuX: number = this.menuClickX;
+                const menuY: number = this.menuClickY;
+                const dx: number = this.anInt1307;
+                let x: number = this.clickX;
+                let y: number = this.clickY;
+                if (this.anInt1304 === 0) {
+                    x -= 4;
+                    y -= 4;
+                }
+                if (this.anInt1304 === 1) {
+                    x -= 553;
+                    y -= 205;
+                }
+                if (this.anInt1304 === 2) {
+                    x -= 17;
+                    y -= 357;
+                }
+                let id: number = -1;
+                for (let row: number = 0; row < this.menuActionRow; row++) {
+                    {
+                        const k3: number = menuY + 31 + (this.menuActionRow - 1 - row) * 15;
+                        if (x > menuX && x < menuX + dx && y > k3 - 13 && y < k3 + 3) {
+                            id = row;
+                        }
+                    }
+                }
+                if (id !== -1) {
+                    this.processMenuActions(id);
+                }
+                this.menuOpen = false;
+                if (this.anInt1304 === 1) {
+                    this.redrawTabArea = true;
+                }
+                if (this.anInt1304 === 2) {
+                    this.redrawChatbox = true;
+                    return;
+                }
+            }
+        } else {
+            if (meta === 1 && this.menuActionRow > 0) {
+                const action: number = this.menuActionTypes[this.menuActionRow - 1];
+                if (
+                    action === 9 ||
+                    action === 225 ||
+                    action === 444 ||
+                    action === 564 ||
+                    action === 894 ||
+                    action === 961 ||
+                    action === 399 ||
+                    action === 324 ||
+                    action === 227 ||
+                    action === 891 ||
+                    action === 52 ||
+                    action === Actions.EXAMINE_ITEM
+                ) {
+                    const item: number = this.firstMenuOperand[this.menuActionRow - 1];
+                    const id: number = this.secondMenuOperand[this.menuActionRow - 1];
+                    const widget: Widget = Widget.forId(id);
+                    if (widget.itemSwapable || widget.itemDeletesDraged) {
+                        this.aBoolean1155 = false;
+                        this.anInt1269 = 0;
+                        this.modifiedWidgetId = id;
+                        this.selectedInventorySlot = item;
+                        this.activeInterfaceType = 2;
+                        this.anInt1114 = this.clickX;
+                        this.anInt1115 = this.clickY;
+                        if (Widget.forId(id).parentId === this.openInterfaceId) {
+                            this.activeInterfaceType = 1;
+                        }
+                        if (Widget.forId(id).parentId === this.backDialogueId) {
+                            this.activeInterfaceType = 3;
+                        }
+                        return;
+                    }
+                }
+            }
+            if (
+                meta === 1 &&
+                (this.anInt1300 === 1 || this.menuHasAddFriend(this.menuActionRow - 1, this.aByte1161)) &&
+                this.menuActionRow > 2
+            ) {
+                meta = 2;
+            }
+            if (meta === 1 && this.menuActionRow > 0) {
+                this.processMenuActions(this.menuActionRow - 1);
+            }
+            if (meta === 2 && this.menuActionRow > 0) {
+                this.determineMenuSize();
+            }
+        }
+    }
+
+    /*private*/ public determineMenuSize() {
+        let width: number = this.fontBold.getStringEffectWidth("Choose Option");
+        for (let i: number = 0; i < this.menuActionRow; i++) {
+            {
+                const rowWidth: number = this.fontBold.getStringEffectWidth(this.menuActionTexts[i]);
+                if (rowWidth > width) {
+                    width = rowWidth;
+                }
+            }
+        }
+        width += 8;
+        const height: number = 15 * this.menuActionRow + 21;
+        if (this.clickX > 4 && this.clickY > 4 && this.clickX < 516 && this.clickY < 338) {
+            let x: number = this.clickX - 4 - ((width / 2) | 0);
+            if (x + width > 512) {
+                x = 512 - width;
+            }
+            if (x < 0) {
+                x = 0;
+            }
+            let y: number = this.clickY - 4;
+            if (y + height > 334) {
+                y = 334 - height;
+            }
+            if (y < 0) {
+                y = 0;
+            }
+            this.menuOpen = true;
+            this.anInt1304 = 0;
+            this.menuClickX = x;
+            this.menuClickY = y;
+            this.anInt1307 = width;
+            this.anInt1308 = height + 1;
+        }
+        if (this.clickX > 553 && this.clickY > 205 && this.clickX < 743 && this.clickY < 466) {
+            let x: number = this.clickX - 553 - ((width / 2) | 0);
+            if (x < 0) {
+                x = 0;
+            } else if (x + width > 190) {
+                x = 190 - width;
+            }
+            let y: number = this.clickY - 205;
+            if (y < 0) {
+                y = 0;
+            } else if (y + height > 261) {
+                y = 261 - height;
+            }
+            this.menuOpen = true;
+            this.anInt1304 = 1;
+            this.menuClickX = x;
+            this.menuClickY = y;
+            this.anInt1307 = width;
+            this.anInt1308 = height + 1;
+        }
+        if (this.clickX > 17 && this.clickY > 357 && this.clickX < 496 && this.clickY < 453) {
+            let x: number = this.clickX - 17 - ((width / 2) | 0);
+            if (x < 0) {
+                x = 0;
+            } else if (x + width > 479) {
+                x = 479 - width;
+            }
+            let y: number = this.clickY - 357;
+            if (y < 0) {
+                y = 0;
+            } else if (y + height > 96) {
+                y = 96 - height;
+            }
+            this.menuOpen = true;
+            this.anInt1304 = 2;
+            this.menuClickX = x;
+            this.menuClickY = y;
+            this.anInt1307 = width;
+            this.anInt1308 = height + 1;
+        }
+    }
+
+    public walk(
+        flag: boolean,
+        flag1: boolean,
+        dstY: number,
+        srcY: number,
+        k: number,
+        l: number,
+        packetType: number,
+        j1: number,
+        dstX: number,
+        l1: number,
+        i2: number,
+        srcX: number
+    ): boolean {
         const byte0: number = 104;
         const byte1: number = 104;
-        for (let x: number = 0; x < byte0; x++) {{
-            for (let y: number = 0; y < byte1; y++) {{
-                this.anIntArrayArray885[x][y] = 0;
-                this.cost[x][y] = 99999999;
-            }}
-        }}
+        for (let x: number = 0; x < byte0; x++) {
+            {
+                for (let y: number = 0; y < byte1; y++) {
+                    {
+                        this.anIntArrayArray885[x][y] = 0;
+                        this.cost[x][y] = 99999999;
+                    }
+                }
+            }
+        }
         let curX: number = srcX;
         let curY: number = srcY;
         this.anIntArrayArray885[srcX][srcY] = 99;
@@ -1504,130 +2672,195 @@ export class Game extends GameShell {
         let flag2: boolean = false;
         const i4: number = this.anIntArray1123.length;
         const masks: number[][] = this.currentCollisionMap[this.plane].adjacency;
-        while ((l3 !== k3)) {{
-            curX = this.anIntArray1123[l3];
-            curY = this.anIntArray1124[l3];
-            l3 = (l3 + 1) % i4;
-            if (curX === dstX && curY === dstY) {
-                flag2 = true;
-                break;
-            }
-            if (j1 !== 0) {
-                if ((j1 < 5 || j1 === 10) && this.currentCollisionMap[this.plane].reachedWall(curX, curY, dstX, dstY, j1 - 1, i2)) {
+        while (l3 !== k3) {
+            {
+                curX = this.anIntArray1123[l3];
+                curY = this.anIntArray1124[l3];
+                l3 = (l3 + 1) % i4;
+                if (curX === dstX && curY === dstY) {
                     flag2 = true;
                     break;
                 }
-                if (j1 < 10 && this.currentCollisionMap[this.plane].reachedWallDecoration(curX, curY, dstX, dstY, j1 - 1, i2)) {
-                    flag2 = true;
-                    break;
-                }
-            }
-            if (k !== 0 && l !== 0 && this.currentCollisionMap[this.plane].reachedFacingObject(curX, curY, dstX, dstY, k, l, l1)) {
-                flag2 = true;
-                break;
-            }
-            const nextCost: number = this.cost[curX][curY] + 1;
-            if (curX > 0 && this.anIntArrayArray885[curX - 1][curY] === 0 && (masks[curX - 1][curY] & 19398920) === 0) {
-                this.anIntArray1123[k3] = curX - 1;
-                this.anIntArray1124[k3] = curY;
-                k3 = (k3 + 1) % i4;
-                this.anIntArrayArray885[curX - 1][curY] = 2;
-                this.cost[curX - 1][curY] = nextCost;
-            }
-            if (curX < byte0 - 1 && this.anIntArrayArray885[curX + 1][curY] === 0 && (masks[curX + 1][curY] & 19399040) === 0) {
-                this.anIntArray1123[k3] = curX + 1;
-                this.anIntArray1124[k3] = curY;
-                k3 = (k3 + 1) % i4;
-                this.anIntArrayArray885[curX + 1][curY] = 8;
-                this.cost[curX + 1][curY] = nextCost;
-            }
-            if (curY > 0 && this.anIntArrayArray885[curX][curY - 1] === 0 && (masks[curX][curY - 1] & 19398914) === 0) {
-                this.anIntArray1123[k3] = curX;
-                this.anIntArray1124[k3] = curY - 1;
-                k3 = (k3 + 1) % i4;
-                this.anIntArrayArray885[curX][curY - 1] = 1;
-                this.cost[curX][curY - 1] = nextCost;
-            }
-            if (curY < byte1 - 1 && this.anIntArrayArray885[curX][curY + 1] === 0 && (masks[curX][curY + 1] & 19398944) === 0) {
-                this.anIntArray1123[k3] = curX;
-                this.anIntArray1124[k3] = curY + 1;
-                k3 = (k3 + 1) % i4;
-                this.anIntArrayArray885[curX][curY + 1] = 4;
-                this.cost[curX][curY + 1] = nextCost;
-            }
-            if (curX > 0 && curY > 0 && this.anIntArrayArray885[curX - 1][curY - 1] === 0 && (masks[curX - 1][curY - 1] & 19398926) === 0 && (masks[curX - 1][curY] & 19398920) === 0 && (masks[curX][curY - 1] & 19398914) === 0) {
-                this.anIntArray1123[k3] = curX - 1;
-                this.anIntArray1124[k3] = curY - 1;
-                k3 = (k3 + 1) % i4;
-                this.anIntArrayArray885[curX - 1][curY - 1] = 3;
-                this.cost[curX - 1][curY - 1] = nextCost;
-            }
-            if (curX < byte0 - 1 && curY > 0 && this.anIntArrayArray885[curX + 1][curY - 1] === 0 && (masks[curX + 1][curY - 1] & 19399043) === 0 && (masks[curX + 1][curY] & 19399040) === 0 && (masks[curX][curY - 1] & 19398914) === 0) {
-                this.anIntArray1123[k3] = curX + 1;
-                this.anIntArray1124[k3] = curY - 1;
-                k3 = (k3 + 1) % i4;
-                this.anIntArrayArray885[curX + 1][curY - 1] = 9;
-                this.cost[curX + 1][curY - 1] = nextCost;
-            }
-            if (curX > 0 && curY < byte1 - 1 && this.anIntArrayArray885[curX - 1][curY + 1] === 0 && (masks[curX - 1][curY + 1] & 19398968) === 0 && (masks[curX - 1][curY] & 19398920) === 0 && (masks[curX][curY + 1] & 19398944) === 0) {
-                this.anIntArray1123[k3] = curX - 1;
-                this.anIntArray1124[k3] = curY + 1;
-                k3 = (k3 + 1) % i4;
-                this.anIntArrayArray885[curX - 1][curY + 1] = 6;
-                this.cost[curX - 1][curY + 1] = nextCost;
-            }
-            if (curX < byte0 - 1 && curY < byte1 - 1 && this.anIntArrayArray885[curX + 1][curY + 1] === 0 && (masks[curX + 1][curY + 1] & 19399136) === 0 && (masks[curX + 1][curY] & 19399040) === 0 && (masks[curX][curY + 1] & 19398944) === 0) {
-                this.anIntArray1123[k3] = curX + 1;
-                this.anIntArray1124[k3] = curY + 1;
-                k3 = (k3 + 1) % i4;
-                this.anIntArrayArray885[curX + 1][curY + 1] = 12;
-                this.cost[curX + 1][curY + 1] = nextCost;
-            }
-        }}
-        this.anInt1126 = 0;
-        if (!flag2) { if (flag) {
-            let l4: number = 1000;
-            let j5: number = 100;
-            const byte2: number = 10;
-            for (let i6: number = dstX - byte2; i6 <= dstX + byte2; i6++) {{
-                for (let k6: number = dstY - byte2; k6 <= dstY + byte2; k6++) {if (i6 >= 0 && k6 >= 0 && i6 < 104 && k6 < 104 && this.cost[i6][k6] < 100) {
-                    let i7: number = 0;
-                    if (i6 < dstX) { i7 = dstX - i6; } else if (i6 > (dstX + k) - 1) { i7 = i6 - ((dstX + k) - 1); }
-                    let j7: number = 0;
-                    if (k6 < dstY) { j7 = dstY - k6; } else if (k6 > (dstY + l) - 1) { j7 = k6 - ((dstY + l) - 1); }
-                    const k7: number = i7 * i7 + j7 * j7;
-                    if (k7 < l4 || k7 === l4 && this.cost[i6][k6] < j5) {
-                        l4 = k7;
-                        j5 = this.cost[i6][k6];
-                        curX = i6;
-                        curY = k6;
+                if (j1 !== 0) {
+                    if ((j1 < 5 || j1 === 10) && this.currentCollisionMap[this.plane].reachedWall(curX, curY, dstX, dstY, j1 - 1, i2)) {
+                        flag2 = true;
+                        break;
                     }
-                }}
-            }}
-            if (l4 === 1000) { return false; }
-            if (curX === srcX && curY === srcY) { return false; }
-            this.anInt1126 = 1;
-        } else {
-            return false;
+                    if (j1 < 10 && this.currentCollisionMap[this.plane].reachedWallDecoration(curX, curY, dstX, dstY, j1 - 1, i2)) {
+                        flag2 = true;
+                        break;
+                    }
+                }
+                if (k !== 0 && l !== 0 && this.currentCollisionMap[this.plane].reachedFacingObject(curX, curY, dstX, dstY, k, l, l1)) {
+                    flag2 = true;
+                    break;
+                }
+                const nextCost: number = this.cost[curX][curY] + 1;
+                if (curX > 0 && this.anIntArrayArray885[curX - 1][curY] === 0 && (masks[curX - 1][curY] & 19398920) === 0) {
+                    this.anIntArray1123[k3] = curX - 1;
+                    this.anIntArray1124[k3] = curY;
+                    k3 = (k3 + 1) % i4;
+                    this.anIntArrayArray885[curX - 1][curY] = 2;
+                    this.cost[curX - 1][curY] = nextCost;
+                }
+                if (curX < byte0 - 1 && this.anIntArrayArray885[curX + 1][curY] === 0 && (masks[curX + 1][curY] & 19399040) === 0) {
+                    this.anIntArray1123[k3] = curX + 1;
+                    this.anIntArray1124[k3] = curY;
+                    k3 = (k3 + 1) % i4;
+                    this.anIntArrayArray885[curX + 1][curY] = 8;
+                    this.cost[curX + 1][curY] = nextCost;
+                }
+                if (curY > 0 && this.anIntArrayArray885[curX][curY - 1] === 0 && (masks[curX][curY - 1] & 19398914) === 0) {
+                    this.anIntArray1123[k3] = curX;
+                    this.anIntArray1124[k3] = curY - 1;
+                    k3 = (k3 + 1) % i4;
+                    this.anIntArrayArray885[curX][curY - 1] = 1;
+                    this.cost[curX][curY - 1] = nextCost;
+                }
+                if (curY < byte1 - 1 && this.anIntArrayArray885[curX][curY + 1] === 0 && (masks[curX][curY + 1] & 19398944) === 0) {
+                    this.anIntArray1123[k3] = curX;
+                    this.anIntArray1124[k3] = curY + 1;
+                    k3 = (k3 + 1) % i4;
+                    this.anIntArrayArray885[curX][curY + 1] = 4;
+                    this.cost[curX][curY + 1] = nextCost;
+                }
+                if (
+                    curX > 0 &&
+                    curY > 0 &&
+                    this.anIntArrayArray885[curX - 1][curY - 1] === 0 &&
+                    (masks[curX - 1][curY - 1] & 19398926) === 0 &&
+                    (masks[curX - 1][curY] & 19398920) === 0 &&
+                    (masks[curX][curY - 1] & 19398914) === 0
+                ) {
+                    this.anIntArray1123[k3] = curX - 1;
+                    this.anIntArray1124[k3] = curY - 1;
+                    k3 = (k3 + 1) % i4;
+                    this.anIntArrayArray885[curX - 1][curY - 1] = 3;
+                    this.cost[curX - 1][curY - 1] = nextCost;
+                }
+                if (
+                    curX < byte0 - 1 &&
+                    curY > 0 &&
+                    this.anIntArrayArray885[curX + 1][curY - 1] === 0 &&
+                    (masks[curX + 1][curY - 1] & 19399043) === 0 &&
+                    (masks[curX + 1][curY] & 19399040) === 0 &&
+                    (masks[curX][curY - 1] & 19398914) === 0
+                ) {
+                    this.anIntArray1123[k3] = curX + 1;
+                    this.anIntArray1124[k3] = curY - 1;
+                    k3 = (k3 + 1) % i4;
+                    this.anIntArrayArray885[curX + 1][curY - 1] = 9;
+                    this.cost[curX + 1][curY - 1] = nextCost;
+                }
+                if (
+                    curX > 0 &&
+                    curY < byte1 - 1 &&
+                    this.anIntArrayArray885[curX - 1][curY + 1] === 0 &&
+                    (masks[curX - 1][curY + 1] & 19398968) === 0 &&
+                    (masks[curX - 1][curY] & 19398920) === 0 &&
+                    (masks[curX][curY + 1] & 19398944) === 0
+                ) {
+                    this.anIntArray1123[k3] = curX - 1;
+                    this.anIntArray1124[k3] = curY + 1;
+                    k3 = (k3 + 1) % i4;
+                    this.anIntArrayArray885[curX - 1][curY + 1] = 6;
+                    this.cost[curX - 1][curY + 1] = nextCost;
+                }
+                if (
+                    curX < byte0 - 1 &&
+                    curY < byte1 - 1 &&
+                    this.anIntArrayArray885[curX + 1][curY + 1] === 0 &&
+                    (masks[curX + 1][curY + 1] & 19399136) === 0 &&
+                    (masks[curX + 1][curY] & 19399040) === 0 &&
+                    (masks[curX][curY + 1] & 19398944) === 0
+                ) {
+                    this.anIntArray1123[k3] = curX + 1;
+                    this.anIntArray1124[k3] = curY + 1;
+                    k3 = (k3 + 1) % i4;
+                    this.anIntArrayArray885[curX + 1][curY + 1] = 12;
+                    this.cost[curX + 1][curY + 1] = nextCost;
+                }
+            }
         }
+        this.anInt1126 = 0;
+        if (!flag2) {
+            if (flag) {
+                let l4: number = 1000;
+                let j5: number = 100;
+                const byte2: number = 10;
+                for (let i6: number = dstX - byte2; i6 <= dstX + byte2; i6++) {
+                    {
+                        for (let k6: number = dstY - byte2; k6 <= dstY + byte2; k6++) {
+                            if (i6 >= 0 && k6 >= 0 && i6 < 104 && k6 < 104 && this.cost[i6][k6] < 100) {
+                                let i7: number = 0;
+                                if (i6 < dstX) {
+                                    i7 = dstX - i6;
+                                } else if (i6 > dstX + k - 1) {
+                                    i7 = i6 - (dstX + k - 1);
+                                }
+                                let j7: number = 0;
+                                if (k6 < dstY) {
+                                    j7 = dstY - k6;
+                                } else if (k6 > dstY + l - 1) {
+                                    j7 = k6 - (dstY + l - 1);
+                                }
+                                const k7: number = i7 * i7 + j7 * j7;
+                                if (k7 < l4 || (k7 === l4 && this.cost[i6][k6] < j5)) {
+                                    l4 = k7;
+                                    j5 = this.cost[i6][k6];
+                                    curX = i6;
+                                    curY = k6;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (l4 === 1000) {
+                    return false;
+                }
+                if (curX === srcX && curY === srcY) {
+                    return false;
+                }
+                this.anInt1126 = 1;
+            } else {
+                return false;
+            }
         }
         l3 = 0;
-        if (flag1) { this.startup(); }
+        if (flag1) {
+            this.startUp();
+        }
         this.anIntArray1123[l3] = curX;
         this.anIntArray1124[l3++] = curY;
         let k5: number;
-        for (let i5: number = k5 = this.anIntArrayArray885[curX][curY]; curX !== srcX || curY !== srcY; i5 = this.anIntArrayArray885[curX][curY]) {{
-            if (i5 !== k5) {
-                k5 = i5;
-                this.anIntArray1123[l3] = curX;
-                this.anIntArray1124[l3++] = curY;
+        for (
+            let i5: number = (k5 = this.anIntArrayArray885[curX][curY]);
+            curX !== srcX || curY !== srcY;
+            i5 = this.anIntArrayArray885[curX][curY]
+        ) {
+            {
+                if (i5 !== k5) {
+                    k5 = i5;
+                    this.anIntArray1123[l3] = curX;
+                    this.anIntArray1124[l3++] = curY;
+                }
+                if ((i5 & 2) !== 0) {
+                    curX++;
+                } else if ((i5 & 8) !== 0) {
+                    curX--;
+                }
+                if ((i5 & 1) !== 0) {
+                    curY++;
+                } else if ((i5 & 4) !== 0) {
+                    curY--;
+                }
             }
-            if ((i5 & 2) !== 0) { curX++; } else if ((i5 & 8) !== 0) { curX--; }
-            if ((i5 & 1) !== 0) { curY++; } else if ((i5 & 4) !== 0) { curY--; }
-        }}
+        }
         if (l3 > 0) {
             let j4: number = l3;
-            if (j4 > 25) { j4 = 25; }
+            if (j4 > 25) {
+                j4 = 25;
+            }
             l3--;
             const l5: number = this.anIntArray1123[l3];
             const j6: number = this.anIntArray1124[l3];
@@ -1648,47 +2881,79 @@ export class Game extends GameShell {
             this.outBuffer.putLEShortAdded(j6 + this.nextTopRightTileY);
             this.destinationX = this.anIntArray1123[0];
             this.destinationY = this.anIntArray1124[0];
-            for (let l6: number = 1; l6 < j4; l6++) {{
-                l3--;
-                this.outBuffer.putByte(this.anIntArray1123[l3] - l5);
-                this.outBuffer.putByteSubtracted(this.anIntArray1124[l3] - j6);
-            }}
+            for (let l6: number = 1; l6 < j4; l6++) {
+                {
+                    l3--;
+                    this.outBuffer.putByte(this.anIntArray1123[l3] - l5);
+                    this.outBuffer.putByteSubtracted(this.anIntArray1124[l3] - j6);
+                }
+            }
             return true;
         }
         return packetType !== 1;
     }
 
     public menuHasAddFriend(i: number, byte0: number): boolean {
-        if (i < 0) { return false; }
+        if (i < 0) {
+            return false;
+        }
         let j: number = this.menuActionTypes[i];
-        if (byte0 !== 97) { throw Error("NullPointerException"); }
-        if (j >= 2000) { j -= 2000; }
+        if (byte0 !== 97) {
+            throw Error("NullPointerException");
+        }
+        if (j >= 2000) {
+            j -= 2000;
+        }
         return j === 762;
     }
 
     public processRightClick(i: number) {
-        if (this.activeInterfaceType !== 0) { return; }
+        if (this.activeInterfaceType !== 0) {
+            return;
+        }
         this.menuActionTexts[0] = "Cancel";
         this.menuActionTypes[0] = 1016;
         this.menuActionRow = 1;
-        if (i >= 0) { this.anInt1004 = this.incomingRandom.nextInt(); }
+        if (i >= 0) {
+            this.anInt1004 = this.incomingRandom.nextInt() | 0;
+        }
         if (this.anInt1053 !== -1) {
             this.anInt915 = 0;
             this.anInt1315 = 0;
             this.method66(0, Widget.forId(this.anInt1053), 0, 0, 0, this.mouseX, 23658, this.mouseY);
-            if (this.anInt915 !== this.anInt1302) { this.anInt1302 = this.anInt915; }
-            if (this.anInt1315 !== this.anInt1129) { this.anInt1129 = this.anInt1315; }
+            if (this.anInt915 !== this.anInt1302) {
+                this.anInt1302 = this.anInt915;
+            }
+            if (this.anInt1315 !== this.anInt1129) {
+                this.anInt1129 = this.anInt1315;
+            }
             return;
         }
         this.method111(this.anInt1178);
         this.anInt915 = 0;
         this.anInt1315 = 0;
-        if (this.mouseX > 4 && this.mouseY > 4 && this.mouseX < 516 && this.mouseY < 338) { if (this.openInterfaceId !== -1) { this.method66(4, Widget.forId(this.openInterfaceId), 0, 0, 4, this.mouseX, 23658, this.mouseY); } else { this.method43(((7 as number) | 0)); } }
-        if (this.anInt915 !== this.anInt1302) { this.anInt1302 = this.anInt915; }
-        if (this.anInt1315 !== this.anInt1129) { this.anInt1129 = this.anInt1315; }
+        if (this.mouseX > 4 && this.mouseY > 4 && this.mouseX < 516 && this.mouseY < 338) {
+            if (this.openInterfaceId !== -1) {
+                this.method66(4, Widget.forId(this.openInterfaceId), 0, 0, 4, this.mouseX, 23658, this.mouseY);
+            } else {
+                this.method43((7 as number) | 0);
+            }
+        }
+        if (this.anInt915 !== this.anInt1302) {
+            this.anInt1302 = this.anInt915;
+        }
+        if (this.anInt1315 !== this.anInt1129) {
+            this.anInt1129 = this.anInt1315;
+        }
         this.anInt915 = 0;
         this.anInt1315 = 0;
-        if (this.mouseX > 553 && this.mouseY > 205 && this.mouseX < 743 && this.mouseY < 466) { if (this.anInt1089 !== -1) { this.method66(205, Widget.forId(this.anInt1089), 1, 0, 553, this.mouseX, 23658, this.mouseY); } else if (this.anIntArray1081[this.anInt1285] !== -1) { this.method66(205, Widget.forId(this.anIntArray1081[this.anInt1285]), 1, 0, 553, this.mouseX, 23658, this.mouseY); } }
+        if (this.mouseX > 553 && this.mouseY > 205 && this.mouseX < 743 && this.mouseY < 466) {
+            if (this.anInt1089 !== -1) {
+                this.method66(205, Widget.forId(this.anInt1089), 1, 0, 553, this.mouseX, 23658, this.mouseY);
+            } else if (this.anIntArray1081[this.anInt1285] !== -1) {
+                this.method66(205, Widget.forId(this.anIntArray1081[this.anInt1285]), 1, 0, 553, this.mouseX, 23658, this.mouseY);
+            }
+        }
         if (this.anInt915 !== this.anInt1280) {
             this.redrawTabArea = true;
             this.anInt1280 = this.anInt915;
@@ -1699,7 +2964,15 @@ export class Game extends GameShell {
         }
         this.anInt915 = 0;
         this.anInt1315 = 0;
-        if (this.mouseX > 17 && this.mouseY > 357 && this.mouseX < 496 && this.mouseY < 453) { if (this.backDialogueId !== -1) { this.method66(357, Widget.forId(this.backDialogueId), 2, 0, 17, this.mouseX, 23658, this.mouseY); } else if (this.dialogueId !== -1) { this.method66(357, Widget.forId(this.dialogueId), 3, 0, 17, this.mouseX, 23658, this.mouseY); } else if (this.mouseY < 434 && this.mouseX < 426 && this.inputType === 0) { this.method113(466, this.mouseX - 17, this.mouseY - 357); } }
+        if (this.mouseX > 17 && this.mouseY > 357 && this.mouseX < 496 && this.mouseY < 453) {
+            if (this.backDialogueId !== -1) {
+                this.method66(357, Widget.forId(this.backDialogueId), 2, 0, 17, this.mouseX, 23658, this.mouseY);
+            } else if (this.dialogueId !== -1) {
+                this.method66(357, Widget.forId(this.dialogueId), 3, 0, 17, this.mouseX, 23658, this.mouseY);
+            } else if (this.mouseY < 434 && this.mouseX < 426 && this.inputType === 0) {
+                this.method113(466, this.mouseX - 17, this.mouseY - 357);
+            }
+        }
         if ((this.backDialogueId !== -1 || this.dialogueId !== -1) && this.anInt915 !== this.anInt1106) {
             this.redrawChatbox = true;
             this.anInt1106 = this.anInt915;
@@ -1708,196 +2981,932 @@ export class Game extends GameShell {
             this.redrawChatbox = true;
             this.anInt1284 = this.anInt1315;
         }
-        for (let flag: boolean = false; !flag; ) {{
-            flag = true;
-            for (let j: number = 0; j < this.menuActionRow - 1; j++) {if (this.menuActionTypes[j] < 1000 && this.menuActionTypes[j + 1] > 1000) {
-                const s: string = this.menuActionTexts[j];
-                this.menuActionTexts[j] = this.menuActionTexts[j + 1];
-                this.menuActionTexts[j + 1] = s;
-                let k: number = this.menuActionTypes[j];
-                this.menuActionTypes[j] = this.menuActionTypes[j + 1];
-                this.menuActionTypes[j + 1] = k;
-                k = this.firstMenuOperand[j];
-                this.firstMenuOperand[j] = this.firstMenuOperand[j + 1];
-                this.firstMenuOperand[j + 1] = k;
-                k = this.secondMenuOperand[j];
-                this.secondMenuOperand[j] = this.secondMenuOperand[j + 1];
-                this.secondMenuOperand[j + 1] = k;
-                k = this.selectedMenuActions[j];
-                this.selectedMenuActions[j] = this.selectedMenuActions[j + 1];
-                this.selectedMenuActions[j + 1] = k;
-                flag = false;
-            }}
-        }}
+        for (let flag: boolean = false; !flag; ) {
+            {
+                flag = true;
+                for (let j: number = 0; j < this.menuActionRow - 1; j++) {
+                    if (this.menuActionTypes[j] < 1000 && this.menuActionTypes[j + 1] > 1000) {
+                        const s: string = this.menuActionTexts[j];
+                        this.menuActionTexts[j] = this.menuActionTexts[j + 1];
+                        this.menuActionTexts[j + 1] = s;
+                        let k: number = this.menuActionTypes[j];
+                        this.menuActionTypes[j] = this.menuActionTypes[j + 1];
+                        this.menuActionTypes[j + 1] = k;
+                        k = this.firstMenuOperand[j];
+                        this.firstMenuOperand[j] = this.firstMenuOperand[j + 1];
+                        this.firstMenuOperand[j + 1] = k;
+                        k = this.secondMenuOperand[j];
+                        this.secondMenuOperand[j] = this.secondMenuOperand[j + 1];
+                        this.secondMenuOperand[j + 1] = k;
+                        k = this.selectedMenuActions[j];
+                        this.selectedMenuActions[j] = this.selectedMenuActions[j + 1];
+                        this.selectedMenuActions[j + 1] = k;
+                        flag = false;
+                    }
+                }
+            }
+        }
     }
 
+    public method113(i: number, j: number, k: number) {
+        let l: number = 0;
+        i = (44 / i) | 0;
+        for (let i1: number = 0; i1 < 100; i1++) {
+            {
+                if (this.chatMessages[i1] == null) {
+                    continue;
+                }
+                const j1: number = this.chatTypes[i1];
+                const k1: number = 70 - l * 14 + this.anInt851 + 4;
+                if (k1 < -20) {
+                    break;
+                }
+                let s: string = this.chatPlayerNames[i1];
+                if (
+                    s != null &&
+                    /* startsWith */ ((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(
+                        s,
+                        "@cr1@"
+                    )
+                ) {
+                    s = s.substring(5);
+                }
+                if (
+                    s != null &&
+                    /* startsWith */ ((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(
+                        s,
+                        "@cr2@"
+                    )
+                ) {
+                    s = s.substring(5);
+                }
+                if (j1 === 0) {
+                    l++;
+                }
+                if (
+                    (j1 === 1 || j1 === 2) &&
+                    (j1 === 1 || this.publicChatMode === 0 || (this.publicChatMode === 1 && this.method148(13292, s)))
+                ) {
+                    if (
+                        k > k1 - 14 &&
+                        k <= k1 &&
+                        !/* equals */ (((o1: any, o2: any) => {
+                            if (o1 && o1.equals) {
+                                return o1.equals(o2);
+                            } else {
+                                return o1 === o2;
+                            }
+                        })(s, Game.localPlayer.playerName) as any)
+                    ) {
+                        if (this.playerRights >= 1) {
+                            this.menuActionTexts[this.menuActionRow] = "Report abuse @whi@" + s;
+                            this.menuActionTypes[this.menuActionRow] = 507;
+                            this.menuActionRow++;
+                        }
+                        this.menuActionTexts[this.menuActionRow] = "Add ignore @whi@" + s;
+                        this.menuActionTypes[this.menuActionRow] = 574;
+                        this.menuActionRow++;
+                        this.menuActionTexts[this.menuActionRow] = "Add friend @whi@" + s;
+                        this.menuActionTypes[this.menuActionRow] = 762;
+                        this.menuActionRow++;
+                    }
+                    l++;
+                }
+                if (
+                    (j1 === 3 || j1 === 7) &&
+                    this.anInt1223 === 0 &&
+                    (j1 === 7 || this.privateChatMode === 0 || (this.privateChatMode === 1 && this.method148(13292, s)))
+                ) {
+                    if (k > k1 - 14 && k <= k1) {
+                        if (this.playerRights >= 1) {
+                            this.menuActionTexts[this.menuActionRow] = "Report abuse @whi@" + s;
+                            this.menuActionTypes[this.menuActionRow] = 507;
+                            this.menuActionRow++;
+                        }
+                        this.menuActionTexts[this.menuActionRow] = "Add ignore @whi@" + s;
+                        this.menuActionTypes[this.menuActionRow] = 574;
+                        this.menuActionRow++;
+                        this.menuActionTexts[this.menuActionRow] = "Add friend @whi@" + s;
+                        this.menuActionTypes[this.menuActionRow] = 762;
+                        this.menuActionRow++;
+                    }
+                    l++;
+                }
+                if (j1 === 4 && (this.tradeMode === 0 || (this.tradeMode === 1 && this.method148(13292, s)))) {
+                    if (k > k1 - 14 && k <= k1) {
+                        this.menuActionTexts[this.menuActionRow] = "Accept trade @whi@" + s;
+                        this.menuActionTypes[this.menuActionRow] = 544;
+                        this.menuActionRow++;
+                    }
+                    l++;
+                }
+                if ((j1 === 5 || j1 === 6) && this.anInt1223 === 0 && this.privateChatMode < 2) {
+                    l++;
+                }
+                if (j1 === 8 && (this.tradeMode === 0 || (this.tradeMode === 1 && this.method148(13292, s)))) {
+                    if (k > k1 - 14 && k <= k1) {
+                        this.menuActionTexts[this.menuActionRow] = "Accept challenge @whi@" + s;
+                        this.menuActionTypes[this.menuActionRow] = 695;
+                        this.menuActionRow++;
+                    }
+                    l++;
+                }
+            }
+        }
+    }
 
-    public method66(i: number, class13: Widget, j: number, k: number, l: number, i1: number, j1: number, k1: number) {
-        if (j1 !== 23658) { return; }
-        if (class13.type !== 0 || class13.children == null || class13.hiddenUntilHovered) { return; }
-        if (i1 < l || k1 < i || i1 > l + class13.width || k1 > i + class13.height) { return; }
-        const l1: number = class13.children.length;
-        for (let i2: number = 0; i2 < l1; i2++) {{
-            let j2: number = class13.childrenX[i2] + l;
-            let k2: number = (class13.childrenY[i2] + i) - k;
-            const child: Widget = Widget.forId(class13.children[i2]);
-            j2 += child.anInt228;
-            k2 += child.anInt259;
-            if ((child.hoveredPopup >= 0 || child.disabledHoveredColor !== 0) && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) { if (child.hoveredPopup >= 0) { this.anInt915 = child.hoveredPopup; } else { this.anInt915 = child.id; } }
-            if (child.type === 8 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) { this.anInt1315 = child.id; }
-            if (child.type === 0) {
-                this.method66(k2, child, j, child.anInt231, j2, i1, 23658, k1);
-                if (child.scrollLimit > child.height) { this.method42(child.scrollLimit, k2, child, ((102 as number) | 0), k1, j, i1, child.height, j2 + child.width); }
-            } else {
-                if (child.actionType === 1 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
-                    let flag: boolean = false;
-                    if (child.contentType !== 0) { flag = this.processFriendListClick(child); }
-                    if (!flag) {
-                        this.menuActionTexts[this.menuActionRow] = child.tooltip;
-                        this.menuActionTypes[this.menuActionRow] = 352;
-                        this.secondMenuOperand[this.menuActionRow] = child.id;
+    public method43(byte0: number) {
+        if (this.itemSelected === 0 && this.widgetSelected === 0) {
+            this.menuActionTexts[this.menuActionRow] = "Walk here";
+            this.menuActionTypes[this.menuActionRow] = 14;
+            this.firstMenuOperand[this.menuActionRow] = this.mouseX;
+            this.secondMenuOperand[this.menuActionRow] = this.mouseY;
+            this.menuActionRow++;
+        }
+        let i: number = -1;
+        if (byte0 !== 7) {
+            this.opcode = -1;
+        }
+        for (let j: number = 0; j < Model.anInt1708; j++) {
+            {
+                const k: number = Model.anIntArray1709[j];
+                const l: number = k & 127;
+                const i1: number = (k >> 7) & 127;
+                const j1: number = (k >> 29) & 3;
+                const k1: number = (k >> 14) & 32767;
+                if (k === i) {
+                    continue;
+                }
+                i = k;
+                if (j1 === 2 && this.currentScene.method271(this.plane, l, i1, k) >= 0) {
+                    let class47: GameObjectDefinition = GameObjectDefinition.getDefinition(k1);
+                    if (class47.childrenIds != null) {
+                        class47 = class47.getChildDefinition();
+                    }
+                    if (class47 == null) {
+                        continue;
+                    }
+                    if (this.itemSelected === 1) {
+                        this.menuActionTexts[this.menuActionRow] = "Use " + this.aString1150 + " with @cya@" + class47.name;
+                        this.menuActionTypes[this.menuActionRow] = 467;
+                        this.selectedMenuActions[this.menuActionRow] = k;
+                        this.firstMenuOperand[this.menuActionRow] = l;
+                        this.secondMenuOperand[this.menuActionRow] = i1;
+                        this.menuActionRow++;
+                    } else if (this.widgetSelected === 1) {
+                        if ((this.anInt1173 & 4) === 4) {
+                            this.menuActionTexts[this.menuActionRow] = this.selectedWidgetName + " @cya@" + class47.name;
+                            this.menuActionTypes[this.menuActionRow] = 376;
+                            this.selectedMenuActions[this.menuActionRow] = k;
+                            this.firstMenuOperand[this.menuActionRow] = l;
+                            this.secondMenuOperand[this.menuActionRow] = i1;
+                            this.menuActionRow++;
+                        }
+                    } else {
+                        if (class47.options != null) {
+                            for (let l1: number = 4; l1 >= 0; l1--) {
+                                if (class47.options[l1] != null) {
+                                    this.menuActionTexts[this.menuActionRow] = class47.options[l1] + " @cya@" + class47.name;
+                                    if (l1 === 0) {
+                                        this.menuActionTypes[this.menuActionRow] = 35;
+                                    }
+                                    if (l1 === 1) {
+                                        this.menuActionTypes[this.menuActionRow] = 389;
+                                    }
+                                    if (l1 === 2) {
+                                        this.menuActionTypes[this.menuActionRow] = 888;
+                                    }
+                                    if (l1 === 3) {
+                                        this.menuActionTypes[this.menuActionRow] = 892;
+                                    }
+                                    if (l1 === 4) {
+                                        this.menuActionTypes[this.menuActionRow] = 1280;
+                                    }
+                                    this.selectedMenuActions[this.menuActionRow] = k;
+                                    this.firstMenuOperand[this.menuActionRow] = l;
+                                    this.secondMenuOperand[this.menuActionRow] = i1;
+                                    this.menuActionRow++;
+                                }
+                            }
+                        }
+                        this.menuActionTexts[this.menuActionRow] = "Examine @cya@" + class47.name;
+                        this.menuActionTypes[this.menuActionRow] = 1412;
+                        this.selectedMenuActions[this.menuActionRow] = class47.id << 14;
+                        this.firstMenuOperand[this.menuActionRow] = l;
+                        this.secondMenuOperand[this.menuActionRow] = i1;
                         this.menuActionRow++;
                     }
                 }
-                if (child.actionType === 2 && this.widgetSelected === 0 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
-                    let circumfix: string = child.optionCircumfix;
-                    if (circumfix.indexOf(" ") !== -1) { circumfix = circumfix.substring(0, circumfix.indexOf(" ")); }
-                    this.menuActionTexts[this.menuActionRow] = circumfix + " @gre@" + child.optionText;
-                    this.menuActionTypes[this.menuActionRow] = Actions.USABLE_WIDGET;
-                    this.secondMenuOperand[this.menuActionRow] = child.id;
-                    this.menuActionRow++;
-                }
-                if (child.actionType === 3 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
-                    this.menuActionTexts[this.menuActionRow] = "Close";
-                    if (j === 3) { this.menuActionTypes[this.menuActionRow] = 55; } else { this.menuActionTypes[this.menuActionRow] = Actions.CLOSE_WIDGETS; }
-                    this.secondMenuOperand[this.menuActionRow] = child.id;
-                    this.menuActionRow++;
-                }
-                if (child.actionType === 4 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
-                    this.menuActionTexts[this.menuActionRow] = child.tooltip;
-                    this.menuActionTypes[this.menuActionRow] = 890;
-                    this.secondMenuOperand[this.menuActionRow] = child.id;
-                    this.menuActionRow++;
-                }
-                if (child.actionType === 5 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
-                    this.menuActionTexts[this.menuActionRow] = child.tooltip;
-                    this.menuActionTypes[this.menuActionRow] = 518;
-                    this.secondMenuOperand[this.menuActionRow] = child.id;
-                    this.menuActionRow++;
-                }
-                if (child.actionType === 6 && !this.aBoolean1239 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
-                    this.menuActionTexts[this.menuActionRow] = child.tooltip;
-                    this.menuActionTypes[this.menuActionRow] = Actions.CLICK_TO_CONTINUE;
-                    this.secondMenuOperand[this.menuActionRow] = child.id;
-                    this.menuActionRow++;
-                }
-                if (child.type === 2) {
-                    let l2: number = 0;
-                    for (let i3: number = 0; i3 < child.height; i3++) {{
-                        for (let j3: number = 0; j3 < child.width; j3++) {{
-                            let k3: number = j2 + j3 * (32 + child.itemSpritePadsX);
-                            let l3: number = k2 + i3 * (32 + child.itemSpritePadsY);
-                            if (l2 < 20) {
-                                k3 += child.imageX[l2];
-                                l3 += child.imageY[l2];
+                if (j1 === 1) {
+                    const class50_sub1_sub4_sub3_sub1: Npc = this.npcs[k1];
+                    if (
+                        class50_sub1_sub4_sub3_sub1.npcDefinition.boundaryDimension === 1 &&
+                        (class50_sub1_sub4_sub3_sub1.worldX & 127) === 64 &&
+                        (class50_sub1_sub4_sub3_sub1.worldY & 127) === 64
+                    ) {
+                        for (let i2: number = 0; i2 < this.anInt1133; i2++) {
+                            {
+                                const class50_sub1_sub4_sub3_sub1_1: Npc = this.npcs[this.anIntArray1134[i2]];
+                                if (
+                                    class50_sub1_sub4_sub3_sub1_1 != null &&
+                                    class50_sub1_sub4_sub3_sub1_1 !== class50_sub1_sub4_sub3_sub1 &&
+                                    class50_sub1_sub4_sub3_sub1_1.npcDefinition.boundaryDimension === 1 &&
+                                    class50_sub1_sub4_sub3_sub1_1.worldX === class50_sub1_sub4_sub3_sub1.worldX &&
+                                    class50_sub1_sub4_sub3_sub1_1.worldY === class50_sub1_sub4_sub3_sub1.worldY
+                                ) {
+                                    this.method82(
+                                        class50_sub1_sub4_sub3_sub1_1.npcDefinition,
+                                        i1,
+                                        l,
+                                        this.anIntArray1134[i2],
+                                        (-76 as number) | 0
+                                    );
+                                }
                             }
-                            if (i1 >= k3 && k1 >= l3 && i1 < k3 + 32 && k1 < l3 + 32) {
-                                this.mouseInvInterfaceIndex = l2;
-                                this.lastActiveInvInterface = child.id;
-                                if (child.items[l2] > 0) {
-                                    const definition: ItemDefinition = ItemDefinition.lookup(child.items[l2] - 1);
-                                    if (this.itemSelected === 1 && child.isInventory) {
-                                        if (child.id !== this.anInt1148 || l2 !== this.anInt1147) {
-                                            this.menuActionTexts[this.menuActionRow] = "Use " + this.aString1150 + " with @lre@" + definition.name;
-                                            this.menuActionTypes[this.menuActionRow] = 903;
-                                            this.selectedMenuActions[this.menuActionRow] = definition.id;
-                                            this.firstMenuOperand[this.menuActionRow] = l2;
-                                            this.secondMenuOperand[this.menuActionRow] = child.id;
-                                            this.menuActionRow++;
-                                        }
-                                    } else if (this.widgetSelected === 1 && child.isInventory) {
-                                        if ((this.anInt1173 & 16) === 16) {
-                                            this.menuActionTexts[this.menuActionRow] = this.selectedWidgetName + " @lre@" + definition.name;
-                                            this.menuActionTypes[this.menuActionRow] = 361;
-                                            this.selectedMenuActions[this.menuActionRow] = definition.id;
-                                            this.firstMenuOperand[this.menuActionRow] = l2;
-                                            this.secondMenuOperand[this.menuActionRow] = child.id;
-                                            this.menuActionRow++;
-                                        }
-                                    } else {
-                                        if (child.isInventory) {
-                                            for (let i4: number = 4; i4 >= 3; i4--) {if (definition.inventoryActions != null && definition.inventoryActions[i4] != null) {
-                                                this.menuActionTexts[this.menuActionRow] = definition.inventoryActions[i4] + " @lre@" + definition.name;
-                                                if (i4 === 3) { this.menuActionTypes[this.menuActionRow] = 227; }
-                                                if (i4 === 4) { this.menuActionTypes[this.menuActionRow] = 891; }
-                                                this.selectedMenuActions[this.menuActionRow] = definition.id;
-                                                this.firstMenuOperand[this.menuActionRow] = l2;
-                                                this.secondMenuOperand[this.menuActionRow] = child.id;
-                                                this.menuActionRow++;
-                                            } else if (i4 === 4) {
-                                                this.menuActionTexts[this.menuActionRow] = "Drop @lre@" + definition.name;
-                                                this.menuActionTypes[this.menuActionRow] = 891;
-                                                this.selectedMenuActions[this.menuActionRow] = definition.id;
-                                                this.firstMenuOperand[this.menuActionRow] = l2;
-                                                this.secondMenuOperand[this.menuActionRow] = child.id;
-                                                this.menuActionRow++;
-                                            }}
-                                        }
-                                        if (child.itemUsable) {
-                                            this.menuActionTexts[this.menuActionRow] = "Use @lre@" + definition.name;
-                                            this.menuActionTypes[this.menuActionRow] = 52;
-                                            this.selectedMenuActions[this.menuActionRow] = definition.id;
-                                            this.firstMenuOperand[this.menuActionRow] = l2;
-                                            this.secondMenuOperand[this.menuActionRow] = child.id;
-                                            this.menuActionRow++;
-                                        }
-                                        if (child.isInventory && definition.inventoryActions != null) {
-                                            for (let j4: number = 2; j4 >= 0; j4--) {if (definition.inventoryActions[j4] != null) {
-                                                this.menuActionTexts[this.menuActionRow] = definition.inventoryActions[j4] + " @lre@" + definition.name;
-                                                if (j4 === 0) { this.menuActionTypes[this.menuActionRow] = 961; }
-                                                if (j4 === 1) { this.menuActionTypes[this.menuActionRow] = 399; }
-                                                if (j4 === 2) { this.menuActionTypes[this.menuActionRow] = 324; }
-                                                this.selectedMenuActions[this.menuActionRow] = definition.id;
-                                                this.firstMenuOperand[this.menuActionRow] = l2;
-                                                this.secondMenuOperand[this.menuActionRow] = child.id;
-                                                this.menuActionRow++;
-                                            }}
-                                        }
-                                        if (child.options != null) {
-                                            for (let k4: number = 4; k4 >= 0; k4--) {if (child.options[k4] != null) {
-                                                this.menuActionTexts[this.menuActionRow] = child.options[k4] + " @lre@" + definition.name;
-                                                if (k4 === 0) { this.menuActionTypes[this.menuActionRow] = 9; }
-                                                if (k4 === 1) { this.menuActionTypes[this.menuActionRow] = 225; }
-                                                if (k4 === 2) { this.menuActionTypes[this.menuActionRow] = 444; }
-                                                if (k4 === 3) { this.menuActionTypes[this.menuActionRow] = 564; }
-                                                if (k4 === 4) { this.menuActionTypes[this.menuActionRow] = 894; }
-                                                this.selectedMenuActions[this.menuActionRow] = definition.id;
-                                                this.firstMenuOperand[this.menuActionRow] = l2;
-                                                this.secondMenuOperand[this.menuActionRow] = child.id;
-                                                this.menuActionRow++;
-                                            }}
-                                        }
-                                        this.menuActionTexts[this.menuActionRow] = "Examine @lre@" + definition.name;
-                                        this.menuActionTypes[this.menuActionRow] = Actions.EXAMINE_ITEM;
-                                        this.selectedMenuActions[this.menuActionRow] = definition.id;
-                                        this.firstMenuOperand[this.menuActionRow] = l2;
-                                        this.secondMenuOperand[this.menuActionRow] = child.id;
+                        }
+                        for (let k2: number = 0; k2 < this.localPlayerCount; k2++) {
+                            {
+                                const class50_sub1_sub4_sub3_sub2_1: Player = this.players[this.playerList[k2]];
+                                if (
+                                    class50_sub1_sub4_sub3_sub2_1 != null &&
+                                    class50_sub1_sub4_sub3_sub2_1.worldX === class50_sub1_sub4_sub3_sub1.worldX &&
+                                    class50_sub1_sub4_sub3_sub2_1.worldY === class50_sub1_sub4_sub3_sub1.worldY
+                                ) {
+                                    this.method38(this.playerList[k2], i1, l, class50_sub1_sub4_sub3_sub2_1, 0);
+                                }
+                            }
+                        }
+                    }
+                    this.method82(class50_sub1_sub4_sub3_sub1.npcDefinition, i1, l, k1, (-76 as number) | 0);
+                }
+                if (j1 === 0) {
+                    const class50_sub1_sub4_sub3_sub2: Player = this.players[k1];
+                    if ((class50_sub1_sub4_sub3_sub2.worldX & 127) === 64 && (class50_sub1_sub4_sub3_sub2.worldY & 127) === 64) {
+                        for (let j2: number = 0; j2 < this.anInt1133; j2++) {
+                            {
+                                const class50_sub1_sub4_sub3_sub1_2: Npc = this.npcs[this.anIntArray1134[j2]];
+                                if (
+                                    class50_sub1_sub4_sub3_sub1_2 != null &&
+                                    class50_sub1_sub4_sub3_sub1_2.npcDefinition.boundaryDimension === 1 &&
+                                    class50_sub1_sub4_sub3_sub1_2.worldX === class50_sub1_sub4_sub3_sub2.worldX &&
+                                    class50_sub1_sub4_sub3_sub1_2.worldY === class50_sub1_sub4_sub3_sub2.worldY
+                                ) {
+                                    this.method82(
+                                        class50_sub1_sub4_sub3_sub1_2.npcDefinition,
+                                        i1,
+                                        l,
+                                        this.anIntArray1134[j2],
+                                        (-76 as number) | 0
+                                    );
+                                }
+                            }
+                        }
+                        for (let l2: number = 0; l2 < this.localPlayerCount; l2++) {
+                            {
+                                const class50_sub1_sub4_sub3_sub2_2: Player = this.players[this.playerList[l2]];
+                                if (
+                                    class50_sub1_sub4_sub3_sub2_2 != null &&
+                                    class50_sub1_sub4_sub3_sub2_2 !== class50_sub1_sub4_sub3_sub2 &&
+                                    class50_sub1_sub4_sub3_sub2_2.worldX === class50_sub1_sub4_sub3_sub2.worldX &&
+                                    class50_sub1_sub4_sub3_sub2_2.worldY === class50_sub1_sub4_sub3_sub2.worldY
+                                ) {
+                                    this.method38(this.playerList[l2], i1, l, class50_sub1_sub4_sub3_sub2_2, 0);
+                                }
+                            }
+                        }
+                    }
+                    this.method38(k1, i1, l, class50_sub1_sub4_sub3_sub2, 0);
+                }
+                if (j1 === 3) {
+                    const class6: LinkedList = this.groundItems[this.plane][l][i1];
+                    if (class6 != null) {
+                        for (
+                            let class50_sub1_sub4_sub1: Item = class6.last() as Item;
+                            class50_sub1_sub4_sub1 != null;
+                            class50_sub1_sub4_sub1 = class6.previous() as Item
+                        ) {
+                            {
+                                const class16: ItemDefinition = ItemDefinition.lookup(class50_sub1_sub4_sub1.itemId);
+                                if (this.itemSelected === 1) {
+                                    this.menuActionTexts[this.menuActionRow] = "Use " + this.aString1150 + " with @lre@" + class16.name;
+                                    this.menuActionTypes[this.menuActionRow] = 100;
+                                    this.selectedMenuActions[this.menuActionRow] = class50_sub1_sub4_sub1.itemId;
+                                    this.firstMenuOperand[this.menuActionRow] = l;
+                                    this.secondMenuOperand[this.menuActionRow] = i1;
+                                    this.menuActionRow++;
+                                } else if (this.widgetSelected === 1) {
+                                    if ((this.anInt1173 & 1) === 1) {
+                                        this.menuActionTexts[this.menuActionRow] = this.selectedWidgetName + " @lre@" + class16.name;
+                                        this.menuActionTypes[this.menuActionRow] = 199;
+                                        this.selectedMenuActions[this.menuActionRow] = class50_sub1_sub4_sub1.itemId;
+                                        this.firstMenuOperand[this.menuActionRow] = l;
+                                        this.secondMenuOperand[this.menuActionRow] = i1;
                                         this.menuActionRow++;
+                                    }
+                                } else {
+                                    for (let i3: number = 4; i3 >= 0; i3--) {
+                                        if (class16.groundActions != null && class16.groundActions[i3] != null) {
+                                            this.menuActionTexts[this.menuActionRow] = class16.groundActions[i3] + " @lre@" + class16.name;
+                                            if (i3 === 0) {
+                                                this.menuActionTypes[this.menuActionRow] = 68;
+                                            }
+                                            if (i3 === 1) {
+                                                this.menuActionTypes[this.menuActionRow] = 26;
+                                            }
+                                            if (i3 === 2) {
+                                                this.menuActionTypes[this.menuActionRow] = 684;
+                                            }
+                                            if (i3 === 3) {
+                                                this.menuActionTypes[this.menuActionRow] = 930;
+                                            }
+                                            if (i3 === 4) {
+                                                this.menuActionTypes[this.menuActionRow] = 270;
+                                            }
+                                            this.selectedMenuActions[this.menuActionRow] = class50_sub1_sub4_sub1.itemId;
+                                            this.firstMenuOperand[this.menuActionRow] = l;
+                                            this.secondMenuOperand[this.menuActionRow] = i1;
+                                            this.menuActionRow++;
+                                        } else if (i3 === 2) {
+                                            this.menuActionTexts[this.menuActionRow] = "Take @lre@" + class16.name;
+                                            this.menuActionTypes[this.menuActionRow] = 684;
+                                            this.selectedMenuActions[this.menuActionRow] = class50_sub1_sub4_sub1.itemId;
+                                            this.firstMenuOperand[this.menuActionRow] = l;
+                                            this.secondMenuOperand[this.menuActionRow] = i1;
+                                            this.menuActionRow++;
+                                        }
+                                    }
+                                    this.menuActionTexts[this.menuActionRow] = "Examine @lre@" + class16.name;
+                                    this.menuActionTypes[this.menuActionRow] = 1564;
+                                    this.selectedMenuActions[this.menuActionRow] = class50_sub1_sub4_sub1.itemId;
+                                    this.firstMenuOperand[this.menuActionRow] = l;
+                                    this.secondMenuOperand[this.menuActionRow] = i1;
+                                    this.menuActionRow++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public method38(i: number, j: number, k: number, class50_sub1_sub4_sub3_sub2: Player, l: number) {
+        if (class50_sub1_sub4_sub3_sub2 === Game.localPlayer) {
+            return;
+        }
+        if (this.menuActionRow >= 400) {
+            return;
+        }
+        if (l !== 0) {
+            Game.aBoolean963 = !Game.aBoolean963;
+        }
+        let s: string;
+        if (class50_sub1_sub4_sub3_sub2.anInt1759 === 0) {
+            s =
+                class50_sub1_sub4_sub3_sub2.playerName +
+                Game.getCombatLevelColour(Game.localPlayer.combatLevel, class50_sub1_sub4_sub3_sub2.combatLevel) +
+                " (level-" +
+                class50_sub1_sub4_sub3_sub2.combatLevel +
+                ")";
+        } else {
+            s = class50_sub1_sub4_sub3_sub2.playerName + " (skill-" + class50_sub1_sub4_sub3_sub2.anInt1759 + ")";
+        }
+        if (this.itemSelected === 1) {
+            this.menuActionTexts[this.menuActionRow] = "Use " + this.aString1150 + " with @whi@" + s;
+            this.menuActionTypes[this.menuActionRow] = 596;
+            this.selectedMenuActions[this.menuActionRow] = i;
+            this.firstMenuOperand[this.menuActionRow] = k;
+            this.secondMenuOperand[this.menuActionRow] = j;
+            this.menuActionRow++;
+        } else if (this.widgetSelected === 1) {
+            if ((this.anInt1173 & 8) === 8) {
+                this.menuActionTexts[this.menuActionRow] = this.selectedWidgetName + " @whi@" + s;
+                this.menuActionTypes[this.menuActionRow] = 918;
+                this.selectedMenuActions[this.menuActionRow] = i;
+                this.firstMenuOperand[this.menuActionRow] = k;
+                this.secondMenuOperand[this.menuActionRow] = j;
+                this.menuActionRow++;
+            }
+        } else {
+            for (let i1: number = 4; i1 >= 0; i1--) {
+                if (this.aStringArray1069[i1] != null) {
+                    this.menuActionTexts[this.menuActionRow] = this.aStringArray1069[i1] + " @whi@" + s;
+                    let c: string = "\u0000";
+                    if (
+                        /* equalsIgnoreCase */ ((o1, o2) => o1.toUpperCase() === (o2 === null ? o2 : o2.toUpperCase()))(
+                            this.aStringArray1069[i1],
+                            "attack"
+                        )
+                    ) {
+                        if (class50_sub1_sub4_sub3_sub2.combatLevel > Game.localPlayer.combatLevel) {
+                            c = "\u07d0";
+                        }
+                        if (Game.localPlayer.teamId !== 0 && class50_sub1_sub4_sub3_sub2.teamId !== 0) {
+                            if (Game.localPlayer.teamId === class50_sub1_sub4_sub3_sub2.teamId) {
+                                c = "\u07d0";
+                            } else {
+                                c = "\u0000";
+                            }
+                        }
+                    } else if (this.aBooleanArray1070[i1]) {
+                        c = "\u07d0";
+                    }
+                    if (i1 === 0) {
+                        this.menuActionTypes[this.menuActionRow] = 200 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                    }
+                    if (i1 === 1) {
+                        this.menuActionTypes[this.menuActionRow] = 493 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                    }
+                    if (i1 === 2) {
+                        this.menuActionTypes[this.menuActionRow] = 408 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                    }
+                    if (i1 === 3) {
+                        this.menuActionTypes[this.menuActionRow] = 677 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                    }
+                    if (i1 === 4) {
+                        this.menuActionTypes[this.menuActionRow] = 876 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                    }
+                    this.selectedMenuActions[this.menuActionRow] = i;
+                    this.firstMenuOperand[this.menuActionRow] = k;
+                    this.secondMenuOperand[this.menuActionRow] = j;
+                    this.menuActionRow++;
+                }
+            }
+        }
+        for (let j1: number = 0; j1 < this.menuActionRow; j1++) {
+            if (this.menuActionTypes[j1] === 14) {
+                this.menuActionTexts[j1] = "Walk here @whi@" + s;
+                return;
+            }
+        }
+    }
+
+    public method82(class37: ActorDefinition, i: number, j: number, k: number, byte0: number) {
+        if (byte0 !== -76) {
+            this.groundItems = null;
+        }
+        if (this.menuActionRow >= 400) {
+            return;
+        }
+        if (class37.childrenIds != null) {
+            class37 = class37.getChildDefinition();
+        }
+        if (class37 == null) {
+            return;
+        }
+        if (!class37.clickable) {
+            return;
+        }
+        let s: string = class37.name;
+        if (class37.combatLevel !== 0) {
+            s = s + Game.getCombatLevelColour(Game.localPlayer.combatLevel, class37.combatLevel) + " (level-" + class37.combatLevel + ")";
+        }
+        if (this.itemSelected === 1) {
+            this.menuActionTexts[this.menuActionRow] = "Use " + this.aString1150 + " with @yel@" + s;
+            this.menuActionTypes[this.menuActionRow] = 347;
+            this.selectedMenuActions[this.menuActionRow] = k;
+            this.firstMenuOperand[this.menuActionRow] = j;
+            this.secondMenuOperand[this.menuActionRow] = i;
+            this.menuActionRow++;
+            return;
+        }
+        if (this.widgetSelected === 1) {
+            if ((this.anInt1173 & 2) === 2) {
+                this.menuActionTexts[this.menuActionRow] = this.selectedWidgetName + " @yel@" + s;
+                this.menuActionTypes[this.menuActionRow] = 67;
+                this.selectedMenuActions[this.menuActionRow] = k;
+                this.firstMenuOperand[this.menuActionRow] = j;
+                this.secondMenuOperand[this.menuActionRow] = i;
+                this.menuActionRow++;
+                return;
+            }
+        } else {
+            if (class37.actions != null) {
+                for (let l: number = 4; l >= 0; l--) {
+                    if (
+                        class37.actions[l] != null &&
+                        !/* equalsIgnoreCase */ ((o1, o2) => o1.toUpperCase() === (o2 === null ? o2 : o2.toUpperCase()))(
+                            class37.actions[l],
+                            "attack"
+                        )
+                    ) {
+                        this.menuActionTexts[this.menuActionRow] = class37.actions[l] + " @yel@" + s;
+                        if (l === 0) {
+                            this.menuActionTypes[this.menuActionRow] = 318;
+                        }
+                        if (l === 1) {
+                            this.menuActionTypes[this.menuActionRow] = 921;
+                        }
+                        if (l === 2) {
+                            this.menuActionTypes[this.menuActionRow] = 118;
+                        }
+                        if (l === 3) {
+                            this.menuActionTypes[this.menuActionRow] = 553;
+                        }
+                        if (l === 4) {
+                            this.menuActionTypes[this.menuActionRow] = 432;
+                        }
+                        this.selectedMenuActions[this.menuActionRow] = k;
+                        this.firstMenuOperand[this.menuActionRow] = j;
+                        this.secondMenuOperand[this.menuActionRow] = i;
+                        this.menuActionRow++;
+                    }
+                }
+            }
+            if (class37.actions != null) {
+                for (let i1: number = 4; i1 >= 0; i1--) {
+                    if (
+                        class37.actions[i1] != null &&
+                        /* equalsIgnoreCase */ ((o1, o2) => o1.toUpperCase() === (o2 === null ? o2 : o2.toUpperCase()))(
+                            class37.actions[i1],
+                            "attack"
+                        )
+                    ) {
+                        let c: string = "\u0000";
+                        if (class37.combatLevel > Game.localPlayer.combatLevel) {
+                            c = "\u07d0";
+                        }
+                        this.menuActionTexts[this.menuActionRow] = class37.actions[i1] + " @yel@" + s;
+                        if (i1 === 0) {
+                            this.menuActionTypes[this.menuActionRow] =
+                                318 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                        }
+                        if (i1 === 1) {
+                            this.menuActionTypes[this.menuActionRow] =
+                                921 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                        }
+                        if (i1 === 2) {
+                            this.menuActionTypes[this.menuActionRow] =
+                                118 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                        }
+                        if (i1 === 3) {
+                            this.menuActionTypes[this.menuActionRow] =
+                                553 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                        }
+                        if (i1 === 4) {
+                            this.menuActionTypes[this.menuActionRow] =
+                                432 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c);
+                        }
+                        this.selectedMenuActions[this.menuActionRow] = k;
+                        this.firstMenuOperand[this.menuActionRow] = j;
+                        this.secondMenuOperand[this.menuActionRow] = i;
+                        this.menuActionRow++;
+                    }
+                }
+            }
+            this.menuActionTexts[this.menuActionRow] = "Examine @yel@" + s;
+            this.menuActionTypes[this.menuActionRow] = 1668;
+            this.selectedMenuActions[this.menuActionRow] = k;
+            this.firstMenuOperand[this.menuActionRow] = j;
+            this.secondMenuOperand[this.menuActionRow] = i;
+            this.menuActionRow++;
+        }
+    }
+
+    public method111(i: number) {
+        i = (21 / i) | 0;
+        if (this.anInt1223 === 0) {
+            return;
+        }
+        let j: number = 0;
+        if (this.systemUpdateTime !== 0) {
+            j = 1;
+        }
+        for (let k: number = 0; k < 100; k++) {
+            if (this.chatMessages[k] != null) {
+                const l: number = this.chatTypes[k];
+                let s: string = this.chatPlayerNames[k];
+                if (
+                    s != null &&
+                    /* startsWith */ ((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(
+                        s,
+                        "@cr1@"
+                    )
+                ) {
+                    s = s.substring(5);
+                }
+                if (
+                    s != null &&
+                    /* startsWith */ ((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(
+                        s,
+                        "@cr2@"
+                    )
+                ) {
+                    s = s.substring(5);
+                }
+                if (
+                    (l === 3 || l === 7) &&
+                    (l === 7 || this.privateChatMode === 0 || (this.privateChatMode === 1 && this.method148(13292, s)))
+                ) {
+                    const i1: number = 329 - j * 13;
+                    if (this.mouseX > 4 && this.mouseY - 4 > i1 - 10 && this.mouseY - 4 <= i1 + 3) {
+                        let j1: number = this.fontNormal.getStringEffectWidth("From:  " + s + this.chatMessages[k]) + 25;
+                        if (j1 > 450) {
+                            j1 = 450;
+                        }
+                        if (this.mouseX < 4 + j1) {
+                            if (this.playerRights >= 1) {
+                                this.menuActionTexts[this.menuActionRow] = "Report abuse @whi@" + s;
+                                this.menuActionTypes[this.menuActionRow] = 2507;
+                                this.menuActionRow++;
+                            }
+                            this.menuActionTexts[this.menuActionRow] = "Add ignore @whi@" + s;
+                            this.menuActionTypes[this.menuActionRow] = 2574;
+                            this.menuActionRow++;
+                            this.menuActionTexts[this.menuActionRow] = "Add friend @whi@" + s;
+                            this.menuActionTypes[this.menuActionRow] = 2762;
+                            this.menuActionRow++;
+                        }
+                    }
+                    if (++j >= 5) {
+                        return;
+                    }
+                }
+                if ((l === 5 || l === 6) && this.privateChatMode < 2 && ++j >= 5) {
+                    return;
+                }
+            }
+        }
+    }
+
+    public method148(i: number, s: string): boolean {
+        if (s == null) {
+            return false;
+        }
+        for (let j: number = 0; j < this.friendsCount; j++) {
+            if (
+                /* equalsIgnoreCase */ ((o1, o2) => o1.toUpperCase() === (o2 === null ? o2 : o2.toUpperCase()))(s, this.friendUsernames[j])
+            ) {
+                return true;
+            }
+        }
+        if (i !== 13292) {
+            this.aBoolean1014 = !this.aBoolean1014;
+        }
+        return /* equalsIgnoreCase */ ((o1, o2) => o1.toUpperCase() === (o2 === null ? o2 : o2.toUpperCase()))(
+            s,
+            Game.localPlayer.playerName
+        );
+    }
+
+    public method66(i: number, class13: Widget, j: number, k: number, l: number, i1: number, j1: number, k1: number) {
+        if (j1 !== 23658) {
+            return;
+        }
+        if (class13.type !== 0 || class13.children == null || class13.hiddenUntilHovered) {
+            return;
+        }
+        if (i1 < l || k1 < i || i1 > l + class13.width || k1 > i + class13.height) {
+            return;
+        }
+        const l1: number = class13.children.length;
+        for (let i2: number = 0; i2 < l1; i2++) {
+            {
+                let j2: number = class13.childrenX[i2] + l;
+                let k2: number = class13.childrenY[i2] + i - k;
+                const child: Widget = Widget.forId(class13.children[i2]);
+                j2 += child.anInt228;
+                k2 += child.anInt259;
+                if (
+                    (child.hoveredPopup >= 0 || child.disabledHoveredColor !== 0) &&
+                    i1 >= j2 &&
+                    k1 >= k2 &&
+                    i1 < j2 + child.width &&
+                    k1 < k2 + child.height
+                ) {
+                    if (child.hoveredPopup >= 0) {
+                        this.anInt915 = child.hoveredPopup;
+                    } else {
+                        this.anInt915 = child.id;
+                    }
+                }
+                if (child.type === 8 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
+                    this.anInt1315 = child.id;
+                }
+                if (child.type === 0) {
+                    this.method66(k2, child, j, child.anInt231, j2, i1, 23658, k1);
+                    if (child.scrollLimit > child.height) {
+                        this.method42(child.scrollLimit, k2, child, (102 as number) | 0, k1, j, i1, child.height, j2 + child.width);
+                    }
+                } else {
+                    if (child.actionType === 1 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
+                        let flag: boolean = false;
+                        if (child.contentType !== 0) {
+                            flag = this.processFriendListClick(child);
+                        }
+                        if (!flag) {
+                            this.menuActionTexts[this.menuActionRow] = child.tooltip;
+                            this.menuActionTypes[this.menuActionRow] = 352;
+                            this.secondMenuOperand[this.menuActionRow] = child.id;
+                            this.menuActionRow++;
+                        }
+                    }
+                    if (
+                        child.actionType === 2 &&
+                        this.widgetSelected === 0 &&
+                        i1 >= j2 &&
+                        k1 >= k2 &&
+                        i1 < j2 + child.width &&
+                        k1 < k2 + child.height
+                    ) {
+                        let circumfix: string = child.optionCircumfix;
+                        if (circumfix.indexOf(" ") !== -1) {
+                            circumfix = circumfix.substring(0, circumfix.indexOf(" "));
+                        }
+                        this.menuActionTexts[this.menuActionRow] = circumfix + " @gre@" + child.optionText;
+                        this.menuActionTypes[this.menuActionRow] = Actions.USABLE_WIDGET;
+                        this.secondMenuOperand[this.menuActionRow] = child.id;
+                        this.menuActionRow++;
+                    }
+                    if (child.actionType === 3 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
+                        this.menuActionTexts[this.menuActionRow] = "Close";
+                        if (j === 3) {
+                            this.menuActionTypes[this.menuActionRow] = 55;
+                        } else {
+                            this.menuActionTypes[this.menuActionRow] = Actions.CLOSE_WIDGETS;
+                        }
+                        this.secondMenuOperand[this.menuActionRow] = child.id;
+                        this.menuActionRow++;
+                    }
+                    if (child.actionType === 4 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
+                        this.menuActionTexts[this.menuActionRow] = child.tooltip;
+                        this.menuActionTypes[this.menuActionRow] = 890;
+                        this.secondMenuOperand[this.menuActionRow] = child.id;
+                        this.menuActionRow++;
+                    }
+                    if (child.actionType === 5 && i1 >= j2 && k1 >= k2 && i1 < j2 + child.width && k1 < k2 + child.height) {
+                        this.menuActionTexts[this.menuActionRow] = child.tooltip;
+                        this.menuActionTypes[this.menuActionRow] = 518;
+                        this.secondMenuOperand[this.menuActionRow] = child.id;
+                        this.menuActionRow++;
+                    }
+                    if (
+                        child.actionType === 6 &&
+                        !this.aBoolean1239 &&
+                        i1 >= j2 &&
+                        k1 >= k2 &&
+                        i1 < j2 + child.width &&
+                        k1 < k2 + child.height
+                    ) {
+                        this.menuActionTexts[this.menuActionRow] = child.tooltip;
+                        this.menuActionTypes[this.menuActionRow] = Actions.CLICK_TO_CONTINUE;
+                        this.secondMenuOperand[this.menuActionRow] = child.id;
+                        this.menuActionRow++;
+                    }
+                    if (child.type === 2) {
+                        let l2: number = 0;
+                        for (let i3: number = 0; i3 < child.height; i3++) {
+                            {
+                                for (let j3: number = 0; j3 < child.width; j3++) {
+                                    {
+                                        let k3: number = j2 + j3 * (32 + child.itemSpritePadsX);
+                                        let l3: number = k2 + i3 * (32 + child.itemSpritePadsY);
+                                        if (l2 < 20) {
+                                            k3 += child.imageX[l2];
+                                            l3 += child.imageY[l2];
+                                        }
+                                        if (i1 >= k3 && k1 >= l3 && i1 < k3 + 32 && k1 < l3 + 32) {
+                                            this.mouseInvInterfaceIndex = l2;
+                                            this.lastActiveInvInterface = child.id;
+                                            if (child.items[l2] > 0) {
+                                                const definition: ItemDefinition = ItemDefinition.lookup(child.items[l2] - 1);
+                                                if (this.itemSelected === 1 && child.isInventory) {
+                                                    if (child.id !== this.anInt1148 || l2 !== this.anInt1147) {
+                                                        this.menuActionTexts[this.menuActionRow] =
+                                                            "Use " + this.aString1150 + " with @lre@" + definition.name;
+                                                        this.menuActionTypes[this.menuActionRow] = 903;
+                                                        this.selectedMenuActions[this.menuActionRow] = definition.id;
+                                                        this.firstMenuOperand[this.menuActionRow] = l2;
+                                                        this.secondMenuOperand[this.menuActionRow] = child.id;
+                                                        this.menuActionRow++;
+                                                    }
+                                                } else if (this.widgetSelected === 1 && child.isInventory) {
+                                                    if ((this.anInt1173 & 16) === 16) {
+                                                        this.menuActionTexts[this.menuActionRow] =
+                                                            this.selectedWidgetName + " @lre@" + definition.name;
+                                                        this.menuActionTypes[this.menuActionRow] = 361;
+                                                        this.selectedMenuActions[this.menuActionRow] = definition.id;
+                                                        this.firstMenuOperand[this.menuActionRow] = l2;
+                                                        this.secondMenuOperand[this.menuActionRow] = child.id;
+                                                        this.menuActionRow++;
+                                                    }
+                                                } else {
+                                                    if (child.isInventory) {
+                                                        for (let i4: number = 4; i4 >= 3; i4--) {
+                                                            if (
+                                                                definition.inventoryActions != null &&
+                                                                definition.inventoryActions[i4] != null
+                                                            ) {
+                                                                this.menuActionTexts[this.menuActionRow] =
+                                                                    definition.inventoryActions[i4] + " @lre@" + definition.name;
+                                                                if (i4 === 3) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 227;
+                                                                }
+                                                                if (i4 === 4) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 891;
+                                                                }
+                                                                this.selectedMenuActions[this.menuActionRow] = definition.id;
+                                                                this.firstMenuOperand[this.menuActionRow] = l2;
+                                                                this.secondMenuOperand[this.menuActionRow] = child.id;
+                                                                this.menuActionRow++;
+                                                            } else if (i4 === 4) {
+                                                                this.menuActionTexts[this.menuActionRow] = "Drop @lre@" + definition.name;
+                                                                this.menuActionTypes[this.menuActionRow] = 891;
+                                                                this.selectedMenuActions[this.menuActionRow] = definition.id;
+                                                                this.firstMenuOperand[this.menuActionRow] = l2;
+                                                                this.secondMenuOperand[this.menuActionRow] = child.id;
+                                                                this.menuActionRow++;
+                                                            }
+                                                        }
+                                                    }
+                                                    if (child.itemUsable) {
+                                                        this.menuActionTexts[this.menuActionRow] = "Use @lre@" + definition.name;
+                                                        this.menuActionTypes[this.menuActionRow] = 52;
+                                                        this.selectedMenuActions[this.menuActionRow] = definition.id;
+                                                        this.firstMenuOperand[this.menuActionRow] = l2;
+                                                        this.secondMenuOperand[this.menuActionRow] = child.id;
+                                                        this.menuActionRow++;
+                                                    }
+                                                    if (child.isInventory && definition.inventoryActions != null) {
+                                                        for (let j4: number = 2; j4 >= 0; j4--) {
+                                                            if (definition.inventoryActions[j4] != null) {
+                                                                this.menuActionTexts[this.menuActionRow] =
+                                                                    definition.inventoryActions[j4] + " @lre@" + definition.name;
+                                                                if (j4 === 0) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 961;
+                                                                }
+                                                                if (j4 === 1) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 399;
+                                                                }
+                                                                if (j4 === 2) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 324;
+                                                                }
+                                                                this.selectedMenuActions[this.menuActionRow] = definition.id;
+                                                                this.firstMenuOperand[this.menuActionRow] = l2;
+                                                                this.secondMenuOperand[this.menuActionRow] = child.id;
+                                                                this.menuActionRow++;
+                                                            }
+                                                        }
+                                                    }
+                                                    if (child.options != null) {
+                                                        for (let k4: number = 4; k4 >= 0; k4--) {
+                                                            if (child.options[k4] != null) {
+                                                                this.menuActionTexts[this.menuActionRow] =
+                                                                    child.options[k4] + " @lre@" + definition.name;
+                                                                if (k4 === 0) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 9;
+                                                                }
+                                                                if (k4 === 1) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 225;
+                                                                }
+                                                                if (k4 === 2) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 444;
+                                                                }
+                                                                if (k4 === 3) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 564;
+                                                                }
+                                                                if (k4 === 4) {
+                                                                    this.menuActionTypes[this.menuActionRow] = 894;
+                                                                }
+                                                                this.selectedMenuActions[this.menuActionRow] = definition.id;
+                                                                this.firstMenuOperand[this.menuActionRow] = l2;
+                                                                this.secondMenuOperand[this.menuActionRow] = child.id;
+                                                                this.menuActionRow++;
+                                                            }
+                                                        }
+                                                    }
+                                                    this.menuActionTexts[this.menuActionRow] = "Examine @lre@" + definition.name;
+                                                    this.menuActionTypes[this.menuActionRow] = Actions.EXAMINE_ITEM;
+                                                    this.selectedMenuActions[this.menuActionRow] = definition.id;
+                                                    this.firstMenuOperand[this.menuActionRow] = l2;
+                                                    this.secondMenuOperand[this.menuActionRow] = child.id;
+                                                    this.menuActionRow++;
+                                                }
+                                            }
+                                        }
+                                        l2++;
                                     }
                                 }
                             }
-                            l2++;
-                        }}
-                    }}
+                        }
+                    }
                 }
             }
-        }}
+        }
     }
 
     public processFriendListClick(widget: Widget): boolean {
         let row: number = widget.contentType;
-        if (row >= 1 && row <= 200 || row >= 701 && row <= 900) {
-            if (row >= 801) { row -= 701; } else if (row >= 701) { row -= 601; } else if (row >= 101) { row -= 101; } else { row--; }
+        if ((row >= 1 && row <= 200) || (row >= 701 && row <= 900)) {
+            if (row >= 801) {
+                row -= 701;
+            } else if (row >= 701) {
+                row -= 601;
+            } else if (row >= 101) {
+                row -= 101;
+            } else {
+                row--;
+            }
             this.menuActionTexts[this.menuActionRow] = "Remove @whi@" + this.friendUsernames[row];
             this.menuActionTypes[this.menuActionRow] = Actions.REMOVE_FRIEND;
             this.menuActionRow++;
@@ -1917,61 +3926,97 @@ export class Game extends GameShell {
     }
 
     public method42(i: number, j: number, class13: Widget, byte0: number, k: number, l: number, i1: number, j1: number, k1: number) {
-        if (this.aBoolean1127) { this.anInt1303 = 32; } else { this.anInt1303 = 0; }
+        if (this.aBoolean1127) {
+            this.anInt1303 = 32;
+        } else {
+            this.anInt1303 = 0;
+        }
         this.aBoolean1127 = false;
         if (byte0 !== 102) {
             for (let l1: number = 1; l1 > 0; l1++) {}
         }
         if (i1 >= k1 && i1 < k1 + 16 && k >= j && k < j + 16) {
             class13.anInt231 -= this.anInt1094 * 4;
-            if (l === 1) { this.redrawTabArea = true; }
-            if (l === 2 || l === 3) { this.redrawChatbox = true; }
+            if (l === 1) {
+                this.redrawTabArea = true;
+            }
+            if (l === 2 || l === 3) {
+                this.redrawChatbox = true;
+            }
             return;
         }
-        if (i1 >= k1 && i1 < k1 + 16 && k >= (j + j1) - 16 && k < j + j1) {
+        if (i1 >= k1 && i1 < k1 + 16 && k >= j + j1 - 16 && k < j + j1) {
             class13.anInt231 += this.anInt1094 * 4;
-            if (l === 1) { this.redrawTabArea = true; }
-            if (l === 2 || l === 3) { this.redrawChatbox = true; }
+            if (l === 1) {
+                this.redrawTabArea = true;
+            }
+            if (l === 2 || l === 3) {
+                this.redrawChatbox = true;
+            }
             return;
         }
-        if (i1 >= k1 - this.anInt1303 && i1 < k1 + 16 + this.anInt1303 && k >= j + 16 && k < (j + j1) - 16 && this.anInt1094 > 0) {
-            let i2: number = (((j1 - 32) * j1) / i | 0);
-            if (i2 < 8) { i2 = 8; }
-            const j2: number = k - j - 16 - (i2 / 2 | 0);
+        if (i1 >= k1 - this.anInt1303 && i1 < k1 + 16 + this.anInt1303 && k >= j + 16 && k < j + j1 - 16 && this.anInt1094 > 0) {
+            let i2: number = (((j1 - 32) * j1) / i) | 0;
+            if (i2 < 8) {
+                i2 = 8;
+            }
+            const j2: number = k - j - 16 - ((i2 / 2) | 0);
             const k2: number = j1 - 32 - i2;
-            class13.anInt231 = (((i - j1) * j2) / k2 | 0);
-            if (l === 1) { this.redrawTabArea = true; }
-            if (l === 2 || l === 3) { this.redrawChatbox = true; }
+            class13.anInt231 = (((i - j1) * j2) / k2) | 0;
+            if (l === 1) {
+                this.redrawTabArea = true;
+            }
+            if (l === 2 || l === 3) {
+                this.redrawChatbox = true;
+            }
             this.aBoolean1127 = true;
         }
     }
 
     /*private*/ public processActorOverheadText() {
-        for (let i: number = -1; i < this.localPlayerCount; i++) {{
-            const index: number = i === -1 ? this.thisPlayerId : this.playerList[i];
-            const player: Player = this.players[index];
-            if (player != null && player.textCycle > 0) {
-                player.textCycle--;
-                if (player.textCycle === 0) { player.forcedChat = null; }
+        for (let i: number = -1; i < this.localPlayerCount; i++) {
+            {
+                const index: number = i === -1 ? this.thisPlayerId : this.playerList[i];
+                const player: Player = this.players[index];
+                if (player != null && player.textCycle > 0) {
+                    player.textCycle--;
+                    if (player.textCycle === 0) {
+                        player.forcedChat = null;
+                    }
+                }
             }
-        }}
-        for (let i: number = 0; i < this.anInt1133; i++) {{
-            const index: number = this.anIntArray1134[i];
-            const npc: Npc = this.npcs[index];
-            if (npc != null && npc.textCycle > 0) {
-                npc.textCycle--;
-                if (npc.textCycle === 0) { npc.forcedChat = null; }
+        }
+        for (let i: number = 0; i < this.anInt1133; i++) {
+            {
+                const index: number = this.anIntArray1134[i];
+                const npc: Npc = this.npcs[index];
+                if (npc != null && npc.textCycle > 0) {
+                    npc.textCycle--;
+                    if (npc.textCycle === 0) {
+                        npc.forcedChat = null;
+                    }
+                }
             }
-        }}
+        }
     }
 
     public method67(i: number) {
-        for (let j: number = 0; j < this.anInt1133; j++) {{
-            const k: number = this.anIntArray1134[j];
-            const class50_sub1_sub4_sub3_sub1: Npc = this.npcs[k];
-            if (class50_sub1_sub4_sub3_sub1 != null) { this.method68(class50_sub1_sub4_sub3_sub1.npcDefinition.boundaryDimension, ((-97 as number) | 0), class50_sub1_sub4_sub3_sub1); }
-        }}
-        if (i !== -37214) { this.outBuffer.putByte(41); }
+        for (let j: number = 0; j < this.anInt1133; j++) {
+            {
+                const k: number = this.anIntArray1134[j];
+                const class50_sub1_sub4_sub3_sub1: Npc = this.npcs[k];
+                if (class50_sub1_sub4_sub3_sub1 != null) {
+                    this.method68(
+                        class50_sub1_sub4_sub3_sub1.npcDefinition.boundaryDimension,
+                        (-97 as number) | 0,
+                        class50_sub1_sub4_sub3_sub1
+                    );
+                }
+            }
+        }
+        if (i !== -37214) {
+            this.outBuffer.putByte(41);
+        }
     }
 
     public method68(i: number, byte0: number, actor: Actor) {
@@ -1993,46 +4038,78 @@ export class Game extends GameShell {
             actor.worldY = actor.pathY[0] * 128 + actor.boundaryDimension * 64;
             actor.resetPath();
         }
-        if (actor.anInt1606 > Game.pulseCycle) { this.method69(actor, true); } else if (actor.anInt1607 >= Game.pulseCycle) { this.method70(actor, -31135); } else { this.method71(actor, 0); }
-        this.method72(((8 as number) | 0), actor);
+        if (actor.anInt1606 > Game.pulseCycle) {
+            this.method69(actor, true);
+        } else if (actor.anInt1607 >= Game.pulseCycle) {
+            this.method70(actor, -31135);
+        } else {
+            this.method71(actor, 0);
+        }
+        this.method72((8 as number) | 0, actor);
         this.method73(actor, -136);
-        if (byte0 === -97) {  }
+        if (byte0 === -97) {
+        }
     }
-    
 
     public method72(byte0: number, class50_sub1_sub4_sub3: Actor) {
-        if (byte0 !== 8) { this.anInt928 = this.incomingRandom.nextInt(); }
-        if (class50_sub1_sub4_sub3.anInt1600 === 0) { return; }
+        if (byte0 !== 8) {
+            this.anInt928 = this.incomingRandom.nextInt() | 0;
+        }
+        if (class50_sub1_sub4_sub3.anInt1600 === 0) {
+            return;
+        }
         if (class50_sub1_sub4_sub3.anInt1609 !== -1 && class50_sub1_sub4_sub3.anInt1609 < 32768) {
             const class50_sub1_sub4_sub3_sub1: Npc = this.npcs[class50_sub1_sub4_sub3.anInt1609];
             if (class50_sub1_sub4_sub3_sub1 != null) {
                 const l: number = class50_sub1_sub4_sub3.worldX - class50_sub1_sub4_sub3_sub1.worldX;
                 const j1: number = class50_sub1_sub4_sub3.worldY - class50_sub1_sub4_sub3_sub1.worldY;
-                if (l !== 0 || j1 !== 0) { class50_sub1_sub4_sub3.nextStepOrientation = (((Math.atan2(l, j1) * 325.949) as number) | 0) & 2047; }
+                if (l !== 0 || j1 !== 0) {
+                    class50_sub1_sub4_sub3.nextStepOrientation = (((Math.atan2(l, j1) * 325.949) as number) | 0) & 2047;
+                }
             }
         }
         if (class50_sub1_sub4_sub3.anInt1609 >= 32768) {
             let i: number = class50_sub1_sub4_sub3.anInt1609 - 32768;
-            if (i === this.thisPlayerServerId) { i = this.thisPlayerId; }
+            if (i === this.thisPlayerServerId) {
+                i = this.thisPlayerId;
+            }
             const class50_sub1_sub4_sub3_sub2: Player = this.players[i];
             if (class50_sub1_sub4_sub3_sub2 != null) {
                 const k1: number = class50_sub1_sub4_sub3.worldX - class50_sub1_sub4_sub3_sub2.worldX;
                 const l1: number = class50_sub1_sub4_sub3.worldY - class50_sub1_sub4_sub3_sub2.worldY;
-                if (k1 !== 0 || l1 !== 0) { class50_sub1_sub4_sub3.nextStepOrientation = (((Math.atan2(k1, l1) * 325.949) as number) | 0) & 2047; }
+                if (k1 !== 0 || l1 !== 0) {
+                    class50_sub1_sub4_sub3.nextStepOrientation = (((Math.atan2(k1, l1) * 325.949) as number) | 0) & 2047;
+                }
             }
         }
-        if ((class50_sub1_sub4_sub3.anInt1598 !== 0 || class50_sub1_sub4_sub3.anInt1599 !== 0) && (class50_sub1_sub4_sub3.pathLength === 0 || class50_sub1_sub4_sub3.anInt1623 > 0)) {
-            const j: number = class50_sub1_sub4_sub3.worldX - (class50_sub1_sub4_sub3.anInt1598 - this.nextTopLeftTileX - this.nextTopLeftTileX) * 64;
-            const i1: number = class50_sub1_sub4_sub3.worldY - (class50_sub1_sub4_sub3.anInt1599 - this.nextTopRightTileY - this.nextTopRightTileY) * 64;
-            if (j !== 0 || i1 !== 0) { class50_sub1_sub4_sub3.nextStepOrientation = (((Math.atan2(j, i1) * 325.949) as number) | 0) & 2047; }
+        if (
+            (class50_sub1_sub4_sub3.anInt1598 !== 0 || class50_sub1_sub4_sub3.anInt1599 !== 0) &&
+            (class50_sub1_sub4_sub3.pathLength === 0 || class50_sub1_sub4_sub3.anInt1623 > 0)
+        ) {
+            const j: number =
+                class50_sub1_sub4_sub3.worldX - (class50_sub1_sub4_sub3.anInt1598 - this.nextTopLeftTileX - this.nextTopLeftTileX) * 64;
+            const i1: number =
+                class50_sub1_sub4_sub3.worldY - (class50_sub1_sub4_sub3.anInt1599 - this.nextTopRightTileY - this.nextTopRightTileY) * 64;
+            if (j !== 0 || i1 !== 0) {
+                class50_sub1_sub4_sub3.nextStepOrientation = (((Math.atan2(j, i1) * 325.949) as number) | 0) & 2047;
+            }
             class50_sub1_sub4_sub3.anInt1598 = 0;
             class50_sub1_sub4_sub3.anInt1599 = 0;
         }
-        const k: number = class50_sub1_sub4_sub3.nextStepOrientation - class50_sub1_sub4_sub3.anInt1612 & 2047;
+        const k: number = (class50_sub1_sub4_sub3.nextStepOrientation - class50_sub1_sub4_sub3.anInt1612) & 2047;
         if (k !== 0) {
-            if (k < class50_sub1_sub4_sub3.anInt1600 || k > 2048 - class50_sub1_sub4_sub3.anInt1600) { class50_sub1_sub4_sub3.anInt1612 = class50_sub1_sub4_sub3.nextStepOrientation; } else if (k > 1024) { class50_sub1_sub4_sub3.anInt1612 -= class50_sub1_sub4_sub3.anInt1600; } else { class50_sub1_sub4_sub3.anInt1612 += class50_sub1_sub4_sub3.anInt1600; }
+            if (k < class50_sub1_sub4_sub3.anInt1600 || k > 2048 - class50_sub1_sub4_sub3.anInt1600) {
+                class50_sub1_sub4_sub3.anInt1612 = class50_sub1_sub4_sub3.nextStepOrientation;
+            } else if (k > 1024) {
+                class50_sub1_sub4_sub3.anInt1612 -= class50_sub1_sub4_sub3.anInt1600;
+            } else {
+                class50_sub1_sub4_sub3.anInt1612 += class50_sub1_sub4_sub3.anInt1600;
+            }
             class50_sub1_sub4_sub3.anInt1612 &= 2047;
-            if (class50_sub1_sub4_sub3.movementAnimation === class50_sub1_sub4_sub3.idleAnimation && class50_sub1_sub4_sub3.anInt1612 !== class50_sub1_sub4_sub3.nextStepOrientation) {
+            if (
+                class50_sub1_sub4_sub3.movementAnimation === class50_sub1_sub4_sub3.idleAnimation &&
+                class50_sub1_sub4_sub3.anInt1612 !== class50_sub1_sub4_sub3.nextStepOrientation
+            ) {
                 if (class50_sub1_sub4_sub3.standTurnAnimationId !== -1) {
                     class50_sub1_sub4_sub3.movementAnimation = class50_sub1_sub4_sub3.standTurnAnimationId;
                     return;
@@ -2043,12 +4120,17 @@ export class Game extends GameShell {
     }
 
     public method73(class50_sub1_sub4_sub3: Actor, i: number) {
-        while ((i >= 0)) {this.anInt1328 = this.incomingRandom.nextInt(); }
+        while (i >= 0) {
+            this.anInt1328 = this.incomingRandom.nextInt() | 0;
+        }
         class50_sub1_sub4_sub3.aBoolean1592 = false;
         if (class50_sub1_sub4_sub3.movementAnimation !== -1) {
             const class14: AnimationSequence = AnimationSequence.animations[class50_sub1_sub4_sub3.movementAnimation];
             class50_sub1_sub4_sub3.anInt1590++;
-            if (class50_sub1_sub4_sub3.displayedMovementFrames < class14.frameCount && class50_sub1_sub4_sub3.anInt1590 > class14.getFrameLength(class50_sub1_sub4_sub3.displayedMovementFrames)) {
+            if (
+                class50_sub1_sub4_sub3.displayedMovementFrames < class14.frameCount &&
+                class50_sub1_sub4_sub3.anInt1590 > class14.getFrameLength(class50_sub1_sub4_sub3.displayedMovementFrames)
+            ) {
                 class50_sub1_sub4_sub3.anInt1590 = 1;
                 class50_sub1_sub4_sub3.displayedMovementFrames++;
             }
@@ -2058,18 +4140,33 @@ export class Game extends GameShell {
             }
         }
         if (class50_sub1_sub4_sub3.graphic !== -1 && Game.pulseCycle >= class50_sub1_sub4_sub3.anInt1617) {
-            if (class50_sub1_sub4_sub3.currentAnimation < 0) { class50_sub1_sub4_sub3.currentAnimation = 0; }
+            if (class50_sub1_sub4_sub3.currentAnimation < 0) {
+                class50_sub1_sub4_sub3.currentAnimation = 0;
+            }
             const class14_1: AnimationSequence = SpotAnimation.cache[class50_sub1_sub4_sub3.graphic].sequences;
             class50_sub1_sub4_sub3.anInt1616++;
-            if (class50_sub1_sub4_sub3.currentAnimation < class14_1.frameCount && class50_sub1_sub4_sub3.anInt1616 > class14_1.getFrameLength(class50_sub1_sub4_sub3.currentAnimation)) {
+            if (
+                class50_sub1_sub4_sub3.currentAnimation < class14_1.frameCount &&
+                class50_sub1_sub4_sub3.anInt1616 > class14_1.getFrameLength(class50_sub1_sub4_sub3.currentAnimation)
+            ) {
                 class50_sub1_sub4_sub3.anInt1616 = 1;
                 class50_sub1_sub4_sub3.currentAnimation++;
             }
-            if (class50_sub1_sub4_sub3.currentAnimation >= class14_1.frameCount && (class50_sub1_sub4_sub3.currentAnimation < 0 || class50_sub1_sub4_sub3.currentAnimation >= class14_1.frameCount)) { class50_sub1_sub4_sub3.graphic = -1; }
+            if (
+                class50_sub1_sub4_sub3.currentAnimation >= class14_1.frameCount &&
+                (class50_sub1_sub4_sub3.currentAnimation < 0 || class50_sub1_sub4_sub3.currentAnimation >= class14_1.frameCount)
+            ) {
+                class50_sub1_sub4_sub3.graphic = -1;
+            }
         }
         if (class50_sub1_sub4_sub3.emoteAnimation !== -1 && class50_sub1_sub4_sub3.animationDelay <= 1) {
             const class14_2: AnimationSequence = AnimationSequence.animations[class50_sub1_sub4_sub3.emoteAnimation];
-            if (class14_2.anInt305 === 1 && class50_sub1_sub4_sub3.anInt1613 > 0 && class50_sub1_sub4_sub3.anInt1606 <= Game.pulseCycle && class50_sub1_sub4_sub3.anInt1607 < Game.pulseCycle) {
+            if (
+                class14_2.anInt305 === 1 &&
+                class50_sub1_sub4_sub3.anInt1613 > 0 &&
+                class50_sub1_sub4_sub3.anInt1606 <= Game.pulseCycle &&
+                class50_sub1_sub4_sub3.anInt1607 < Game.pulseCycle
+            ) {
                 class50_sub1_sub4_sub3.animationDelay = 1;
                 return;
             }
@@ -2077,21 +4174,32 @@ export class Game extends GameShell {
         if (class50_sub1_sub4_sub3.emoteAnimation !== -1 && class50_sub1_sub4_sub3.animationDelay === 0) {
             const class14_3: AnimationSequence = AnimationSequence.animations[class50_sub1_sub4_sub3.emoteAnimation];
             class50_sub1_sub4_sub3.anInt1626++;
-            if (class50_sub1_sub4_sub3.displayedEmoteFrames < class14_3.frameCount && class50_sub1_sub4_sub3.anInt1626 > class14_3.getFrameLength(class50_sub1_sub4_sub3.displayedEmoteFrames)) {
+            if (
+                class50_sub1_sub4_sub3.displayedEmoteFrames < class14_3.frameCount &&
+                class50_sub1_sub4_sub3.anInt1626 > class14_3.getFrameLength(class50_sub1_sub4_sub3.displayedEmoteFrames)
+            ) {
                 class50_sub1_sub4_sub3.anInt1626 = 1;
                 class50_sub1_sub4_sub3.displayedEmoteFrames++;
             }
             if (class50_sub1_sub4_sub3.displayedEmoteFrames >= class14_3.frameCount) {
                 class50_sub1_sub4_sub3.displayedEmoteFrames -= class14_3.frameStep;
                 class50_sub1_sub4_sub3.anInt1628++;
-                if (class50_sub1_sub4_sub3.anInt1628 >= class14_3.anInt304) { class50_sub1_sub4_sub3.emoteAnimation = -1; }
-                if (class50_sub1_sub4_sub3.displayedEmoteFrames < 0 || class50_sub1_sub4_sub3.displayedEmoteFrames >= class14_3.frameCount) { class50_sub1_sub4_sub3.emoteAnimation = -1; }
+                if (class50_sub1_sub4_sub3.anInt1628 >= class14_3.anInt304) {
+                    class50_sub1_sub4_sub3.emoteAnimation = -1;
+                }
+                if (
+                    class50_sub1_sub4_sub3.displayedEmoteFrames < 0 ||
+                    class50_sub1_sub4_sub3.displayedEmoteFrames >= class14_3.frameCount
+                ) {
+                    class50_sub1_sub4_sub3.emoteAnimation = -1;
+                }
             }
             class50_sub1_sub4_sub3.aBoolean1592 = class14_3.aBoolean300;
         }
-        if (class50_sub1_sub4_sub3.animationDelay > 0) { class50_sub1_sub4_sub3.animationDelay--; }
+        if (class50_sub1_sub4_sub3.animationDelay > 0) {
+            class50_sub1_sub4_sub3.animationDelay--;
+        }
     }
-
 
     public method71(class50_sub1_sub4_sub3: Actor, i: number) {
         class50_sub1_sub4_sub3.movementAnimation = class50_sub1_sub4_sub3.idleAnimation;
@@ -2112,96 +4220,189 @@ export class Game extends GameShell {
         }
         const j: number = class50_sub1_sub4_sub3.worldX;
         const k: number = class50_sub1_sub4_sub3.worldY;
-        const l: number = class50_sub1_sub4_sub3.pathX[class50_sub1_sub4_sub3.pathLength - 1] * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
-        const i1: number = class50_sub1_sub4_sub3.pathY[class50_sub1_sub4_sub3.pathLength - 1] * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
+        const l: number =
+            class50_sub1_sub4_sub3.pathX[class50_sub1_sub4_sub3.pathLength - 1] * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
+        const i1: number =
+            class50_sub1_sub4_sub3.pathY[class50_sub1_sub4_sub3.pathLength - 1] * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
         if (l - j > 256 || l - j < -256 || i1 - k > 256 || i1 - k < -256) {
             class50_sub1_sub4_sub3.worldX = l;
             class50_sub1_sub4_sub3.worldY = i1;
             return;
         }
         if (j < l) {
-            if (k < i1) { class50_sub1_sub4_sub3.nextStepOrientation = 1280; } else if (k > i1) { class50_sub1_sub4_sub3.nextStepOrientation = 1792; } else { class50_sub1_sub4_sub3.nextStepOrientation = 1536; }
+            if (k < i1) {
+                class50_sub1_sub4_sub3.nextStepOrientation = 1280;
+            } else if (k > i1) {
+                class50_sub1_sub4_sub3.nextStepOrientation = 1792;
+            } else {
+                class50_sub1_sub4_sub3.nextStepOrientation = 1536;
+            }
         } else if (j > l) {
-            if (k < i1) { class50_sub1_sub4_sub3.nextStepOrientation = 768; } else if (k > i1) { class50_sub1_sub4_sub3.nextStepOrientation = 256; } else { class50_sub1_sub4_sub3.nextStepOrientation = 512; }
-        } else if (k < i1) { class50_sub1_sub4_sub3.nextStepOrientation = 1024; } else { class50_sub1_sub4_sub3.nextStepOrientation = 0; }
-        let j1: number = class50_sub1_sub4_sub3.nextStepOrientation - class50_sub1_sub4_sub3.anInt1612 & 2047;
-        if (j1 > 1024) { j1 -= 2048; }
+            if (k < i1) {
+                class50_sub1_sub4_sub3.nextStepOrientation = 768;
+            } else if (k > i1) {
+                class50_sub1_sub4_sub3.nextStepOrientation = 256;
+            } else {
+                class50_sub1_sub4_sub3.nextStepOrientation = 512;
+            }
+        } else if (k < i1) {
+            class50_sub1_sub4_sub3.nextStepOrientation = 1024;
+        } else {
+            class50_sub1_sub4_sub3.nextStepOrientation = 0;
+        }
+        let j1: number = (class50_sub1_sub4_sub3.nextStepOrientation - class50_sub1_sub4_sub3.anInt1612) & 2047;
+        if (j1 > 1024) {
+            j1 -= 2048;
+        }
         let k1: number = class50_sub1_sub4_sub3.turnAroundAnimationId;
-        if (i !== 0) { this.outBuffer.putByte(34); }
-        if (j1 >= -256 && j1 <= 256) { k1 = class50_sub1_sub4_sub3.walkAnimationId; } else if (j1 >= 256 && j1 < 768) { k1 = class50_sub1_sub4_sub3.turnLeftAnimationId; } else if (j1 >= -768 && j1 <= -256) { k1 = class50_sub1_sub4_sub3.turnRightAnimationId; }
-        if (k1 === -1) { k1 = class50_sub1_sub4_sub3.walkAnimationId; }
+        if (i !== 0) {
+            this.outBuffer.putByte(34);
+        }
+        if (j1 >= -256 && j1 <= 256) {
+            k1 = class50_sub1_sub4_sub3.walkAnimationId;
+        } else if (j1 >= 256 && j1 < 768) {
+            k1 = class50_sub1_sub4_sub3.turnLeftAnimationId;
+        } else if (j1 >= -768 && j1 <= -256) {
+            k1 = class50_sub1_sub4_sub3.turnRightAnimationId;
+        }
+        if (k1 === -1) {
+            k1 = class50_sub1_sub4_sub3.walkAnimationId;
+        }
         class50_sub1_sub4_sub3.movementAnimation = k1;
         let l1: number = 4;
-        if (class50_sub1_sub4_sub3.anInt1612 !== class50_sub1_sub4_sub3.nextStepOrientation && class50_sub1_sub4_sub3.anInt1609 === -1 && class50_sub1_sub4_sub3.anInt1600 !== 0) { l1 = 2; }
-        if (class50_sub1_sub4_sub3.pathLength > 2) { l1 = 6; }
-        if (class50_sub1_sub4_sub3.pathLength > 3) { l1 = 8; }
+        if (
+            class50_sub1_sub4_sub3.anInt1612 !== class50_sub1_sub4_sub3.nextStepOrientation &&
+            class50_sub1_sub4_sub3.anInt1609 === -1 &&
+            class50_sub1_sub4_sub3.anInt1600 !== 0
+        ) {
+            l1 = 2;
+        }
+        if (class50_sub1_sub4_sub3.pathLength > 2) {
+            l1 = 6;
+        }
+        if (class50_sub1_sub4_sub3.pathLength > 3) {
+            l1 = 8;
+        }
         if (class50_sub1_sub4_sub3.anInt1623 > 0 && class50_sub1_sub4_sub3.pathLength > 1) {
             l1 = 8;
             class50_sub1_sub4_sub3.anInt1623--;
         }
-        if (class50_sub1_sub4_sub3.runningQueue[class50_sub1_sub4_sub3.pathLength - 1]) { l1 <<= 1; }
-        if (l1 >= 8 && class50_sub1_sub4_sub3.movementAnimation === class50_sub1_sub4_sub3.walkAnimationId && class50_sub1_sub4_sub3.runAnimationId !== -1) { class50_sub1_sub4_sub3.movementAnimation = class50_sub1_sub4_sub3.runAnimationId; }
+        if (class50_sub1_sub4_sub3.runningQueue[class50_sub1_sub4_sub3.pathLength - 1]) {
+            l1 <<= 1;
+        }
+        if (
+            l1 >= 8 &&
+            class50_sub1_sub4_sub3.movementAnimation === class50_sub1_sub4_sub3.walkAnimationId &&
+            class50_sub1_sub4_sub3.runAnimationId !== -1
+        ) {
+            class50_sub1_sub4_sub3.movementAnimation = class50_sub1_sub4_sub3.runAnimationId;
+        }
         if (j < l) {
             class50_sub1_sub4_sub3.worldX += l1;
-            if (class50_sub1_sub4_sub3.worldX > l) { class50_sub1_sub4_sub3.worldX = l; }
+            if (class50_sub1_sub4_sub3.worldX > l) {
+                class50_sub1_sub4_sub3.worldX = l;
+            }
         } else if (j > l) {
             class50_sub1_sub4_sub3.worldX -= l1;
-            if (class50_sub1_sub4_sub3.worldX < l) { class50_sub1_sub4_sub3.worldX = l; }
+            if (class50_sub1_sub4_sub3.worldX < l) {
+                class50_sub1_sub4_sub3.worldX = l;
+            }
         }
         if (k < i1) {
             class50_sub1_sub4_sub3.worldY += l1;
-            if (class50_sub1_sub4_sub3.worldY > i1) { class50_sub1_sub4_sub3.worldY = i1; }
+            if (class50_sub1_sub4_sub3.worldY > i1) {
+                class50_sub1_sub4_sub3.worldY = i1;
+            }
         } else if (k > i1) {
             class50_sub1_sub4_sub3.worldY -= l1;
-            if (class50_sub1_sub4_sub3.worldY < i1) { class50_sub1_sub4_sub3.worldY = i1; }
+            if (class50_sub1_sub4_sub3.worldY < i1) {
+                class50_sub1_sub4_sub3.worldY = i1;
+            }
         }
         if (class50_sub1_sub4_sub3.worldX === l && class50_sub1_sub4_sub3.worldY === i1) {
             class50_sub1_sub4_sub3.pathLength--;
-            if (class50_sub1_sub4_sub3.anInt1613 > 0) { class50_sub1_sub4_sub3.anInt1613--; }
+            if (class50_sub1_sub4_sub3.anInt1613 > 0) {
+                class50_sub1_sub4_sub3.anInt1613--;
+            }
         }
     }
 
     public method69(class50_sub1_sub4_sub3: Actor, flag: boolean) {
-        if (!flag) { Game.aBoolean963 = !Game.aBoolean963; }
+        if (!flag) {
+            Game.aBoolean963 = !Game.aBoolean963;
+        }
         const i: number = class50_sub1_sub4_sub3.anInt1606 - Game.pulseCycle;
         const j: number = class50_sub1_sub4_sub3.anInt1602 * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
         const k: number = class50_sub1_sub4_sub3.anInt1604 * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
-        class50_sub1_sub4_sub3.worldX += ((j - class50_sub1_sub4_sub3.worldX) / i | 0);
-        class50_sub1_sub4_sub3.worldY += ((k - class50_sub1_sub4_sub3.worldY) / i | 0);
+        class50_sub1_sub4_sub3.worldX += ((j - class50_sub1_sub4_sub3.worldX) / i) | 0;
+        class50_sub1_sub4_sub3.worldY += ((k - class50_sub1_sub4_sub3.worldY) / i) | 0;
         class50_sub1_sub4_sub3.anInt1623 = 0;
-        if (class50_sub1_sub4_sub3.anInt1608 === 0) { class50_sub1_sub4_sub3.nextStepOrientation = 1024; }
-        if (class50_sub1_sub4_sub3.anInt1608 === 1) { class50_sub1_sub4_sub3.nextStepOrientation = 1536; }
-        if (class50_sub1_sub4_sub3.anInt1608 === 2) { class50_sub1_sub4_sub3.nextStepOrientation = 0; }
-        if (class50_sub1_sub4_sub3.anInt1608 === 3) { class50_sub1_sub4_sub3.nextStepOrientation = 512; }
+        if (class50_sub1_sub4_sub3.anInt1608 === 0) {
+            class50_sub1_sub4_sub3.nextStepOrientation = 1024;
+        }
+        if (class50_sub1_sub4_sub3.anInt1608 === 1) {
+            class50_sub1_sub4_sub3.nextStepOrientation = 1536;
+        }
+        if (class50_sub1_sub4_sub3.anInt1608 === 2) {
+            class50_sub1_sub4_sub3.nextStepOrientation = 0;
+        }
+        if (class50_sub1_sub4_sub3.anInt1608 === 3) {
+            class50_sub1_sub4_sub3.nextStepOrientation = 512;
+        }
     }
 
     public method70(class50_sub1_sub4_sub3: Actor, i: number) {
-        if (class50_sub1_sub4_sub3.anInt1607 === Game.pulseCycle || class50_sub1_sub4_sub3.emoteAnimation === -1 || class50_sub1_sub4_sub3.animationDelay !== 0 || class50_sub1_sub4_sub3.anInt1626 + 1 > AnimationSequence.animations[class50_sub1_sub4_sub3.emoteAnimation].getFrameLength(class50_sub1_sub4_sub3.displayedEmoteFrames)) {
+        if (
+            class50_sub1_sub4_sub3.anInt1607 === Game.pulseCycle ||
+            class50_sub1_sub4_sub3.emoteAnimation === -1 ||
+            class50_sub1_sub4_sub3.animationDelay !== 0 ||
+            class50_sub1_sub4_sub3.anInt1626 + 1 >
+                AnimationSequence.animations[class50_sub1_sub4_sub3.emoteAnimation].getFrameLength(
+                    class50_sub1_sub4_sub3.displayedEmoteFrames
+                )
+        ) {
             const j: number = class50_sub1_sub4_sub3.anInt1607 - class50_sub1_sub4_sub3.anInt1606;
             const k: number = Game.pulseCycle - class50_sub1_sub4_sub3.anInt1606;
             const l: number = class50_sub1_sub4_sub3.anInt1602 * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
             const i1: number = class50_sub1_sub4_sub3.anInt1604 * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
             const j1: number = class50_sub1_sub4_sub3.anInt1603 * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
             const k1: number = class50_sub1_sub4_sub3.anInt1605 * 128 + class50_sub1_sub4_sub3.boundaryDimension * 64;
-            class50_sub1_sub4_sub3.worldX = ((l * (j - k) + j1 * k) / j | 0);
-            class50_sub1_sub4_sub3.worldY = ((i1 * (j - k) + k1 * k) / j | 0);
+            class50_sub1_sub4_sub3.worldX = ((l * (j - k) + j1 * k) / j) | 0;
+            class50_sub1_sub4_sub3.worldY = ((i1 * (j - k) + k1 * k) / j) | 0;
         }
         class50_sub1_sub4_sub3.anInt1623 = 0;
-        if (class50_sub1_sub4_sub3.anInt1608 === 0) { class50_sub1_sub4_sub3.nextStepOrientation = 1024; }
-        if (class50_sub1_sub4_sub3.anInt1608 === 1) { class50_sub1_sub4_sub3.nextStepOrientation = 1536; }
-        if (class50_sub1_sub4_sub3.anInt1608 === 2) { class50_sub1_sub4_sub3.nextStepOrientation = 0; }
-        if (class50_sub1_sub4_sub3.anInt1608 === 3) { class50_sub1_sub4_sub3.nextStepOrientation = 512; }
+        if (class50_sub1_sub4_sub3.anInt1608 === 0) {
+            class50_sub1_sub4_sub3.nextStepOrientation = 1024;
+        }
+        if (class50_sub1_sub4_sub3.anInt1608 === 1) {
+            class50_sub1_sub4_sub3.nextStepOrientation = 1536;
+        }
+        if (class50_sub1_sub4_sub3.anInt1608 === 2) {
+            class50_sub1_sub4_sub3.nextStepOrientation = 0;
+        }
+        if (class50_sub1_sub4_sub3.anInt1608 === 3) {
+            class50_sub1_sub4_sub3.nextStepOrientation = 512;
+        }
         class50_sub1_sub4_sub3.anInt1612 = class50_sub1_sub4_sub3.nextStepOrientation;
-        if (i === -31135) {  }
+        if (i === -31135) {
+        }
     }
 
     public method100(i: number) {
-        for (let j: number = -1; j < this.localPlayerCount; j++) {{
-            let k: number;
-            if (j === -1) { k = this.thisPlayerId; } else { k = this.playerList[j]; }
-            const class50_sub1_sub4_sub3_sub2: Player = this.players[k];
-            if (class50_sub1_sub4_sub3_sub2 != null) { this.method68(1, ((-97 as number) | 0), class50_sub1_sub4_sub3_sub2); }
-        }}
+        for (let j: number = -1; j < this.localPlayerCount; j++) {
+            {
+                let k: number;
+                if (j === -1) {
+                    k = this.thisPlayerId;
+                } else {
+                    k = this.playerList[j];
+                }
+                const class50_sub1_sub4_sub3_sub2: Player = this.players[k];
+                if (class50_sub1_sub4_sub3_sub2 != null) {
+                    this.method68(1, (-97 as number) | 0, class50_sub1_sub4_sub3_sub2);
+                }
+            }
+        }
         if (i < this.anInt1222 || i > this.anInt1222) {
             for (let l: number = 1; l > 0; l++) {}
         }
@@ -2219,7 +4420,9 @@ export class Game extends GameShell {
         this.loggedIn = false;
         this.anInt850 = 0;
         this.login(this.username, this.password, true);
-        if (!this.loggedIn) { this.logout(); }
+        if (!this.loggedIn) {
+            this.logout();
+        }
         try {
             class17.close();
             return;
@@ -2229,51 +4432,69 @@ export class Game extends GameShell {
     }
 
     public method116(j: number, abyte0: number[]): boolean {
-        if (abyte0 == null) { return true; } else { return SignLink.saveWave(abyte0, j); }
+        if (abyte0 == null) {
+            return true;
+        } else {
+            return SignLink.saveWave(abyte0, j);
+        }
     }
 
     public method152() {
-        for (let index: number = 0; index < this.currentSound; index++) {{
-            let flag1: boolean = false;
-            try {
-                const stream: Buffer = SoundTrack.data(this.sound[index], this.soundType[index]);
-                // TODO fix sound
-                new SoundPlayer(null /*new ByteArrayInputStream(stream.buffer, 0, stream.currentPosition)*/, this.soundVolume[index], this.soundDelay[index]);
-                if (new Date().getTime() + ((n) => n < 0 ? Math.ceil(n) : Math.floor(n))(((stream.currentPosition / 22 | 0)) as number) > this.aLong1172 + ((n) => n < 0 ? Math.ceil(n) : Math.floor(n))(((this.anInt1257 / 22 | 0)) as number)) {
-                    this.anInt1257 = stream.currentPosition;
-                    this.aLong1172 = new Date().getTime();
-                    if (this.method116(stream.currentPosition, Array.from(stream.buffer))) {
-                        this.anInt1272 = this.sound[index];
-                        this.anInt935 = this.soundType[index];
+        for (let index: number = 0; index < this.currentSound; index++) {
+            {
+                let flag1: boolean = false;
+                try {
+                    const stream: Buffer = SoundTrack.data(this.sound[index], this.soundType[index]);
+                    // TODO fix sound
+                    new SoundPlayer(
+                        null /*new ByteArrayInputStream(stream.buffer, 0, stream.currentPosition)*/,
+                        this.soundVolume[index],
+                        this.soundDelay[index]
+                    );
+                    if (
+                        new Date().getTime() +
+                            (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(((stream.currentPosition / 22) | 0) as number) >
+                        this.aLong1172 + (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(((this.anInt1257 / 22) | 0) as number)
+                    ) {
+                        this.anInt1257 = stream.currentPosition;
+                        this.aLong1172 = new Date().getTime();
+                        if (this.method116(stream.currentPosition, Array.from(stream.buffer))) {
+                            this.anInt1272 = this.sound[index];
+                            this.anInt935 = this.soundType[index];
+                        } else {
+                            flag1 = true;
+                        }
+                    }
+                } catch (exception) {
+                    if (SignLink.__reportError) {
+                        this.outBuffer.putOpcode(80);
+                        this.outBuffer.putShort(this.sound[index] & 32767);
                     } else {
-                        flag1 = true;
+                        this.outBuffer.putOpcode(80);
+                        this.outBuffer.putShort(-1);
                     }
                 }
-            } catch (exception) {
-                if (SignLink.__reportError) {
-                    this.outBuffer.putOpcode(80);
-                    this.outBuffer.putShort(this.sound[index] & 32767);
+                if (!flag1 || this.soundDelay[index] === -5) {
+                    this.currentSound--;
+                    for (let j: number = index; j < this.currentSound; j++) {
+                        {
+                            this.sound[j] = this.sound[j + 1];
+                            this.soundType[j] = this.soundType[j + 1];
+                            this.soundDelay[j] = this.soundDelay[j + 1];
+                            this.soundVolume[j] = this.soundVolume[j + 1];
+                        }
+                    }
+                    index--;
                 } else {
-                    this.outBuffer.putOpcode(80);
-                    this.outBuffer.putShort(-1);
+                    this.soundDelay[index] = -5;
                 }
             }
-            if (!flag1 || this.soundDelay[index] === -5) {
-                this.currentSound--;
-                for (let j: number = index; j < this.currentSound; j++) {{
-                    this.sound[j] = this.sound[j + 1];
-                    this.soundType[j] = this.soundType[j + 1];
-                    this.soundDelay[j] = this.soundDelay[j + 1];
-                    this.soundVolume[j] = this.soundVolume[j + 1];
-                }}
-                index--;
-            } else {
-                this.soundDelay[index] = -5;
-            }
-        }}
+        }
         if (this.previousSong > 0) {
             this.previousSong -= 20;
-            if (this.previousSong < 0) { this.previousSong = 0; }
+            if (this.previousSong < 0) {
+                this.previousSong = 0;
+            }
             if (this.previousSong === 0 && this.musicEnabled && !Game.lowMemory) {
                 this.nextSong = this.currentSong;
                 this.songChanging = true;
@@ -2283,99 +4504,190 @@ export class Game extends GameShell {
     }
 
     public method36(i: number) {
-        if (i !== 16220) { this.anInt1328 = 458; }
+        if (i !== 16220) {
+            this.anInt1328 = 458;
+        }
         if (this.loadingStage === 2) {
-            for (let spawnObjectNode: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode; spawnObjectNode != null; spawnObjectNode = this.aClass6_1261.next() as SpawnObjectNode) {{
-                if (spawnObjectNode.anInt1390 > 0) { spawnObjectNode.anInt1390--; }
-                if (spawnObjectNode.anInt1390 === 0) {
-                    if (spawnObjectNode.anInt1387 < 0 || Region.method170(spawnObjectNode.anInt1389, this.aByte1143, spawnObjectNode.anInt1387)) {
-                        this.method45(spawnObjectNode.anInt1388, spawnObjectNode.anInt1393, spawnObjectNode.anInt1387, spawnObjectNode.anInt1394, spawnObjectNode.anInt1391, spawnObjectNode.anInt1389, ((1 as number) | 0), spawnObjectNode.anInt1392);
-                        spawnObjectNode.remove();
+            for (
+                let spawnObjectNode: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode;
+                spawnObjectNode != null;
+                spawnObjectNode = this.aClass6_1261.next() as SpawnObjectNode
+            ) {
+                {
+                    if (spawnObjectNode.anInt1390 > 0) {
+                        spawnObjectNode.anInt1390--;
                     }
-                } else {
-                    if (spawnObjectNode.anInt1395 > 0) { spawnObjectNode.anInt1395--; }
-                    if (spawnObjectNode.anInt1395 === 0 && spawnObjectNode.anInt1393 >= 1 && spawnObjectNode.anInt1394 >= 1 && spawnObjectNode.anInt1393 <= 102 && spawnObjectNode.anInt1394 <= 102 && (spawnObjectNode.anInt1384 < 0 || Region.method170(spawnObjectNode.anInt1386, this.aByte1143, spawnObjectNode.anInt1384))) {
-                        this.method45(spawnObjectNode.anInt1385, spawnObjectNode.anInt1393, spawnObjectNode.anInt1384, spawnObjectNode.anInt1394, spawnObjectNode.anInt1391, spawnObjectNode.anInt1386, ((1 as number) | 0), spawnObjectNode.anInt1392);
-                        spawnObjectNode.anInt1395 = -1;
-                        if (spawnObjectNode.anInt1384 === spawnObjectNode.anInt1387 && spawnObjectNode.anInt1387 === -1) { spawnObjectNode.remove(); } else if (spawnObjectNode.anInt1384 === spawnObjectNode.anInt1387 && spawnObjectNode.anInt1385 === spawnObjectNode.anInt1388 && spawnObjectNode.anInt1386 === spawnObjectNode.anInt1389) { spawnObjectNode.remove(); }
+                    if (spawnObjectNode.anInt1390 === 0) {
+                        if (
+                            spawnObjectNode.anInt1387 < 0 ||
+                            Region.method170(spawnObjectNode.anInt1389, this.aByte1143, spawnObjectNode.anInt1387)
+                        ) {
+                            this.method45(
+                                spawnObjectNode.anInt1388,
+                                spawnObjectNode.anInt1393,
+                                spawnObjectNode.anInt1387,
+                                spawnObjectNode.anInt1394,
+                                spawnObjectNode.anInt1391,
+                                spawnObjectNode.anInt1389,
+                                (1 as number) | 0,
+                                spawnObjectNode.anInt1392
+                            );
+                            spawnObjectNode.remove();
+                        }
+                    } else {
+                        if (spawnObjectNode.anInt1395 > 0) {
+                            spawnObjectNode.anInt1395--;
+                        }
+                        if (
+                            spawnObjectNode.anInt1395 === 0 &&
+                            spawnObjectNode.anInt1393 >= 1 &&
+                            spawnObjectNode.anInt1394 >= 1 &&
+                            spawnObjectNode.anInt1393 <= 102 &&
+                            spawnObjectNode.anInt1394 <= 102 &&
+                            (spawnObjectNode.anInt1384 < 0 ||
+                                Region.method170(spawnObjectNode.anInt1386, this.aByte1143, spawnObjectNode.anInt1384))
+                        ) {
+                            this.method45(
+                                spawnObjectNode.anInt1385,
+                                spawnObjectNode.anInt1393,
+                                spawnObjectNode.anInt1384,
+                                spawnObjectNode.anInt1394,
+                                spawnObjectNode.anInt1391,
+                                spawnObjectNode.anInt1386,
+                                (1 as number) | 0,
+                                spawnObjectNode.anInt1392
+                            );
+                            spawnObjectNode.anInt1395 = -1;
+                            if (spawnObjectNode.anInt1384 === spawnObjectNode.anInt1387 && spawnObjectNode.anInt1387 === -1) {
+                                spawnObjectNode.remove();
+                            } else if (
+                                spawnObjectNode.anInt1384 === spawnObjectNode.anInt1387 &&
+                                spawnObjectNode.anInt1385 === spawnObjectNode.anInt1388 &&
+                                spawnObjectNode.anInt1386 === spawnObjectNode.anInt1389
+                            ) {
+                                spawnObjectNode.remove();
+                            }
+                        }
                     }
                 }
-            }}
+            }
         }
     }
-    
+
     public method45(i: number, j: number, k: number, l: number, i1: number, j1: number, byte0: number, k1: number) {
-        if (byte0 !== this.aByte1066) { this.anInt1175 = -380; }
+        if (byte0 !== this.aByte1066) {
+            this.anInt1175 = -380;
+        }
         if (j >= 1 && l >= 1 && j <= 102 && l <= 102) {
-            if (Game.lowMemory && i1 !== this.plane) { return; }
+            if (Game.lowMemory && i1 !== this.plane) {
+                return;
+            }
             let l1: number = 0;
-            if (k1 === 0) { l1 = this.currentScene.method267(i1, j, l); }
-            if (k1 === 1) { l1 = this.currentScene.method268(j, ((4 as number) | 0), i1, l); }
-            if (k1 === 2) { l1 = this.currentScene.method269(i1, j, l); }
-            if (k1 === 3) { l1 = this.currentScene.getFloorDecorationHash(i1, j, l); }
+            if (k1 === 0) {
+                l1 = this.currentScene.method267(i1, j, l);
+            }
+            if (k1 === 1) {
+                l1 = this.currentScene.method268(j, (4 as number) | 0, i1, l);
+            }
+            if (k1 === 2) {
+                l1 = this.currentScene.method269(i1, j, l);
+            }
+            if (k1 === 3) {
+                l1 = this.currentScene.getFloorDecorationHash(i1, j, l);
+            }
             if (l1 !== 0) {
                 const l2: number = this.currentScene.method271(i1, j, l, l1);
-                const i2: number = l1 >> 14 & 32767;
+                const i2: number = (l1 >> 14) & 32767;
                 const j2: number = l2 & 31;
                 const k2: number = l2 >> 6;
                 if (k1 === 0) {
                     this.currentScene.method258(l, i1, j, true);
                     const class47: GameObjectDefinition = GameObjectDefinition.getDefinition(i2);
-                    if (class47.solid) { this.currentCollisionMap[i1].unmarkWall(k2, j, l, j2, class47.walkable); }
+                    if (class47.solid) {
+                        this.currentCollisionMap[i1].unmarkWall(k2, j, l, j2, class47.walkable);
+                    }
                 }
-                if (k1 === 1) { this.currentScene.method259(false, j, l, i1); }
+                if (k1 === 1) {
+                    this.currentScene.method259(false, j, l, i1);
+                }
                 if (k1 === 2) {
                     this.currentScene.method260(l, i1, -779, j);
                     const class47_1: GameObjectDefinition = GameObjectDefinition.getDefinition(i2);
-                    if (j + class47_1.sizeX > 103 || l + class47_1.sizeX > 103 || j + class47_1.sizeY > 103 || l + class47_1.sizeY > 103) { return; }
-                    if (class47_1.solid) { this.currentCollisionMap[i1].unmarkSolidOccupant(this.anInt1055, l, j, k2, class47_1.sizeY, class47_1.walkable, class47_1.sizeX); }
+                    if (j + class47_1.sizeX > 103 || l + class47_1.sizeX > 103 || j + class47_1.sizeY > 103 || l + class47_1.sizeY > 103) {
+                        return;
+                    }
+                    if (class47_1.solid) {
+                        this.currentCollisionMap[i1].unmarkSolidOccupant(
+                            this.anInt1055,
+                            l,
+                            j,
+                            k2,
+                            class47_1.sizeY,
+                            class47_1.walkable,
+                            class47_1.sizeX
+                        );
+                    }
                 }
                 if (k1 === 3) {
                     this.currentScene.method261(j, l, true, i1);
                     const class47_2: GameObjectDefinition = GameObjectDefinition.getDefinition(i2);
-                    if (class47_2.solid && class47_2.actionsBoolean) { this.currentCollisionMap[i1].unmarkConcealed(j, l); }
+                    if (class47_2.solid && class47_2.actionsBoolean) {
+                        this.currentCollisionMap[i1].unmarkConcealed(j, l);
+                    }
                 }
             }
             if (k >= 0) {
                 let i3: number = i1;
-                if (i3 < 3 && (this.currentSceneTileFlags[1][j][l] & 2) === 2) { i3++; }
+                if (i3 < 3 && (this.currentSceneTileFlags[1][j][l] & 2) === 2) {
+                    i3++;
+                }
                 Region.method165(k, i3, j1, l, this.currentCollisionMap[i1], i, j, 0, i1, this.currentScene, this.anIntArrayArrayArray891);
             }
         }
     }
 
-    public parseIncomingPacket(): boolean {
-        if (this.gameConnection == null) { return false; }
+    public async parseIncomingPacket(): Promise<boolean> {
+        if (this.gameConnection == null) {
+            return false;
+        }
         try {
             let available: number = this.gameConnection.getAvailable();
-            if (available === 0) { return false; }
+            if (available === 0) {
+                return false;
+            }
             if (this.opcode === -1) {
-                this.gameConnection.read$byte_A$int$int(this.buffer.buffer, 0, 1);
+                await this.gameConnection.read$byte_A$int$int(this.buffer.buffer, 0, 1);
                 this.opcode = this.buffer.buffer[0] & 255;
-                if (this.incomingRandom != null) { this.opcode = this.opcode - this.incomingRandom.nextInt() & 255; }
+                if (this.incomingRandom != null) {
+                    this.opcode = (this.opcode - this.incomingRandom.nextInt()) & 255;
+                }
                 this.packetSize = PacketConstants.PACKET_SIZES[this.opcode];
                 available--;
             }
-            if (this.packetSize === -1) { if (available > 0) {
-                this.gameConnection.read$byte_A$int$int(this.buffer.buffer, 0, 1);
-                this.packetSize = this.buffer.buffer[0] & 255;
-                available--;
-            } else {
+            if (this.packetSize === -1) {
+                if (available > 0) {
+                    await this.gameConnection.read$byte_A$int$int(this.buffer.buffer, 0, 1);
+                    this.packetSize = this.buffer.buffer[0] & 255;
+                    available--;
+                } else {
+                    return false;
+                }
+            }
+            if (this.packetSize === -2) {
+                if (available > 1) {
+                    await this.gameConnection.read$byte_A$int$int(this.buffer.buffer, 0, 2);
+                    this.buffer.currentPosition = 0;
+                    this.packetSize = this.buffer.getUnsignedLEShort();
+                    available -= 2;
+                } else {
+                    return false;
+                }
+            }
+            if (available < this.packetSize) {
                 return false;
             }
-            }
-            if (this.packetSize === -2) { if (available > 1) {
-                this.gameConnection.read$byte_A$int$int(this.buffer.buffer, 0, 2);
-                this.buffer.currentPosition = 0;
-                this.packetSize = this.buffer.getUnsignedLEShort();
-                available -= 2;
-            } else {
-                return false;
-            }
-            }
-            if (available < this.packetSize) { return false; }
             this.buffer.currentPosition = 0;
-            this.gameConnection.read$byte_A$int$int(this.buffer.buffer, 0, this.packetSize);
+            await this.gameConnection.read$byte_A$int$int(this.buffer.buffer, 0, this.packetSize);
             this.timeoutCounter = 0;
             this.thirdLastOpcode = this.secondLastOpcode;
             this.secondLastOpcode = this.lastOpcode;
@@ -2415,7 +4727,7 @@ export class Game extends GameShell {
                 const i17: number = this.buffer.getUnsignedLEShort();
                 if (i17 === 65535) {
                     if (this.currentSound < 50) {
-                        this.sound[this.currentSound] = ((k1 as number) | 0);
+                        this.sound[this.currentSound] = (k1 as number) | 0;
                         this.soundType[this.currentSound] = k11;
                         this.soundDelay[this.currentSound] = 0;
                         this.currentSound++;
@@ -2437,14 +4749,24 @@ export class Game extends GameShell {
                     this.widgetSettings[l1] = byte0;
                     this.updateVarp(0, l1);
                     this.redrawTabArea = true;
-                    if (this.dialogueId !== -1) { this.redrawChatbox = true; }
+                    if (this.dialogueId !== -1) {
+                        this.redrawChatbox = true;
+                    }
                 }
                 this.opcode = -1;
                 return true;
             }
             if (this.opcode === 13) {
-                for (let i2: number = 0; i2 < this.players.length; i2++) {if (this.players[i2] != null) { this.players[i2].emoteAnimation = -1; }}
-                for (let l11: number = 0; l11 < this.npcs.length; l11++) {if (this.npcs[l11] != null) { this.npcs[l11].emoteAnimation = -1; }}
+                for (let i2: number = 0; i2 < this.players.length; i2++) {
+                    if (this.players[i2] != null) {
+                        this.players[i2].emoteAnimation = -1;
+                    }
+                }
+                for (let l11: number = 0; l11 < this.npcs.length; l11++) {
+                    if (this.npcs[l11] != null) {
+                        this.npcs[l11].emoteAnimation = -1;
+                    }
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -2463,7 +4785,7 @@ export class Game extends GameShell {
             }
             if (this.opcode === 109) {
                 const k2: number = this.buffer.getUnsignedLEShort();
-                this.method112(((36 as number) | 0), k2);
+                this.method112((36 as number) | 0, k2);
                 if (this.anInt1089 !== -1) {
                     this.method44(Game.aBoolean1190, this.anInt1089);
                     this.anInt1089 = -1;
@@ -2494,7 +4816,9 @@ export class Game extends GameShell {
             }
             if (this.opcode === 220) {
                 let songID: number = this.buffer.getLittleShortA();
-                if (songID === 65535) { songID = -1; }
+                if (songID === 65535) {
+                    songID = -1;
+                }
                 if (songID !== this.currentSong && this.musicEnabled && !Game.lowMemory && this.previousSong === 0) {
                     this.nextSong = songID;
                     this.songChanging = true;
@@ -2529,8 +4853,8 @@ export class Game extends GameShell {
             if (this.opcode === 218) {
                 const interfaceId: number = this.buffer.getUnsignedLEShort();
                 const rgb: number = this.buffer.method550();
-                const j17: number = rgb >> 10 & 31;
-                const j22: number = rgb >> 5 & 31;
+                const j17: number = (rgb >> 10) & 31;
+                const j22: number = (rgb >> 5) & 31;
                 const l24: number = rgb & 31;
                 Widget.forId(interfaceId).disabledColor = (j17 << 19) + (j22 << 11) + (l24 << 3);
                 this.opcode = -1;
@@ -2541,7 +4865,9 @@ export class Game extends GameShell {
                 let option: string = this.buffer.getString();
                 const alwaysOnTop: number = this.buffer.getUnsignedByte();
                 if (slot >= 1 && slot <= 5) {
-                    if (/* equalsIgnoreCase */((o1, o2) => o1.toUpperCase() === (o2 === null ? o2 : o2.toUpperCase()))(option, "null")) { option = null; }
+                    if (/* equalsIgnoreCase */ ((o1, o2) => o1.toUpperCase() === (o2 === null ? o2 : o2.toUpperCase()))(option, "null")) {
+                        option = null;
+                    }
                     this.aStringArray1069[slot - 1] = option;
                     this.aBooleanArray1070[slot - 1] = alwaysOnTop === 0;
                 }
@@ -2567,7 +4893,9 @@ export class Game extends GameShell {
             }
             if (this.opcode === 199) {
                 this.anInt1197 = this.buffer.getUnsignedByte();
-                if (this.anInt1197 === 1) { this.anInt1226 = this.buffer.getUnsignedLEShort(); }
+                if (this.anInt1197 === 1) {
+                    this.anInt1226 = this.buffer.getUnsignedLEShort();
+                }
                 if (this.anInt1197 >= 2 && this.anInt1197 <= 6) {
                     if (this.anInt1197 === 2) {
                         this.anInt847 = 64;
@@ -2594,7 +4922,9 @@ export class Game extends GameShell {
                     this.anInt845 = this.buffer.getUnsignedLEShort();
                     this.anInt846 = this.buffer.getUnsignedByte();
                 }
-                if (this.anInt1197 === 10) { this.anInt1151 = this.buffer.getUnsignedLEShort(); }
+                if (this.anInt1197 === 10) {
+                    this.anInt1151 = this.buffer.getUnsignedLEShort();
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -2608,15 +4938,19 @@ export class Game extends GameShell {
                 if (this.anInt997 >= 100) {
                     const i4: number = this.anInt993 * 128 + 64;
                     const l12: number = this.anInt994 * 128 + 64;
-                    const l17: number = this.method110(l12, i4, ((9 as number) | 0), this.plane) - this.anInt995;
+                    const l17: number = this.method110(l12, i4, (9 as number) | 0, this.plane) - this.anInt995;
                     const k22: number = i4 - this.cameraX;
                     const i25: number = l17 - this.cameraZ;
                     const k27: number = l12 - this.cameraY;
-                    const i30: number = ((Math.sqrt(k22 * k22 + k27 * k27) as number) | 0);
+                    const i30: number = (Math.sqrt(k22 * k22 + k27 * k27) as number) | 0;
                     this.anInt1219 = (((Math.atan2(i25, i30) * 325.949) as number) | 0) & 2047;
                     this.anInt1220 = (((Math.atan2(k22, k27) * -325.949) as number) | 0) & 2047;
-                    if (this.anInt1219 < 128) { this.anInt1219 = 128; }
-                    if (this.anInt1219 > 383) { this.anInt1219 = 383; }
+                    if (this.anInt1219 < 128) {
+                        this.anInt1219 = 128;
+                    }
+                    if (this.anInt1219 > 383) {
+                        this.anInt1219 = 383;
+                    }
                 }
                 this.opcode = -1;
                 return true;
@@ -2634,7 +4968,9 @@ export class Game extends GameShell {
                     this.widgetSettings[i13] = j4;
                     this.updateVarp(0, i13);
                     this.redrawTabArea = true;
-                    if (this.dialogueId !== -1) { this.redrawChatbox = true; }
+                    if (this.dialogueId !== -1) {
+                        this.redrawChatbox = true;
+                    }
                 }
                 this.opcode = -1;
                 return true;
@@ -2690,35 +5026,69 @@ export class Game extends GameShell {
             }
             if (this.opcode === 63) {
                 const message: string = this.buffer.getString();
-                if (/* endsWith */((str, searchString) => { const pos = str.length - searchString.length; const lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(message, ":tradereq:")) {
+                if (
+                    /* endsWith */ ((str, searchString) => {
+                        const pos = str.length - searchString.length;
+                        const lastIndex = str.indexOf(searchString, pos);
+                        return lastIndex !== -1 && lastIndex === pos;
+                    })(message, ":tradereq:")
+                ) {
                     const s3: string = message.substring(0, message.indexOf(":"));
                     const l18: number = TextUtils.nameToLong(s3);
                     let flag1: boolean = false;
-                    for (let l27: number = 0; l27 < this.ignoresCount; l27++) {{
-                        if (this.ignores[l27] !== l18) { continue; }
-                        flag1 = true;
-                        break;
-                    }}
-                    if (!flag1 && !this.inTutorialIsland) { this.addChatMessage(s3, "wishes to trade with you.", 4); }
-                } else if (/* endsWith */((str, searchString) => { const pos = str.length - searchString.length; const lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(message, ":duelreq:")) {
+                    for (let l27: number = 0; l27 < this.ignoresCount; l27++) {
+                        {
+                            if (this.ignores[l27] !== l18) {
+                                continue;
+                            }
+                            flag1 = true;
+                            break;
+                        }
+                    }
+                    if (!flag1 && !this.inTutorialIsland) {
+                        this.addChatMessage(s3, "wishes to trade with you.", 4);
+                    }
+                } else if (
+                    /* endsWith */ ((str, searchString) => {
+                        const pos = str.length - searchString.length;
+                        const lastIndex = str.indexOf(searchString, pos);
+                        return lastIndex !== -1 && lastIndex === pos;
+                    })(message, ":duelreq:")
+                ) {
                     const s4: string = message.substring(0, message.indexOf(":"));
                     const l19: number = TextUtils.nameToLong(s4);
                     let flag2: boolean = false;
-                    for (let i28: number = 0; i28 < this.ignoresCount; i28++) {{
-                        if (this.ignores[i28] !== l19) { continue; }
-                        flag2 = true;
-                        break;
-                    }}
-                    if (!flag2 && !this.inTutorialIsland) { this.addChatMessage(s4, "wishes to duel with you.", 8); }
-                } else if (/* endsWith */((str, searchString) => { const pos = str.length - searchString.length; const lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(message, ":chalreq:")) {
+                    for (let i28: number = 0; i28 < this.ignoresCount; i28++) {
+                        {
+                            if (this.ignores[i28] !== l19) {
+                                continue;
+                            }
+                            flag2 = true;
+                            break;
+                        }
+                    }
+                    if (!flag2 && !this.inTutorialIsland) {
+                        this.addChatMessage(s4, "wishes to duel with you.", 8);
+                    }
+                } else if (
+                    /* endsWith */ ((str, searchString) => {
+                        const pos = str.length - searchString.length;
+                        const lastIndex = str.indexOf(searchString, pos);
+                        return lastIndex !== -1 && lastIndex === pos;
+                    })(message, ":chalreq:")
+                ) {
                     const s5: string = message.substring(0, message.indexOf(":"));
                     const l20: number = TextUtils.nameToLong(s5);
                     let flag3: boolean = false;
-                    for (let j28: number = 0; j28 < this.ignoresCount; j28++) {{
-                        if (this.ignores[j28] !== l20) { continue; }
-                        flag3 = true;
-                        break;
-                    }}
+                    for (let j28: number = 0; j28 < this.ignoresCount; j28++) {
+                        {
+                            if (this.ignores[j28] !== l20) {
+                                continue;
+                            }
+                            flag3 = true;
+                            break;
+                        }
+                    }
                     if (!flag3 && !this.inTutorialIsland) {
                         const s8: string = message.substring(message.indexOf(":") + 1, message.length - 9);
                         this.addChatMessage(s5, s8, 8);
@@ -2731,7 +5101,9 @@ export class Game extends GameShell {
             }
             if (this.opcode === 50) {
                 const k4: number = this.buffer.getSignedShort();
-                if (k4 >= 0) { this.method112(((36 as number) | 0), k4); }
+                if (k4 >= 0) {
+                    this.method112((36 as number) | 0, k4);
+                }
                 if (k4 !== this.anInt1279) {
                     this.method44(Game.aBoolean1190, this.anInt1279);
                     this.anInt1279 = k4;
@@ -2747,7 +5119,9 @@ export class Game extends GameShell {
                 return true;
             }
             if (this.opcode === 174) {
-                if (this.anInt1285 === 12) { this.redrawTabArea = true; }
+                if (this.anInt1285 === 12) {
+                    this.redrawTabArea = true;
+                }
                 this.anInt1030 = this.buffer.getSignedShort();
                 this.opcode = -1;
                 return true;
@@ -2814,16 +5188,20 @@ export class Game extends GameShell {
                 this.redrawTabArea = true;
                 const interfaceId: number = this.buffer.getUnsignedLEShort();
                 const inter: Widget = Widget.forId(interfaceId);
-                while ((this.buffer.currentPosition < this.packetSize)) {{
-                    const slot: number = this.buffer.getSmart();
-                    const id: number = this.buffer.getUnsignedLEShort();
-                    let amount: number = this.buffer.getUnsignedByte();
-                    if (amount === 255) { amount = this.buffer.getInt(); }
-                    if (slot >= 0 && slot < inter.items.length) {
-                        inter.items[slot] = id;
-                        inter.itemAmounts[slot] = amount;
+                while (this.buffer.currentPosition < this.packetSize) {
+                    {
+                        const slot: number = this.buffer.getSmart();
+                        const id: number = this.buffer.getUnsignedLEShort();
+                        let amount: number = this.buffer.getUnsignedByte();
+                        if (amount === 255) {
+                            amount = this.buffer.getInt();
+                        }
+                        if (slot >= 0 && slot < inter.items.length) {
+                            inter.items[slot] = id;
+                            inter.itemAmounts[slot] = amount;
+                        }
                     }
-                }}
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -2831,17 +5209,25 @@ export class Game extends GameShell {
                 const friend: number = this.buffer.getLong();
                 const nodeId: number = this.buffer.getUnsignedByte();
                 let s7: string = TextUtils.formatName(TextUtils.longToName(friend));
-                for (let k25: number = 0; k25 < this.friendsCount; k25++) {{
-                    if (friend !== this.friends[k25]) { continue; }
-                    if (this.friendWorlds[k25] !== nodeId) {
-                        this.friendWorlds[k25] = nodeId;
-                        this.redrawTabArea = true;
-                        if (nodeId > 0) { this.addChatMessage("", s7 + " has logged in.", 5); }
-                        if (nodeId === 0) { this.addChatMessage("", s7 + " has logged out.", 5); }
+                for (let k25: number = 0; k25 < this.friendsCount; k25++) {
+                    {
+                        if (friend !== this.friends[k25]) {
+                            continue;
+                        }
+                        if (this.friendWorlds[k25] !== nodeId) {
+                            this.friendWorlds[k25] = nodeId;
+                            this.redrawTabArea = true;
+                            if (nodeId > 0) {
+                                this.addChatMessage("", s7 + " has logged in.", 5);
+                            }
+                            if (nodeId === 0) {
+                                this.addChatMessage("", s7 + " has logged out.", 5);
+                            }
+                        }
+                        s7 = null;
+                        break;
                     }
-                    s7 = null;
-                    break;
-                }}
+                }
                 if (s7 != null && this.friendsCount < 200) {
                     this.friends[this.friendsCount] = friend;
                     this.friendUsernames[this.friendsCount] = s7;
@@ -2849,22 +5235,29 @@ export class Game extends GameShell {
                     this.friendsCount++;
                     this.redrawTabArea = true;
                 }
-                for (let flag5: boolean = false; !flag5; ) {{
-                    flag5 = true;
-                    for (let j30: number = 0; j30 < this.friendsCount - 1; j30++) {if (this.friendWorlds[j30] !== Game.world && this.friendWorlds[j30 + 1] === Game.world || this.friendWorlds[j30] === 0 && this.friendWorlds[j30 + 1] !== 0) {
-                        const l31: number = this.friendWorlds[j30];
-                        this.friendWorlds[j30] = this.friendWorlds[j30 + 1];
-                        this.friendWorlds[j30 + 1] = l31;
-                        const s10: string = this.friendUsernames[j30];
-                        this.friendUsernames[j30] = this.friendUsernames[j30 + 1];
-                        this.friendUsernames[j30 + 1] = s10;
-                        const l33: number = this.friends[j30];
-                        this.friends[j30] = this.friends[j30 + 1];
-                        this.friends[j30 + 1] = l33;
-                        this.redrawTabArea = true;
-                        flag5 = false;
-                    }}
-                }}
+                for (let flag5: boolean = false; !flag5; ) {
+                    {
+                        flag5 = true;
+                        for (let j30: number = 0; j30 < this.friendsCount - 1; j30++) {
+                            if (
+                                (this.friendWorlds[j30] !== Game.world && this.friendWorlds[j30 + 1] === Game.world) ||
+                                (this.friendWorlds[j30] === 0 && this.friendWorlds[j30 + 1] !== 0)
+                            ) {
+                                const l31: number = this.friendWorlds[j30];
+                                this.friendWorlds[j30] = this.friendWorlds[j30 + 1];
+                                this.friendWorlds[j30 + 1] = l31;
+                                const s10: string = this.friendUsernames[j30];
+                                this.friendUsernames[j30] = this.friendUsernames[j30 + 1];
+                                this.friendUsernames[j30 + 1] = s10;
+                                const l33: number = this.friends[j30];
+                                this.friends[j30] = this.friends[j30 + 1];
+                                this.friends[j30 + 1] = l33;
+                                this.redrawTabArea = true;
+                                flag5 = false;
+                            }
+                        }
+                    }
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -2886,20 +5279,48 @@ export class Game extends GameShell {
             if (this.opcode === 40) {
                 this.placementY = this.buffer.getByteSubtracted();
                 this.placementX = this.buffer.getByteNegated();
-                for (let k5: number = this.placementX; k5 < this.placementX + 8; k5++) {{
-                    for (let i14: number = this.placementY; i14 < this.placementY + 8; i14++) {if (this.groundItems[this.plane][k5][i14] != null) {
-                        this.groundItems[this.plane][k5][i14] = null;
-                        this.processGroundItems(k5, i14);
-                    }}
-                }}
-                for (let spawnObjectNode: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode; spawnObjectNode != null; spawnObjectNode = this.aClass6_1261.next() as SpawnObjectNode) {if (spawnObjectNode.anInt1393 >= this.placementX && spawnObjectNode.anInt1393 < this.placementX + 8 && spawnObjectNode.anInt1394 >= this.placementY && spawnObjectNode.anInt1394 < this.placementY + 8 && spawnObjectNode.anInt1391 === this.plane) { spawnObjectNode.anInt1390 = 0; }}
+                for (let k5: number = this.placementX; k5 < this.placementX + 8; k5++) {
+                    {
+                        for (let i14: number = this.placementY; i14 < this.placementY + 8; i14++) {
+                            if (this.groundItems[this.plane][k5][i14] != null) {
+                                this.groundItems[this.plane][k5][i14] = null;
+                                this.processGroundItems(k5, i14);
+                            }
+                        }
+                    }
+                }
+                for (
+                    let spawnObjectNode: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode;
+                    spawnObjectNode != null;
+                    spawnObjectNode = this.aClass6_1261.next() as SpawnObjectNode
+                ) {
+                    if (
+                        spawnObjectNode.anInt1393 >= this.placementX &&
+                        spawnObjectNode.anInt1393 < this.placementX + 8 &&
+                        spawnObjectNode.anInt1394 >= this.placementY &&
+                        spawnObjectNode.anInt1394 < this.placementY + 8 &&
+                        spawnObjectNode.anInt1391 === this.plane
+                    ) {
+                        spawnObjectNode.anInt1390 = 0;
+                    }
+                }
                 this.opcode = -1;
                 return true;
             }
             if (this.opcode === 255) {
                 const interfaceId: number = this.buffer.getLittleShortA();
                 Widget.forId(interfaceId).modelType = 3;
-                if (Game.localPlayer.npcDefinition == null) { Widget.forId(interfaceId).modelId = (Game.localPlayer.appearanceColors[0] << 25) + (Game.localPlayer.appearanceColors[4] << 20) + (Game.localPlayer.appearance[0] << 15) + (Game.localPlayer.appearance[8] << 10) + (Game.localPlayer.appearance[11] << 5) + Game.localPlayer.appearance[1]; } else { Widget.forId(interfaceId).modelId = (((305419896 + Game.localPlayer.npcDefinition.id) as number) | 0); }
+                if (Game.localPlayer.npcDefinition == null) {
+                    Widget.forId(interfaceId).modelId =
+                        (Game.localPlayer.appearanceColors[0] << 25) +
+                        (Game.localPlayer.appearanceColors[4] << 20) +
+                        (Game.localPlayer.appearance[0] << 15) +
+                        (Game.localPlayer.appearance[8] << 10) +
+                        (Game.localPlayer.appearance[11] << 5) +
+                        Game.localPlayer.appearance[1];
+                } else {
+                    Widget.forId(interfaceId).modelId = ((305419896 + Game.localPlayer.npcDefinition.id) as number) | 0;
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -2908,27 +5329,44 @@ export class Game extends GameShell {
                 const i19: number = this.buffer.getInt();
                 const j23: number = this.buffer.getUnsignedByte();
                 let flag4: boolean = false;
-                for (let k28: number = 0; k28 < 100; k28++) {{
-                    if (this.anIntArray1258[k28] !== i19) { continue; }
-                    flag4 = true;
-                    break;
-                }}
-                if (j23 <= 1) {
-                    for (let k30: number = 0; k30 < this.ignoresCount; k30++) {{
-                        if (this.ignores[k30] !== l6) { continue; }
+                for (let k28: number = 0; k28 < 100; k28++) {
+                    {
+                        if (this.anIntArray1258[k28] !== i19) {
+                            continue;
+                        }
                         flag4 = true;
                         break;
-                    }}
+                    }
                 }
-                if (!flag4 && !this.inTutorialIsland) { try {
-                    this.anIntArray1258[this.anInt1152] = i19;
-                    this.anInt1152 = (this.anInt1152 + 1) % 100;
-                    let s9: string = ChatEncoder.get(this.packetSize - 13, this.buffer);
-                    if (j23 !== 3) { s9 = ChatCensor.censorString(s9); }
-                    if (j23 === 2 || j23 === 3) { this.addChatMessage("@cr2@" + TextUtils.formatName(TextUtils.longToName(l6)), s9, 7); } else if (j23 === 1) { this.addChatMessage("@cr1@" + TextUtils.formatName(TextUtils.longToName(l6)), s9, 7); } else { this.addChatMessage(TextUtils.formatName(TextUtils.longToName(l6)), s9, 3); }
-                } catch (exception1) {
-                    SignLink.reportError("cde1");
+                if (j23 <= 1) {
+                    for (let k30: number = 0; k30 < this.ignoresCount; k30++) {
+                        {
+                            if (this.ignores[k30] !== l6) {
+                                continue;
+                            }
+                            flag4 = true;
+                            break;
+                        }
+                    }
                 }
+                if (!flag4 && !this.inTutorialIsland) {
+                    try {
+                        this.anIntArray1258[this.anInt1152] = i19;
+                        this.anInt1152 = (this.anInt1152 + 1) % 100;
+                        let s9: string = ChatEncoder.get(this.packetSize - 13, this.buffer);
+                        if (j23 !== 3) {
+                            s9 = ChatCensor.censorString(s9);
+                        }
+                        if (j23 === 2 || j23 === 3) {
+                            this.addChatMessage("@cr2@" + TextUtils.formatName(TextUtils.longToName(l6)), s9, 7);
+                        } else if (j23 === 1) {
+                            this.addChatMessage("@cr1@" + TextUtils.formatName(TextUtils.longToName(l6)), s9, 7);
+                        } else {
+                            this.addChatMessage(TextUtils.formatName(TextUtils.longToName(l6)), s9, 3);
+                        }
+                    } catch (exception1) {
+                        SignLink.reportError("cde1");
+                    }
                 }
                 this.opcode = -1;
                 return true;
@@ -2936,16 +5374,18 @@ export class Game extends GameShell {
             if (this.opcode === 183) {
                 this.placementX = this.buffer.getUnsignedByte();
                 this.placementY = this.buffer.getByteAdded();
-                while ((this.buffer.currentPosition < this.packetSize)) {{
-                    const j6: number = this.buffer.getUnsignedByte();
-                    this.parsePlacementPacket(this.buffer, j6);
-                }}
+                while (this.buffer.currentPosition < this.packetSize) {
+                    {
+                        const j6: number = this.buffer.getUnsignedByte();
+                        this.parsePlacementPacket(this.buffer, j6);
+                    }
+                }
                 this.opcode = -1;
                 return true;
             }
             if (this.opcode === 159) {
                 const interfaceId: number = this.buffer.getLittleShortA();
-                this.method112(((36 as number) | 0), interfaceId);
+                this.method112((36 as number) | 0, interfaceId);
                 if (this.anInt1089 !== -1) {
                     this.method44(Game.aBoolean1190, this.anInt1089);
                     this.anInt1089 = -1;
@@ -2980,7 +5420,7 @@ export class Game extends GameShell {
             }
             if (this.opcode === 246) {
                 const i7: number = this.buffer.getLittleShortA();
-                this.method112(((36 as number) | 0), i7);
+                this.method112((36 as number) | 0, i7);
                 if (this.backDialogueId !== -1) {
                     this.method44(Game.aBoolean1190, this.backDialogueId);
                     this.backDialogueId = -1;
@@ -3021,7 +5461,11 @@ export class Game extends GameShell {
                 this.anIntArray843[j7] = j19;
                 this.anIntArray1029[j7] = j14;
                 this.anIntArray1054[j7] = 1;
-                for (let k23: number = 0; k23 < 98; k23++) {if (j19 >= Game.SKILL_EXPERIENCE[k23]) { this.anIntArray1054[j7] = k23 + 2; }}
+                for (let k23: number = 0; k23 < 98; k23++) {
+                    if (j19 >= Game.SKILL_EXPERIENCE[k23]) {
+                        this.anIntArray1054[j7] = k23 + 2;
+                    }
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -3030,16 +5474,22 @@ export class Game extends GameShell {
                 const interfaceId: number = this.buffer.getUnsignedLEShort();
                 const inter: Widget = Widget.forId(interfaceId);
                 const items: number = this.buffer.getUnsignedLEShort();
-                for (let item: number = 0; item < items; item++) {{
-                    inter.items[item] = this.buffer.getLittleShortA();
-                    let amount: number = this.buffer.getByteNegated();
-                    if (amount === 255) { amount = this.buffer.method555(); }
-                    inter.itemAmounts[item] = amount;
-                }}
-                for (let i26: number = items; i26 < inter.items.length; i26++) {{
-                    inter.items[i26] = 0;
-                    inter.itemAmounts[i26] = 0;
-                }}
+                for (let item: number = 0; item < items; item++) {
+                    {
+                        inter.items[item] = this.buffer.getLittleShortA();
+                        let amount: number = this.buffer.getByteNegated();
+                        if (amount === 255) {
+                            amount = this.buffer.method555();
+                        }
+                        inter.itemAmounts[item] = amount;
+                    }
+                }
+                for (let i26: number = items; i26 < inter.items.length; i26++) {
+                    {
+                        inter.items[i26] = 0;
+                        inter.itemAmounts[i26] = 0;
+                    }
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -3054,14 +5504,24 @@ export class Game extends GameShell {
                 if (this.opcode === 53) {
                     tmpChunkX = this.buffer.method550();
                     this.buffer.initBitAccess();
-                    for (let z: number = 0; z < 4; z++) {{
-                        for (let x: number = 0; x < 13; x++) {{
-                            for (let y: number = 0; y < 13; y++) {{
-                                const flag: number = this.buffer.getBits(1);
-                                if (flag === 1) { this.constructedMapPalette[z][x][y] = this.buffer.getBits(26); } else { this.constructedMapPalette[z][x][y] = -1; }
-                            }}
-                        }}
-                    }}
+                    for (let z: number = 0; z < 4; z++) {
+                        {
+                            for (let x: number = 0; x < 13; x++) {
+                                {
+                                    for (let y: number = 0; y < 13; y++) {
+                                        {
+                                            const flag: number = this.buffer.getBits(1);
+                                            if (flag === 1) {
+                                                this.constructedMapPalette[z][x][y] = this.buffer.getBits(26);
+                                            } else {
+                                                this.constructedMapPalette[z][x][y] = -1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     this.buffer.finishBitAccess();
                     tmpChunkY = this.buffer.method550();
                     this.aBoolean1163 = true;
@@ -3075,101 +5535,212 @@ export class Game extends GameShell {
                 this.nextTopLeftTileX = (this.chunkX - 6) * 8;
                 this.nextTopRightTileY = (this.chunkY - 6) * 8;
                 this.aBoolean1067 = false;
-                if (((this.chunkX / 8 | 0) === 48 || (this.chunkX / 8 | 0) === 49) && (this.chunkY / 8 | 0) === 48) { this.aBoolean1067 = true; }
-                if ((this.chunkX / 8 | 0) === 48 && (this.chunkY / 8 | 0) === 148) { this.aBoolean1067 = true; }
+                if ((((this.chunkX / 8) | 0) === 48 || ((this.chunkX / 8) | 0) === 49) && ((this.chunkY / 8) | 0) === 48) {
+                    this.aBoolean1067 = true;
+                }
+                if (((this.chunkX / 8) | 0) === 48 && ((this.chunkY / 8) | 0) === 148) {
+                    this.aBoolean1067 = true;
+                }
                 this.loadingStage = 1;
                 this.aLong1229 = new Date().getTime();
                 this.method125(null, "Loading - please wait.");
                 if (this.opcode === 222) {
                     let count: number = 0;
-                    for (let fileX: number = ((this.chunkX - 6) / 8 | 0); fileX <= ((this.chunkX + 6) / 8 | 0); fileX++) {{
-                        for (let fileY: number = ((this.chunkY - 6) / 8 | 0); fileY <= ((this.chunkY + 6) / 8 | 0); fileY++) {count++; }
-                    }}
-                    this.aByteArrayArray838 = ((s) => { const a = []; while (s-- > 0) { a.push(null); } return a; })(count);
-                    this.aByteArrayArray1232 = ((s) => { const a = []; while (s-- > 0) { a.push(null); } return a; })(count);
-                    this.coordinates = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(count);
-                    this.anIntArray857 = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(count);
-                    this.anIntArray858 = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(count);
-                    count = 0;
-                    for (let fileX: number = ((this.chunkX - 6) / 8 | 0); fileX <= ((this.chunkX + 6) / 8 | 0); fileX++) {{
-                        for (let fileY: number = ((this.chunkY - 6) / 8 | 0); fileY <= ((this.chunkY + 6) / 8 | 0); fileY++) {{
-                            this.coordinates[count] = (fileX << 8) + fileY;
-                            if (this.aBoolean1067 && (fileY === 49 || fileY === 149 || fileY === 147 || fileX === 50 || fileX === 49 && fileY === 47)) {
-                                this.anIntArray857[count] = -1;
-                                this.anIntArray858[count] = -1;
-                                count++;
-                            } else {
-                                const l30: number = this.anIntArray857[count] = this.onDemandRequester.regId(0, fileX, fileY, 0);
-                                if (l30 !== -1) { this.onDemandRequester.request(3, l30); }
-                                const i32: number = this.anIntArray858[count] = this.onDemandRequester.regId(0, fileX, fileY, 1);
-                                if (i32 !== -1) { this.onDemandRequester.request(3, i32); }
+                    for (let fileX: number = ((this.chunkX - 6) / 8) | 0; fileX <= (((this.chunkX + 6) / 8) | 0); fileX++) {
+                        {
+                            for (let fileY: number = ((this.chunkY - 6) / 8) | 0; fileY <= (((this.chunkY + 6) / 8) | 0); fileY++) {
                                 count++;
                             }
-                        }}
-                    }}
+                        }
+                    }
+                    this.aByteArrayArray838 = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(null);
+                        }
+                        return a;
+                    })(count);
+                    this.aByteArrayArray1232 = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(null);
+                        }
+                        return a;
+                    })(count);
+                    this.coordinates = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(0);
+                        }
+                        return a;
+                    })(count);
+                    this.anIntArray857 = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(0);
+                        }
+                        return a;
+                    })(count);
+                    this.anIntArray858 = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(0);
+                        }
+                        return a;
+                    })(count);
+                    count = 0;
+                    for (let fileX: number = ((this.chunkX - 6) / 8) | 0; fileX <= (((this.chunkX + 6) / 8) | 0); fileX++) {
+                        {
+                            for (let fileY: number = ((this.chunkY - 6) / 8) | 0; fileY <= (((this.chunkY + 6) / 8) | 0); fileY++) {
+                                {
+                                    this.coordinates[count] = (fileX << 8) + fileY;
+                                    if (
+                                        this.aBoolean1067 &&
+                                        (fileY === 49 || fileY === 149 || fileY === 147 || fileX === 50 || (fileX === 49 && fileY === 47))
+                                    ) {
+                                        this.anIntArray857[count] = -1;
+                                        this.anIntArray858[count] = -1;
+                                        count++;
+                                    } else {
+                                        const l30: number = (this.anIntArray857[count] = this.onDemandRequester.regId(0, fileX, fileY, 0));
+                                        if (l30 !== -1) {
+                                            this.onDemandRequester.request(3, l30);
+                                        }
+                                        const i32: number = (this.anIntArray858[count] = this.onDemandRequester.regId(0, fileX, fileY, 1));
+                                        if (i32 !== -1) {
+                                            this.onDemandRequester.request(3, i32);
+                                        }
+                                        count++;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 if (this.opcode === 53) {
                     let uniqueCount: number = 0;
-                    const fileIndices: number[] = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(676);
-                    for (let tileZ: number = 0; tileZ < 4; tileZ++) {{
-                        for (let tileX: number = 0; tileX < 13; tileX++) {{
-                            for (let tileY: number = 0; tileY < 13; tileY++) {{
-                                const data: number = this.constructedMapPalette[tileZ][tileX][tileY];
-                                if (data !== -1) {
-                                    const chunkX: number = data >> 14 & 1023;
-                                    const chunkY: number = data >> 3 & 2047;
-                                    let fileIndex: number = ((chunkX / 8 | 0) << 8) + (chunkY / 8 | 0);
-                                    for (let pos: number = 0; pos < uniqueCount; pos++) {{
-                                        if (fileIndices[pos] !== fileIndex) { continue; }
-                                        fileIndex = -1;
-                                        break;
-                                    }}
-                                    if (fileIndex !== -1) { fileIndices[uniqueCount++] = fileIndex; }
+                    const fileIndices: number[] = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(0);
+                        }
+                        return a;
+                    })(676);
+                    for (let tileZ: number = 0; tileZ < 4; tileZ++) {
+                        {
+                            for (let tileX: number = 0; tileX < 13; tileX++) {
+                                {
+                                    for (let tileY: number = 0; tileY < 13; tileY++) {
+                                        {
+                                            const data: number = this.constructedMapPalette[tileZ][tileX][tileY];
+                                            if (data !== -1) {
+                                                const chunkX: number = (data >> 14) & 1023;
+                                                const chunkY: number = (data >> 3) & 2047;
+                                                let fileIndex: number = (((chunkX / 8) | 0) << 8) + ((chunkY / 8) | 0);
+                                                for (let pos: number = 0; pos < uniqueCount; pos++) {
+                                                    {
+                                                        if (fileIndices[pos] !== fileIndex) {
+                                                            continue;
+                                                        }
+                                                        fileIndex = -1;
+                                                        break;
+                                                    }
+                                                }
+                                                if (fileIndex !== -1) {
+                                                    fileIndices[uniqueCount++] = fileIndex;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
-                            }}
-                        }}
-                    }}
-                    this.aByteArrayArray838 = ((s) => { const a = []; while (s-- > 0) { a.push(null); } return a; })(uniqueCount);
-                    this.aByteArrayArray1232 = ((s) => { const a = []; while (s-- > 0) { a.push(null); } return a; })(uniqueCount);
-                    this.coordinates = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(uniqueCount);
-                    this.anIntArray857 = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(uniqueCount);
-                    this.anIntArray858 = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(uniqueCount);
-                    for (let pos: number = 0; pos < uniqueCount; pos++) {{
-                        const j31: number = this.coordinates[pos] = fileIndices[pos];
-                        const fileX: number = j31 >> 8 & 255;
-                        const fileY: number = j31 & 255;
-                        const i34: number = this.anIntArray857[pos] = this.onDemandRequester.regId(0, fileX, fileY, 0);
-                        if (i34 !== -1) { this.onDemandRequester.request(3, i34); }
-                        const k34: number = this.anIntArray858[pos] = this.onDemandRequester.regId(0, fileX, fileY, 1);
-                        if (k34 !== -1) { this.onDemandRequester.request(3, k34); }
-                    }}
+                            }
+                        }
+                    }
+                    this.aByteArrayArray838 = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(null);
+                        }
+                        return a;
+                    })(uniqueCount);
+                    this.aByteArrayArray1232 = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(null);
+                        }
+                        return a;
+                    })(uniqueCount);
+                    this.coordinates = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(0);
+                        }
+                        return a;
+                    })(uniqueCount);
+                    this.anIntArray857 = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(0);
+                        }
+                        return a;
+                    })(uniqueCount);
+                    this.anIntArray858 = (s => {
+                        const a = [];
+                        while (s-- > 0) {
+                            a.push(0);
+                        }
+                        return a;
+                    })(uniqueCount);
+                    for (let pos: number = 0; pos < uniqueCount; pos++) {
+                        {
+                            const j31: number = (this.coordinates[pos] = fileIndices[pos]);
+                            const fileX: number = (j31 >> 8) & 255;
+                            const fileY: number = j31 & 255;
+                            const i34: number = (this.anIntArray857[pos] = this.onDemandRequester.regId(0, fileX, fileY, 0));
+                            if (i34 !== -1) {
+                                this.onDemandRequester.request(3, i34);
+                            }
+                            const k34: number = (this.anIntArray858[pos] = this.onDemandRequester.regId(0, fileX, fileY, 1));
+                            if (k34 !== -1) {
+                                this.onDemandRequester.request(3, k34);
+                            }
+                        }
+                    }
                 }
                 const deltaX: number = this.nextTopLeftTileX - this.topLeftTileX;
                 const deltaY: number = this.nextTopRightTileY - this.topLeftTileY;
                 this.topLeftTileX = this.nextTopLeftTileX;
                 this.topLeftTileY = this.nextTopRightTileY;
-                for (let id: number = 0; id < 16384; id++) {{
-                    const npc: Npc = this.npcs[id];
-                    if (npc != null) {
-                        for (let pos: number = 0; pos < 10; pos++) {{
-                            ((npc) as Actor).pathX[pos] -= deltaX;
-                            ((npc) as Actor).pathY[pos] -= deltaY;
-                        }}
-                        npc.worldX -= deltaX * 128;
-                        npc.worldY -= deltaY * 128;
+                for (let id: number = 0; id < 16384; id++) {
+                    {
+                        const npc: Npc = this.npcs[id];
+                        if (npc != null) {
+                            for (let pos: number = 0; pos < 10; pos++) {
+                                {
+                                    (npc as Actor).pathX[pos] -= deltaX;
+                                    (npc as Actor).pathY[pos] -= deltaY;
+                                }
+                            }
+                            npc.worldX -= deltaX * 128;
+                            npc.worldY -= deltaY * 128;
+                        }
                     }
-                }}
-                for (let id: number = 0; id < this.anInt968; id++) {{
-                    const player: Player = this.players[id];
-                    if (player != null) {
-                        for (let pos: number = 0; pos < 10; pos++) {{
-                            ((player) as Actor).pathX[pos] -= deltaX;
-                            ((player) as Actor).pathY[pos] -= deltaY;
-                        }}
-                        player.worldX -= deltaX * 128;
-                        player.worldY -= deltaY * 128;
+                }
+                for (let id: number = 0; id < this.anInt968; id++) {
+                    {
+                        const player: Player = this.players[id];
+                        if (player != null) {
+                            for (let pos: number = 0; pos < 10; pos++) {
+                                {
+                                    (player as Actor).pathX[pos] -= deltaX;
+                                    (player as Actor).pathY[pos] -= deltaY;
+                                }
+                            }
+                            player.worldX -= deltaX * 128;
+                            player.worldY -= deltaY * 128;
+                        }
                     }
-                }}
+                }
                 this.aBoolean1209 = true;
                 let byte1: number = 0;
                 let byte2: number = 104;
@@ -3187,18 +5758,41 @@ export class Game extends GameShell {
                     byte5 = -1;
                     byte6 = -1;
                 }
-                for (let i35: number = byte1; i35 !== byte2; i35 += byte3) {{
-                    for (let j35: number = byte4; j35 !== byte5; j35 += byte6) {{
-                        const k35: number = i35 + deltaX;
-                        const l35: number = j35 + deltaY;
-                        for (let i36: number = 0; i36 < 4; i36++) {if (k35 >= 0 && l35 >= 0 && k35 < 104 && l35 < 104) { this.groundItems[i36][i35][j35] = this.groundItems[i36][k35][l35]; } else { this.groundItems[i36][i35][j35] = null; }}
-                    }}
-                }}
-                for (let spawnObjectNode_1: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode; spawnObjectNode_1 != null; spawnObjectNode_1 = this.aClass6_1261.next() as SpawnObjectNode) {{
-                    spawnObjectNode_1.anInt1393 -= deltaX;
-                    spawnObjectNode_1.anInt1394 -= deltaY;
-                    if (spawnObjectNode_1.anInt1393 < 0 || spawnObjectNode_1.anInt1394 < 0 || spawnObjectNode_1.anInt1393 >= 104 || spawnObjectNode_1.anInt1394 >= 104) { spawnObjectNode_1.remove(); }
-                }}
+                for (let i35: number = byte1; i35 !== byte2; i35 += byte3) {
+                    {
+                        for (let j35: number = byte4; j35 !== byte5; j35 += byte6) {
+                            {
+                                const k35: number = i35 + deltaX;
+                                const l35: number = j35 + deltaY;
+                                for (let i36: number = 0; i36 < 4; i36++) {
+                                    if (k35 >= 0 && l35 >= 0 && k35 < 104 && l35 < 104) {
+                                        this.groundItems[i36][i35][j35] = this.groundItems[i36][k35][l35];
+                                    } else {
+                                        this.groundItems[i36][i35][j35] = null;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                for (
+                    let spawnObjectNode_1: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode;
+                    spawnObjectNode_1 != null;
+                    spawnObjectNode_1 = this.aClass6_1261.next() as SpawnObjectNode
+                ) {
+                    {
+                        spawnObjectNode_1.anInt1393 -= deltaX;
+                        spawnObjectNode_1.anInt1394 -= deltaY;
+                        if (
+                            spawnObjectNode_1.anInt1393 < 0 ||
+                            spawnObjectNode_1.anInt1394 < 0 ||
+                            spawnObjectNode_1.anInt1393 >= 104 ||
+                            spawnObjectNode_1.anInt1394 >= 104
+                        ) {
+                            spawnObjectNode_1.remove();
+                        }
+                    }
+                }
                 if (this.destinationX !== 0) {
                     this.destinationX -= deltaX;
                     this.destinationY -= deltaY;
@@ -3212,13 +5806,27 @@ export class Game extends GameShell {
                 this.opcode = -1;
                 return true;
             }
-            if (this.opcode === 41 || this.opcode === 121 || this.opcode === 203 || this.opcode === 106 || this.opcode === 59 || this.opcode === 181 || this.opcode === 208 || this.opcode === 107 || this.opcode === 142 || this.opcode === 88 || this.opcode === 152) {
+            if (
+                this.opcode === 41 ||
+                this.opcode === 121 ||
+                this.opcode === 203 ||
+                this.opcode === 106 ||
+                this.opcode === 59 ||
+                this.opcode === 181 ||
+                this.opcode === 208 ||
+                this.opcode === 107 ||
+                this.opcode === 142 ||
+                this.opcode === 88 ||
+                this.opcode === 152
+            ) {
                 this.parsePlacementPacket(this.buffer, this.opcode);
                 this.opcode = -1;
                 return true;
             }
             if (this.opcode === 125) {
-                if (this.anInt1285 === 12) { this.redrawTabArea = true; }
+                if (this.anInt1285 === 12) {
+                    this.redrawTabArea = true;
+                }
                 this.anInt1324 = this.buffer.getUnsignedByte();
                 this.opcode = -1;
                 return true;
@@ -3237,7 +5845,7 @@ export class Game extends GameShell {
                     Widget.forId(interfaceId).modelId = itemId;
                     Widget.forId(interfaceId).rotationX = class16.modelRotationX;
                     Widget.forId(interfaceId).rotationY = class16.modelRotationY;
-                    Widget.forId(interfaceId).zoom = ((class16.modelScale * 100) / scale | 0);
+                    Widget.forId(interfaceId).zoom = ((class16.modelScale * 100) / scale) | 0;
                     this.opcode = -1;
                     return true;
                 }
@@ -3252,7 +5860,7 @@ export class Game extends GameShell {
                 if (this.anInt878 >= 100) {
                     this.cameraX = this.anInt874 * 128 + 64;
                     this.cameraY = this.anInt875 * 128 + 64;
-                    this.cameraZ = this.method110(this.cameraY, this.cameraX, ((9 as number) | 0), this.plane) - this.anInt876;
+                    this.cameraZ = this.method110(this.cameraY, this.cameraX, (9 as number) | 0, this.plane) - this.anInt876;
                 }
                 this.opcode = -1;
                 return true;
@@ -3275,15 +5883,19 @@ export class Game extends GameShell {
                 return true;
             }
             if (this.opcode === 226) {
-                this.ignoresCount = (this.packetSize / 8 | 0);
-                for (let k8: number = 0; k8 < this.ignoresCount; k8++) {this.ignores[k8] = this.buffer.getLong(); }
+                this.ignoresCount = (this.packetSize / 8) | 0;
+                for (let k8: number = 0; k8 < this.ignoresCount; k8++) {
+                    this.ignores[k8] = this.buffer.getLong();
+                }
                 this.opcode = -1;
                 return true;
             }
             if (this.opcode === 10) {
                 const l8: number = this.buffer.getByteSubtracted();
                 let j15: number = this.buffer.method550();
-                if (j15 === 65535) { j15 = -1; }
+                if (j15 === 65535) {
+                    j15 = -1;
+                }
                 if (this.anIntArray1081[l8] !== j15) {
                     this.method44(Game.aBoolean1190, this.anIntArray1081[l8]);
                     this.anIntArray1081[l8] = j15;
@@ -3296,17 +5908,23 @@ export class Game extends GameShell {
             if (this.opcode === 219) {
                 const interfaceId: number = this.buffer.method549();
                 const class13_2: Widget = Widget.forId(interfaceId);
-                for (let k21: number = 0; k21 < class13_2.items.length; k21++) {{
-                    class13_2.items[k21] = -1;
-                    class13_2.items[k21] = 0;
-                }}
+                for (let k21: number = 0; k21 < class13_2.items.length; k21++) {
+                    {
+                        class13_2.items[k21] = -1;
+                        class13_2.items[k21] = 0;
+                    }
+                }
                 this.opcode = -1;
                 return true;
             }
             if (this.opcode === 238) {
                 this.anInt1213 = this.buffer.getUnsignedByte();
                 if (this.anInt1213 === this.anInt1285) {
-                    if (this.anInt1213 === 3) { this.anInt1285 = 1; } else { this.anInt1285 = 3; }
+                    if (this.anInt1213 === 3) {
+                        this.anInt1285 = 1;
+                    } else {
+                        this.anInt1285 = 3;
+                    }
                     this.redrawTabArea = true;
                 }
                 this.opcode = -1;
@@ -3314,7 +5932,9 @@ export class Game extends GameShell {
             }
             if (this.opcode === 148) {
                 this.oriented = false;
-                for (let j9: number = 0; j9 < 5; j9++) {this.aBooleanArray927[j9] = false; }
+                for (let j9: number = 0; j9 < 5; j9++) {
+                    this.aBooleanArray927[j9] = false;
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -3333,8 +5953,10 @@ export class Game extends GameShell {
             if (this.opcode === 253) {
                 const k9: number = this.buffer.method549();
                 const k15: number = this.buffer.method550();
-                this.method112(((36 as number) | 0), k15);
-                if (k9 !== -1) { this.method112(((36 as number) | 0), k9); }
+                this.method112((36 as number) | 0, k15);
+                if (k9 !== -1) {
+                    this.method112((36 as number) | 0, k9);
+                }
                 if (this.openInterfaceId !== -1) {
                     this.method44(Game.aBoolean1190, this.openInterfaceId);
                     this.openInterfaceId = -1;
@@ -3381,11 +6003,13 @@ export class Game extends GameShell {
                 return true;
             }
             if (this.opcode === 113) {
-                for (let i10: number = 0; i10 < this.widgetSettings.length; i10++) {if (this.widgetSettings[i10] !== this.anIntArray1005[i10]) {
-                    this.widgetSettings[i10] = this.anIntArray1005[i10];
-                    this.updateVarp(0, i10);
-                    this.redrawTabArea = true;
-                }}
+                for (let i10: number = 0; i10 < this.widgetSettings.length; i10++) {
+                    if (this.widgetSettings[i10] !== this.anIntArray1005[i10]) {
+                        this.widgetSettings[i10] = this.anIntArray1005[i10];
+                        this.updateVarp(0, i10);
+                        this.redrawTabArea = true;
+                    }
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -3393,7 +6017,9 @@ export class Game extends GameShell {
                 const j10: number = this.buffer.getLittleShortA();
                 const s6: string = this.buffer.getString();
                 Widget.forId(j10).disabledText = s6;
-                if (Widget.forId(j10).parentId === this.anIntArray1081[this.anInt1285]) { this.redrawTabArea = true; }
+                if (Widget.forId(j10).parentId === this.anIntArray1081[this.anInt1285]) {
+                    this.redrawTabArea = true;
+                }
                 this.opcode = -1;
                 return true;
             }
@@ -3402,28 +6028,48 @@ export class Game extends GameShell {
                 let i16: number = this.buffer.getLittleShortA();
                 const class13_4: Widget = Widget.forId(interfaceId);
                 if (class13_4 != null && class13_4.type === 0) {
-                    if (i16 < 0) { i16 = 0; }
-                    if (i16 > class13_4.scrollLimit - class13_4.height) { i16 = class13_4.scrollLimit - class13_4.height; }
+                    if (i16 < 0) {
+                        i16 = 0;
+                    }
+                    if (i16 > class13_4.scrollLimit - class13_4.height) {
+                        i16 = class13_4.scrollLimit - class13_4.height;
+                    }
                     class13_4.anInt231 = i16;
                 }
                 this.opcode = -1;
                 return true;
             }
-            SignLink.reportError("T1 - " + this.opcode + "," + this.packetSize + " - " + this.secondLastOpcode + "," + this.thirdLastOpcode);
+            SignLink.reportError(
+                "T1 - " + this.opcode + "," + this.packetSize + " - " + this.secondLastOpcode + "," + this.thirdLastOpcode
+            );
             this.logout();
         } catch (__e) {
             // if (__e != null && __e instanceof IOException as any) {
             //     this.dropClient();
 
             // }
-            if (__e != null && __e instanceof Error as any) {
+            if (__e != null && ((__e instanceof Error) as any)) {
                 const exception: Error = __e as Error;
-                let s1: string = "T2 - " + this.opcode + "," + this.secondLastOpcode + "," + this.thirdLastOpcode + " - " + this.packetSize + "," + (this.nextTopLeftTileX + Game.localPlayer.pathX[0]) + "," + (this.nextTopRightTileY + Game.localPlayer.pathY[0]) + " - ";
-                for (let j16: number = 0; j16 < this.packetSize && j16 < 50; j16++) {s1 = s1 + this.buffer.buffer[j16] + ","; }
+                let s1: string =
+                    "T2 - " +
+                    this.opcode +
+                    "," +
+                    this.secondLastOpcode +
+                    "," +
+                    this.thirdLastOpcode +
+                    " - " +
+                    this.packetSize +
+                    "," +
+                    (this.nextTopLeftTileX + Game.localPlayer.pathX[0]) +
+                    "," +
+                    (this.nextTopRightTileY + Game.localPlayer.pathY[0]) +
+                    " - ";
+                for (let j16: number = 0; j16 < this.packetSize && j16 < 50; j16++) {
+                    s1 = s1 + this.buffer.buffer[j16] + ",";
+                }
                 SignLink.reportError(s1);
                 this.logout();
                 console.error(exception.message, exception);
-
             }
         }
         return true;
@@ -3433,24 +6079,30 @@ export class Game extends GameShell {
         this.loggedIn = flag && this.loggedIn;
         this.removePlayerCount = 0;
         this.updatedPlayerCount = 0;
-        this.method46(i, ((-58 as number) | 0), class50_sub1_sub2);
+        this.method46(i, (-58 as number) | 0, class50_sub1_sub2);
         this.method132(class50_sub1_sub2, i, false);
         this.method62(class50_sub1_sub2, i, 838);
-        for (let j: number = 0; j < this.removePlayerCount; j++) {{
-            const k: number = this.removePlayers[j];
-            if (this.npcs[k].pulseCycle !== Game.pulseCycle) {
-                this.npcs[k].npcDefinition = null;
-                this.npcs[k] = null;
+        for (let j: number = 0; j < this.removePlayerCount; j++) {
+            {
+                const k: number = this.removePlayers[j];
+                if (this.npcs[k].pulseCycle !== Game.pulseCycle) {
+                    this.npcs[k].npcDefinition = null;
+                    this.npcs[k] = null;
+                }
             }
-        }}
+        }
         if (class50_sub1_sub2.currentPosition !== i) {
-            SignLink.reportError(this.username + " size mismatch in getnpcpos - coord:" + class50_sub1_sub2.currentPosition + " psize:" + i);
+            SignLink.reportError(
+                this.username + " size mismatch in getnpcpos - coord:" + class50_sub1_sub2.currentPosition + " psize:" + i
+            );
             throw Error("eek");
         }
-        for (let l: number = 0; l < this.anInt1133; l++) {if (this.npcs[this.anIntArray1134[l]] == null) {
-            SignLink.reportError(this.username + " null entry in npc list - coord:" + l + " size:" + this.anInt1133);
-            throw Error("eek");
-        }}
+        for (let l: number = 0; l < this.anInt1133; l++) {
+            if (this.npcs[this.anIntArray1134[l]] == null) {
+                SignLink.reportError(this.username + " null entry in npc list - coord:" + l + " size:" + this.anInt1133);
+                throw Error("eek");
+            }
+        }
     }
 
     /*private*/ public updatePlayers(size: number, buffer: Buffer) {
@@ -3460,52 +6112,68 @@ export class Game extends GameShell {
         this.updateOtherPlayerMovement(buffer);
         this.addNewPlayers(size, buffer);
         this.parsePlayerBlocks(buffer);
-        for (let i: number = 0; i < this.removePlayerCount; i++) {{
-            const index: number = this.removePlayers[i];
-            if (this.players[index].pulseCycle !== Game.pulseCycle) { this.players[index] = null; }
-        }}
+        for (let i: number = 0; i < this.removePlayerCount; i++) {
+            {
+                const index: number = this.removePlayers[i];
+                if (this.players[index].pulseCycle !== Game.pulseCycle) {
+                    this.players[index] = null;
+                }
+            }
+        }
         if (buffer.currentPosition !== size) {
             SignLink.reportError("Error packet size mismatch in getplayer coord:" + buffer.currentPosition + " psize:" + size);
             throw Error("eek");
         }
-        for (let i: number = 0; i < this.localPlayerCount; i++) {{
-            if (this.players[this.playerList[i]] == null) {
-                SignLink.reportError(this.username + " null entry in pl list - coord:" + i + " size:" + this.localPlayerCount);
-                throw Error("eek");
+        for (let i: number = 0; i < this.localPlayerCount; i++) {
+            {
+                if (this.players[this.playerList[i]] == null) {
+                    SignLink.reportError(this.username + " null entry in pl list - coord:" + i + " size:" + this.localPlayerCount);
+                    throw Error("eek");
+                }
             }
-        }}
+        }
     }
 
     /*private*/ public parsePlayerBlocks(buffer: Buffer) {
-        for (let i: number = 0; i < this.updatedPlayerCount; i++) {{
-            const id: number = this.updatedPlayers[i];
-            const player: Player = this.players[id];
-            let mask: number = buffer.getUnsignedByte();
-            if ((mask & 32) !== 0) { mask += buffer.getUnsignedByte() << 8; }
-            this.parsePlayerBlock(id, player, mask, buffer);
-        }}
+        for (let i: number = 0; i < this.updatedPlayerCount; i++) {
+            {
+                const id: number = this.updatedPlayers[i];
+                const player: Player = this.players[id];
+                let mask: number = buffer.getUnsignedByte();
+                if ((mask & 32) !== 0) {
+                    mask += buffer.getUnsignedByte() << 8;
+                }
+                this.parsePlayerBlock(id, player, mask, buffer);
+            }
+        }
     }
-    
+
     public addChatMessage(name: string, message: string, type: number) {
         if (type === 0 && this.dialogueId !== -1) {
             this.clickToContinueString = message;
             this.clickType = 0;
         }
-        if (this.backDialogueId === -1) { this.redrawChatbox = true; }
-        for (let index: number = 99; index > 0; index--) {{
-            this.chatTypes[index] = this.chatTypes[index - 1];
-            this.chatPlayerNames[index] = this.chatPlayerNames[index - 1];
-            this.chatMessages[index] = this.chatMessages[index - 1];
-        }}
+        if (this.backDialogueId === -1) {
+            this.redrawChatbox = true;
+        }
+        for (let index: number = 99; index > 0; index--) {
+            {
+                this.chatTypes[index] = this.chatTypes[index - 1];
+                this.chatPlayerNames[index] = this.chatPlayerNames[index - 1];
+                this.chatMessages[index] = this.chatMessages[index - 1];
+            }
+        }
         this.chatTypes[0] = type;
         this.chatPlayerNames[0] = name;
         this.chatMessages[0] = message;
     }
-    
+
     /*private*/ public parsePlayerBlock(id: number, player: Player, mask: number, buffer: Buffer) {
         if ((mask & 8) !== 0) {
             let animation: number = buffer.getUnsignedLEShort();
-            if (animation === 65535) { animation = -1; }
+            if (animation === 65535) {
+                animation = -1;
+            }
             const delay: number = buffer.getByteSubtracted();
             if (animation === player.emoteAnimation && animation !== -1) {
                 const mode: number = AnimationSequence.animations[animation].anInt307;
@@ -3515,8 +6183,14 @@ export class Game extends GameShell {
                     player.animationDelay = delay;
                     player.anInt1628 = 0;
                 }
-                if (mode === 2) { player.anInt1628 = 0; }
-            } else if (animation === -1 || player.emoteAnimation === -1 || AnimationSequence.animations[animation].anInt301 >= AnimationSequence.animations[player.emoteAnimation].anInt301) {
+                if (mode === 2) {
+                    player.anInt1628 = 0;
+                }
+            } else if (
+                animation === -1 ||
+                player.emoteAnimation === -1 ||
+                AnimationSequence.animations[animation].anInt301 >= AnimationSequence.animations[player.emoteAnimation].anInt301
+            ) {
                 player.emoteAnimation = animation;
                 player.displayedEmoteFrames = 0;
                 player.anInt1626 = 0;
@@ -3527,7 +6201,7 @@ export class Game extends GameShell {
         }
         if ((mask & 16) !== 0) {
             player.forcedChat = buffer.getString();
-            if (((c) => c.charCodeAt == null ? c as any : c.charCodeAt(0))(player.forcedChat.charAt(0)) == "~".charCodeAt(0)) {
+            if ((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(player.forcedChat.charAt(0)) == "~".charCodeAt(0)) {
                 player.forcedChat = player.forcedChat.substring(1);
                 this.addChatMessage(player.playerName, player.forcedChat, 2);
             } else if (player === Game.localPlayer) {
@@ -3549,7 +6223,9 @@ export class Game extends GameShell {
         }
         if ((mask & 1) !== 0) {
             player.anInt1609 = buffer.method550();
-            if (player.anInt1609 === 65535) { player.anInt1609 = -1; }
+            if (player.anInt1609 === 65535) {
+                player.anInt1609 = -1;
+            }
         }
         if ((mask & 2) !== 0) {
             player.anInt1598 = buffer.getUnsignedLEShort();
@@ -3562,12 +6238,22 @@ export class Game extends GameShell {
             player.anInt1617 = Game.pulseCycle + (heightAndDelay & 65535);
             player.currentAnimation = 0;
             player.anInt1616 = 0;
-            if (player.anInt1617 > Game.pulseCycle) { player.currentAnimation = -1; }
-            if (player.graphic === 65535) { player.graphic = -1; }
+            if (player.anInt1617 > Game.pulseCycle) {
+                player.currentAnimation = -1;
+            }
+            if (player.graphic === 65535) {
+                player.graphic = -1;
+            }
         }
         if ((mask & 4) !== 0) {
             const size: number = buffer.getUnsignedByte();
-            const bytes: number[] = ((s) => { const a = []; while (s-- > 0) { a.push(0); } return a; })(size);
+            const bytes: number[] = (s => {
+                const a = [];
+                while (s-- > 0) {
+                    a.push(0);
+                }
+                return a;
+            })(size);
             const appearance: Buffer = new Buffer(bytes);
             buffer.getBytesReverse(bytes, 0, size);
             this.cachedAppearances[id] = appearance;
@@ -3590,11 +6276,15 @@ export class Game extends GameShell {
                 const nameLong: number = TextUtils.nameToLong(player.playerName);
                 let ignored: boolean = false;
                 if (rights <= 1) {
-                    for (let i: number = 0; i < this.ignoresCount; i++) {{
-                        if (this.ignores[i] !== nameLong) { continue; }
-                        ignored = true;
-                        break;
-                    }}
+                    for (let i: number = 0; i < this.ignoresCount; i++) {
+                        {
+                            if (this.ignores[i] !== nameLong) {
+                                continue;
+                            }
+                            ignored = true;
+                            break;
+                        }
+                    }
                 }
                 if (!ignored && !this.inTutorialIsland) {
                     try {
@@ -3606,7 +6296,13 @@ export class Game extends GameShell {
                         player.textColour = effectsAndColour >> 8;
                         player.textEffect = effectsAndColour & 255;
                         player.textCycle = 150;
-                        if (rights === 2 || rights === 3) { this.addChatMessage("@cr2@" + player.playerName, message, 1); } else if (rights === 1) { this.addChatMessage("@cr1@" + player.playerName, message, 1); } else { this.addChatMessage(player.playerName, message, 2); }
+                        if (rights === 2 || rights === 3) {
+                            this.addChatMessage("@cr2@" + player.playerName, message, 1);
+                        } else if (rights === 1) {
+                            this.addChatMessage("@cr1@" + player.playerName, message, 1);
+                        } else {
+                            this.addChatMessage(player.playerName, message, 2);
+                        }
                     } catch (exception) {
                         SignLink.reportError("cde2");
                     }
@@ -3624,77 +6320,99 @@ export class Game extends GameShell {
         }
     }
     /*private*/ public addNewPlayers(size: number, buffer: Buffer) {
-        while ((buffer.bitPosition + 10 < size * 8)) {{
-            const id: number = buffer.getBits(11);
-            if (id === 2047) { break; }
-            if (this.players[id] == null) {
-                this.players[id] = new Player();
-                if (this.cachedAppearances[id] != null) { this.players[id].updateAppearance(this.cachedAppearances[id]); }
+        while (buffer.bitPosition + 10 < size * 8) {
+            {
+                const id: number = buffer.getBits(11);
+                if (id === 2047) {
+                    break;
+                }
+                if (this.players[id] == null) {
+                    this.players[id] = new Player();
+                    if (this.cachedAppearances[id] != null) {
+                        this.players[id].updateAppearance(this.cachedAppearances[id]);
+                    }
+                }
+                this.playerList[this.localPlayerCount++] = id;
+                const player: Player = this.players[id];
+                player.pulseCycle = Game.pulseCycle;
+                let x: number = buffer.getBits(5);
+                if (x > 15) {
+                    x -= 32;
+                }
+                const updated: number = buffer.getBits(1);
+                if (updated === 1) {
+                    this.updatedPlayers[this.updatedPlayerCount++] = id;
+                }
+                const discardQueue: number = buffer.getBits(1);
+                let y: number = buffer.getBits(5);
+                if (y > 15) {
+                    y -= 32;
+                }
+                player.setPosition(Game.localPlayer.pathX[0] + x, Game.localPlayer.pathY[0] + y, discardQueue === 1);
             }
-            this.playerList[this.localPlayerCount++] = id;
-            const player: Player = this.players[id];
-            player.pulseCycle = Game.pulseCycle;
-            let x: number = buffer.getBits(5);
-            if (x > 15) { x -= 32; }
-            const updated: number = buffer.getBits(1);
-            if (updated === 1) { this.updatedPlayers[this.updatedPlayerCount++] = id; }
-            const discardQueue: number = buffer.getBits(1);
-            let y: number = buffer.getBits(5);
-            if (y > 15) { y -= 32; }
-            player.setPosition(Game.localPlayer.pathX[0] + x, Game.localPlayer.pathY[0] + y, discardQueue === 1);
-        }}
+        }
         buffer.finishBitAccess();
     }
     /*private*/ public updateOtherPlayerMovement(buffer: Buffer) {
         const playerCount: number = buffer.getBits(8);
         if (playerCount < this.localPlayerCount) {
-            for (let i: number = playerCount; i < this.localPlayerCount; i++) {this.removePlayers[this.removePlayerCount++] = this.playerList[i]; }
+            for (let i: number = playerCount; i < this.localPlayerCount; i++) {
+                this.removePlayers[this.removePlayerCount++] = this.playerList[i];
+            }
         }
         if (playerCount > this.localPlayerCount) {
             SignLink.reportError(this.username + " Too many players");
             throw Error("eek");
         }
         this.localPlayerCount = 0;
-        for (let i: number = 0; i < playerCount; i++) {{
-            const id: number = this.playerList[i];
-            const player: Player = this.players[id];
-            const updated: number = buffer.getBits(1);
-            if (updated === 0) {
-                this.playerList[this.localPlayerCount++] = id;
-                player.pulseCycle = Game.pulseCycle;
-            } else {
-                const moveType: number = buffer.getBits(2);
-                if (moveType === 0) {
+        for (let i: number = 0; i < playerCount; i++) {
+            {
+                const id: number = this.playerList[i];
+                const player: Player = this.players[id];
+                const updated: number = buffer.getBits(1);
+                if (updated === 0) {
                     this.playerList[this.localPlayerCount++] = id;
                     player.pulseCycle = Game.pulseCycle;
-                    this.updatedPlayers[this.updatedPlayerCount++] = id;
-                } else if (moveType === 1) {
-                    this.playerList[this.localPlayerCount++] = id;
-                    player.pulseCycle = Game.pulseCycle;
-                    const direction: number = buffer.getBits(3);
-                    player.move(direction, false);
-                    const blockUpdateRequired: number = buffer.getBits(1);
-                    if (blockUpdateRequired === 1) { this.updatedPlayers[this.updatedPlayerCount++] = id; }
-                } else if (moveType === 2) {
-                    this.playerList[this.localPlayerCount++] = id;
-                    player.pulseCycle = Game.pulseCycle;
-                    const direction1: number = buffer.getBits(3);
-                    player.move(direction1, true);
-                    const direction2: number = buffer.getBits(3);
-                    player.move(direction2, true);
-                    const updateRequired: number = buffer.getBits(1);
-                    if (updateRequired === 1) { this.updatedPlayers[this.updatedPlayerCount++] = id; }
-                } else if (moveType === 3) {
-                    this.removePlayers[this.removePlayerCount++] = id;
+                } else {
+                    const moveType: number = buffer.getBits(2);
+                    if (moveType === 0) {
+                        this.playerList[this.localPlayerCount++] = id;
+                        player.pulseCycle = Game.pulseCycle;
+                        this.updatedPlayers[this.updatedPlayerCount++] = id;
+                    } else if (moveType === 1) {
+                        this.playerList[this.localPlayerCount++] = id;
+                        player.pulseCycle = Game.pulseCycle;
+                        const direction: number = buffer.getBits(3);
+                        player.move(direction, false);
+                        const blockUpdateRequired: number = buffer.getBits(1);
+                        if (blockUpdateRequired === 1) {
+                            this.updatedPlayers[this.updatedPlayerCount++] = id;
+                        }
+                    } else if (moveType === 2) {
+                        this.playerList[this.localPlayerCount++] = id;
+                        player.pulseCycle = Game.pulseCycle;
+                        const direction1: number = buffer.getBits(3);
+                        player.move(direction1, true);
+                        const direction2: number = buffer.getBits(3);
+                        player.move(direction2, true);
+                        const updateRequired: number = buffer.getBits(1);
+                        if (updateRequired === 1) {
+                            this.updatedPlayers[this.updatedPlayerCount++] = id;
+                        }
+                    } else if (moveType === 3) {
+                        this.removePlayers[this.removePlayerCount++] = id;
+                    }
                 }
             }
-        }}
+        }
     }
-    
+
     /*private*/ public updateLocalPlayerMovement(buffer: Buffer) {
         buffer.initBitAccess();
         const moved: number = buffer.getBits(1);
-        if (moved === 0) { return; }
+        if (moved === 0) {
+            return;
+        }
         const moveType: number = buffer.getBits(2);
         if (moveType === 0) {
             this.updatedPlayers[this.updatedPlayerCount++] = this.thisPlayerId;
@@ -3704,7 +6422,9 @@ export class Game extends GameShell {
             const direction: number = buffer.getBits(3);
             Game.localPlayer.move(direction, false);
             const blockUpdateRequired: number = buffer.getBits(1);
-            if (blockUpdateRequired === 1) { this.updatedPlayers[this.updatedPlayerCount++] = this.thisPlayerId; }
+            if (blockUpdateRequired === 1) {
+                this.updatedPlayers[this.updatedPlayerCount++] = this.thisPlayerId;
+            }
             return;
         }
         if (moveType === 2) {
@@ -3713,7 +6433,9 @@ export class Game extends GameShell {
             const direction2: number = buffer.getBits(3);
             Game.localPlayer.move(direction2, true);
             const blockUpdateRequired: number = buffer.getBits(1);
-            if (blockUpdateRequired === 1) { this.updatedPlayers[this.updatedPlayerCount++] = this.thisPlayerId; }
+            if (blockUpdateRequired === 1) {
+                this.updatedPlayers[this.updatedPlayerCount++] = this.thisPlayerId;
+            }
             return;
         }
         if (moveType === 3) {
@@ -3722,180 +6444,248 @@ export class Game extends GameShell {
             const localY: number = buffer.getBits(7);
             const localX: number = buffer.getBits(7);
             const blockUpdateRequired: number = buffer.getBits(1);
-            if (blockUpdateRequired === 1) { this.updatedPlayers[this.updatedPlayerCount++] = this.thisPlayerId; }
+            if (blockUpdateRequired === 1) {
+                this.updatedPlayers[this.updatedPlayerCount++] = this.thisPlayerId;
+            }
             Game.localPlayer.setPosition(localX, localY, discardWalkingQueue === 1);
         }
     }
 
     public method62(class50_sub1_sub2: Buffer, i: number, j: number) {
-        j = (24 / j | 0);
-        for (let k: number = 0; k < this.updatedPlayerCount; k++) {{
-            const l: number = this.updatedPlayers[k];
-            const class50_sub1_sub4_sub3_sub1: Npc = this.npcs[l];
-            const i1: number = class50_sub1_sub2.getUnsignedByte();
-            if ((i1 & 1) !== 0) {
-                class50_sub1_sub4_sub3_sub1.npcDefinition = ActorDefinition.getDefinition(class50_sub1_sub2.method550());
-                class50_sub1_sub4_sub3_sub1.boundaryDimension = class50_sub1_sub4_sub3_sub1.npcDefinition.boundaryDimension;
-                class50_sub1_sub4_sub3_sub1.anInt1600 = class50_sub1_sub4_sub3_sub1.npcDefinition.degreesToTurn;
-                class50_sub1_sub4_sub3_sub1.walkAnimationId = class50_sub1_sub4_sub3_sub1.npcDefinition.walkAnimationId;
-                class50_sub1_sub4_sub3_sub1.turnAroundAnimationId = class50_sub1_sub4_sub3_sub1.npcDefinition.turnAroundAnimationId;
-                class50_sub1_sub4_sub3_sub1.turnRightAnimationId = class50_sub1_sub4_sub3_sub1.npcDefinition.turnRightAnimationId;
-                class50_sub1_sub4_sub3_sub1.turnLeftAnimationId = class50_sub1_sub4_sub3_sub1.npcDefinition.turnLeftAnimationId;
-                class50_sub1_sub4_sub3_sub1.idleAnimation = class50_sub1_sub4_sub3_sub1.npcDefinition.standAnimationId;
-            }
-            if ((i1 & 64) !== 0) {
-                class50_sub1_sub4_sub3_sub1.anInt1609 = class50_sub1_sub2.method549();
-                if (class50_sub1_sub4_sub3_sub1.anInt1609 === 65535) { class50_sub1_sub4_sub3_sub1.anInt1609 = -1; }
-            }
-            if ((i1 & 128) !== 0) {
-                const j1: number = class50_sub1_sub2.getByteAdded();
-                const j2: number = class50_sub1_sub2.getByteAdded();
-                class50_sub1_sub4_sub3_sub1.updateHits(j2, j1, Game.pulseCycle);
-                class50_sub1_sub4_sub3_sub1.endCycle = Game.pulseCycle + 300;
-                class50_sub1_sub4_sub3_sub1.anInt1596 = class50_sub1_sub2.getUnsignedByte();
-                class50_sub1_sub4_sub3_sub1.anInt1597 = class50_sub1_sub2.getByteSubtracted();
-            }
-            if ((i1 & 4) !== 0) {
-                class50_sub1_sub4_sub3_sub1.graphic = class50_sub1_sub2.getUnsignedLEShort();
-                const k1: number = class50_sub1_sub2.method556();
-                class50_sub1_sub4_sub3_sub1.spotAnimationDelay = k1 >> 16;
-                class50_sub1_sub4_sub3_sub1.anInt1617 = Game.pulseCycle + (k1 & 65535);
-                class50_sub1_sub4_sub3_sub1.currentAnimation = 0;
-                class50_sub1_sub4_sub3_sub1.anInt1616 = 0;
-                if (class50_sub1_sub4_sub3_sub1.anInt1617 > Game.pulseCycle) { class50_sub1_sub4_sub3_sub1.currentAnimation = -1; }
-                if (class50_sub1_sub4_sub3_sub1.graphic === 65535) { class50_sub1_sub4_sub3_sub1.graphic = -1; }
-            }
-            if ((i1 & 32) !== 0) {
-                class50_sub1_sub4_sub3_sub1.forcedChat = class50_sub1_sub2.getString();
-                class50_sub1_sub4_sub3_sub1.textCycle = 100;
-            }
-            if ((i1 & 8) !== 0) {
-                class50_sub1_sub4_sub3_sub1.anInt1598 = class50_sub1_sub2.getLittleShortA();
-                class50_sub1_sub4_sub3_sub1.anInt1599 = class50_sub1_sub2.method549();
-            }
-            if ((i1 & 2) !== 0) {
-                let l1: number = class50_sub1_sub2.getUnsignedLEShort();
-                if (l1 === 65535) { l1 = -1; }
-                const k2: number = class50_sub1_sub2.getByteSubtracted();
-                if (l1 === class50_sub1_sub4_sub3_sub1.emoteAnimation && l1 !== -1) {
-                    const i3: number = AnimationSequence.animations[l1].anInt307;
-                    if (i3 === 1) {
+        j = (24 / j) | 0;
+        for (let k: number = 0; k < this.updatedPlayerCount; k++) {
+            {
+                const l: number = this.updatedPlayers[k];
+                const class50_sub1_sub4_sub3_sub1: Npc = this.npcs[l];
+                const i1: number = class50_sub1_sub2.getUnsignedByte();
+                if ((i1 & 1) !== 0) {
+                    class50_sub1_sub4_sub3_sub1.npcDefinition = ActorDefinition.getDefinition(class50_sub1_sub2.method550());
+                    class50_sub1_sub4_sub3_sub1.boundaryDimension = class50_sub1_sub4_sub3_sub1.npcDefinition.boundaryDimension;
+                    class50_sub1_sub4_sub3_sub1.anInt1600 = class50_sub1_sub4_sub3_sub1.npcDefinition.degreesToTurn;
+                    class50_sub1_sub4_sub3_sub1.walkAnimationId = class50_sub1_sub4_sub3_sub1.npcDefinition.walkAnimationId;
+                    class50_sub1_sub4_sub3_sub1.turnAroundAnimationId = class50_sub1_sub4_sub3_sub1.npcDefinition.turnAroundAnimationId;
+                    class50_sub1_sub4_sub3_sub1.turnRightAnimationId = class50_sub1_sub4_sub3_sub1.npcDefinition.turnRightAnimationId;
+                    class50_sub1_sub4_sub3_sub1.turnLeftAnimationId = class50_sub1_sub4_sub3_sub1.npcDefinition.turnLeftAnimationId;
+                    class50_sub1_sub4_sub3_sub1.idleAnimation = class50_sub1_sub4_sub3_sub1.npcDefinition.standAnimationId;
+                }
+                if ((i1 & 64) !== 0) {
+                    class50_sub1_sub4_sub3_sub1.anInt1609 = class50_sub1_sub2.method549();
+                    if (class50_sub1_sub4_sub3_sub1.anInt1609 === 65535) {
+                        class50_sub1_sub4_sub3_sub1.anInt1609 = -1;
+                    }
+                }
+                if ((i1 & 128) !== 0) {
+                    const j1: number = class50_sub1_sub2.getByteAdded();
+                    const j2: number = class50_sub1_sub2.getByteAdded();
+                    class50_sub1_sub4_sub3_sub1.updateHits(j2, j1, Game.pulseCycle);
+                    class50_sub1_sub4_sub3_sub1.endCycle = Game.pulseCycle + 300;
+                    class50_sub1_sub4_sub3_sub1.anInt1596 = class50_sub1_sub2.getUnsignedByte();
+                    class50_sub1_sub4_sub3_sub1.anInt1597 = class50_sub1_sub2.getByteSubtracted();
+                }
+                if ((i1 & 4) !== 0) {
+                    class50_sub1_sub4_sub3_sub1.graphic = class50_sub1_sub2.getUnsignedLEShort();
+                    const k1: number = class50_sub1_sub2.method556();
+                    class50_sub1_sub4_sub3_sub1.spotAnimationDelay = k1 >> 16;
+                    class50_sub1_sub4_sub3_sub1.anInt1617 = Game.pulseCycle + (k1 & 65535);
+                    class50_sub1_sub4_sub3_sub1.currentAnimation = 0;
+                    class50_sub1_sub4_sub3_sub1.anInt1616 = 0;
+                    if (class50_sub1_sub4_sub3_sub1.anInt1617 > Game.pulseCycle) {
+                        class50_sub1_sub4_sub3_sub1.currentAnimation = -1;
+                    }
+                    if (class50_sub1_sub4_sub3_sub1.graphic === 65535) {
+                        class50_sub1_sub4_sub3_sub1.graphic = -1;
+                    }
+                }
+                if ((i1 & 32) !== 0) {
+                    class50_sub1_sub4_sub3_sub1.forcedChat = class50_sub1_sub2.getString();
+                    class50_sub1_sub4_sub3_sub1.textCycle = 100;
+                }
+                if ((i1 & 8) !== 0) {
+                    class50_sub1_sub4_sub3_sub1.anInt1598 = class50_sub1_sub2.getLittleShortA();
+                    class50_sub1_sub4_sub3_sub1.anInt1599 = class50_sub1_sub2.method549();
+                }
+                if ((i1 & 2) !== 0) {
+                    let l1: number = class50_sub1_sub2.getUnsignedLEShort();
+                    if (l1 === 65535) {
+                        l1 = -1;
+                    }
+                    const k2: number = class50_sub1_sub2.getByteSubtracted();
+                    if (l1 === class50_sub1_sub4_sub3_sub1.emoteAnimation && l1 !== -1) {
+                        const i3: number = AnimationSequence.animations[l1].anInt307;
+                        if (i3 === 1) {
+                            class50_sub1_sub4_sub3_sub1.displayedEmoteFrames = 0;
+                            class50_sub1_sub4_sub3_sub1.anInt1626 = 0;
+                            class50_sub1_sub4_sub3_sub1.animationDelay = k2;
+                            class50_sub1_sub4_sub3_sub1.anInt1628 = 0;
+                        }
+                        if (i3 === 2) {
+                            class50_sub1_sub4_sub3_sub1.anInt1628 = 0;
+                        }
+                    } else if (
+                        l1 === -1 ||
+                        class50_sub1_sub4_sub3_sub1.emoteAnimation === -1 ||
+                        AnimationSequence.animations[l1].anInt301 >=
+                            AnimationSequence.animations[class50_sub1_sub4_sub3_sub1.emoteAnimation].anInt301
+                    ) {
+                        class50_sub1_sub4_sub3_sub1.emoteAnimation = l1;
                         class50_sub1_sub4_sub3_sub1.displayedEmoteFrames = 0;
                         class50_sub1_sub4_sub3_sub1.anInt1626 = 0;
                         class50_sub1_sub4_sub3_sub1.animationDelay = k2;
                         class50_sub1_sub4_sub3_sub1.anInt1628 = 0;
+                        class50_sub1_sub4_sub3_sub1.anInt1613 = class50_sub1_sub4_sub3_sub1.pathLength;
                     }
-                    if (i3 === 2) { class50_sub1_sub4_sub3_sub1.anInt1628 = 0; }
-                } else if (l1 === -1 || class50_sub1_sub4_sub3_sub1.emoteAnimation === -1 || AnimationSequence.animations[l1].anInt301 >= AnimationSequence.animations[class50_sub1_sub4_sub3_sub1.emoteAnimation].anInt301) {
-                    class50_sub1_sub4_sub3_sub1.emoteAnimation = l1;
-                    class50_sub1_sub4_sub3_sub1.displayedEmoteFrames = 0;
-                    class50_sub1_sub4_sub3_sub1.anInt1626 = 0;
-                    class50_sub1_sub4_sub3_sub1.animationDelay = k2;
-                    class50_sub1_sub4_sub3_sub1.anInt1628 = 0;
-                    class50_sub1_sub4_sub3_sub1.anInt1613 = class50_sub1_sub4_sub3_sub1.pathLength;
+                }
+                if ((i1 & 16) !== 0) {
+                    const i2: number = class50_sub1_sub2.getByteSubtracted();
+                    const l2: number = class50_sub1_sub2.getByteSubtracted();
+                    class50_sub1_sub4_sub3_sub1.updateHits(l2, i2, Game.pulseCycle);
+                    class50_sub1_sub4_sub3_sub1.endCycle = Game.pulseCycle + 300;
+                    class50_sub1_sub4_sub3_sub1.anInt1596 = class50_sub1_sub2.getUnsignedByte();
+                    class50_sub1_sub4_sub3_sub1.anInt1597 = class50_sub1_sub2.getByteNegated();
                 }
             }
-            if ((i1 & 16) !== 0) {
-                const i2: number = class50_sub1_sub2.getByteSubtracted();
-                const l2: number = class50_sub1_sub2.getByteSubtracted();
-                class50_sub1_sub4_sub3_sub1.updateHits(l2, i2, Game.pulseCycle);
-                class50_sub1_sub4_sub3_sub1.endCycle = Game.pulseCycle + 300;
-                class50_sub1_sub4_sub3_sub1.anInt1596 = class50_sub1_sub2.getUnsignedByte();
-                class50_sub1_sub4_sub3_sub1.anInt1597 = class50_sub1_sub2.getByteNegated();
-            }
-        }}
-    }
-    
-    public method132(class50_sub1_sub2: Buffer, i: number, flag: boolean) {
-        if (flag) { this.anInt1140 = 287; }
-        while ((class50_sub1_sub2.bitPosition + 21 < i * 8)) {{
-            const j: number = class50_sub1_sub2.getBits(14);
-            if (j === 16383) { break; }
-            if (this.npcs[j] == null) { this.npcs[j] = new Npc(); }
-            const npc: Npc = this.npcs[j];
-            this.anIntArray1134[this.anInt1133++] = j;
-            npc.pulseCycle = Game.pulseCycle;
-            const k: number = class50_sub1_sub2.getBits(1);
-            if (k === 1) { this.updatedPlayers[this.updatedPlayerCount++] = j; }
-            let l: number = class50_sub1_sub2.getBits(5);
-            if (l > 15) { l -= 32; }
-            let i1: number = class50_sub1_sub2.getBits(5);
-            if (i1 > 15) { i1 -= 32; }
-            const j1: number = class50_sub1_sub2.getBits(1);
-            npc.npcDefinition = ActorDefinition.getDefinition(class50_sub1_sub2.getBits(13));
-            npc.boundaryDimension = npc.npcDefinition.boundaryDimension;
-            npc.anInt1600 = npc.npcDefinition.degreesToTurn;
-            npc.walkAnimationId = npc.npcDefinition.walkAnimationId;
-            npc.turnAroundAnimationId = npc.npcDefinition.turnAroundAnimationId;
-            npc.turnRightAnimationId = npc.npcDefinition.turnRightAnimationId;
-            npc.turnLeftAnimationId = npc.npcDefinition.turnLeftAnimationId;
-            npc.idleAnimation = npc.npcDefinition.standAnimationId;
-            npc.setPosition(Game.localPlayer.pathX[0] + i1, Game.localPlayer.pathY[0] + l, j1 === 1);
-        }}
-        class50_sub1_sub2.finishBitAccess();
+        }
     }
 
+    public method132(class50_sub1_sub2: Buffer, i: number, flag: boolean) {
+        if (flag) {
+            this.anInt1140 = 287;
+        }
+        while (class50_sub1_sub2.bitPosition + 21 < i * 8) {
+            {
+                const j: number = class50_sub1_sub2.getBits(14);
+                if (j === 16383) {
+                    break;
+                }
+                if (this.npcs[j] == null) {
+                    this.npcs[j] = new Npc();
+                }
+                const npc: Npc = this.npcs[j];
+                this.anIntArray1134[this.anInt1133++] = j;
+                npc.pulseCycle = Game.pulseCycle;
+                const k: number = class50_sub1_sub2.getBits(1);
+                if (k === 1) {
+                    this.updatedPlayers[this.updatedPlayerCount++] = j;
+                }
+                let l: number = class50_sub1_sub2.getBits(5);
+                if (l > 15) {
+                    l -= 32;
+                }
+                let i1: number = class50_sub1_sub2.getBits(5);
+                if (i1 > 15) {
+                    i1 -= 32;
+                }
+                const j1: number = class50_sub1_sub2.getBits(1);
+                npc.npcDefinition = ActorDefinition.getDefinition(class50_sub1_sub2.getBits(13));
+                npc.boundaryDimension = npc.npcDefinition.boundaryDimension;
+                npc.anInt1600 = npc.npcDefinition.degreesToTurn;
+                npc.walkAnimationId = npc.npcDefinition.walkAnimationId;
+                npc.turnAroundAnimationId = npc.npcDefinition.turnAroundAnimationId;
+                npc.turnRightAnimationId = npc.npcDefinition.turnRightAnimationId;
+                npc.turnLeftAnimationId = npc.npcDefinition.turnLeftAnimationId;
+                npc.idleAnimation = npc.npcDefinition.standAnimationId;
+                npc.setPosition(Game.localPlayer.pathX[0] + i1, Game.localPlayer.pathY[0] + l, j1 === 1);
+            }
+        }
+        class50_sub1_sub2.finishBitAccess();
+    }
 
     public method46(i: number, byte0: number, buffer: Buffer) {
         buffer.initBitAccess();
         const j: number = buffer.getBits(8);
-        if (byte0 !== this.aByte1317) { this.anInt1281 = -460; }
+        if (byte0 !== this.aByte1317) {
+            this.anInt1281 = -460;
+        }
         if (j < this.anInt1133) {
-            for (let k: number = j; k < this.anInt1133; k++) {this.removePlayers[this.removePlayerCount++] = this.anIntArray1134[k]; }
+            for (let k: number = j; k < this.anInt1133; k++) {
+                this.removePlayers[this.removePlayerCount++] = this.anIntArray1134[k];
+            }
         }
         if (j > this.anInt1133) {
             SignLink.reportError(this.username + " Too many npcs");
             throw Error("eek");
         }
         this.anInt1133 = 0;
-        for (let l: number = 0; l < j; l++) {{
-            const i1: number = this.anIntArray1134[l];
-            const npc: Npc = this.npcs[i1];
-            const updateRequired: number = buffer.getBits(1);
-            if (updateRequired === 0) {
-                this.anIntArray1134[this.anInt1133++] = i1;
-                npc.pulseCycle = Game.pulseCycle;
-            } else {
-                const moveType: number = buffer.getBits(2);
-                if (moveType === 0) {
+        for (let l: number = 0; l < j; l++) {
+            {
+                const i1: number = this.anIntArray1134[l];
+                const npc: Npc = this.npcs[i1];
+                const updateRequired: number = buffer.getBits(1);
+                if (updateRequired === 0) {
                     this.anIntArray1134[this.anInt1133++] = i1;
                     npc.pulseCycle = Game.pulseCycle;
-                    this.updatedPlayers[this.updatedPlayerCount++] = i1;
-                } else if (moveType === 1) {
-                    this.anIntArray1134[this.anInt1133++] = i1;
-                    npc.pulseCycle = Game.pulseCycle;
-                    const direction: number = buffer.getBits(3);
-                    npc.move(direction, false);
-                    const blockUpdateRequired: number = buffer.getBits(1);
-                    if (blockUpdateRequired === 1) { this.updatedPlayers[this.updatedPlayerCount++] = i1; }
-                } else if (moveType === 2) {
-                    this.anIntArray1134[this.anInt1133++] = i1;
-                    npc.pulseCycle = Game.pulseCycle;
-                    const direction1: number = buffer.getBits(3);
-                    npc.move(direction1, true);
-                    const direction2: number = buffer.getBits(3);
-                    npc.move(direction2, true);
-                    const blockUpdateRequired: number = buffer.getBits(1);
-                    if (blockUpdateRequired === 1) { this.updatedPlayers[this.updatedPlayerCount++] = i1; }
-                } else if (moveType === 3) { this.removePlayers[this.removePlayerCount++] = i1; }
+                } else {
+                    const moveType: number = buffer.getBits(2);
+                    if (moveType === 0) {
+                        this.anIntArray1134[this.anInt1133++] = i1;
+                        npc.pulseCycle = Game.pulseCycle;
+                        this.updatedPlayers[this.updatedPlayerCount++] = i1;
+                    } else if (moveType === 1) {
+                        this.anIntArray1134[this.anInt1133++] = i1;
+                        npc.pulseCycle = Game.pulseCycle;
+                        const direction: number = buffer.getBits(3);
+                        npc.move(direction, false);
+                        const blockUpdateRequired: number = buffer.getBits(1);
+                        if (blockUpdateRequired === 1) {
+                            this.updatedPlayers[this.updatedPlayerCount++] = i1;
+                        }
+                    } else if (moveType === 2) {
+                        this.anIntArray1134[this.anInt1133++] = i1;
+                        npc.pulseCycle = Game.pulseCycle;
+                        const direction1: number = buffer.getBits(3);
+                        npc.move(direction1, true);
+                        const direction2: number = buffer.getBits(3);
+                        npc.move(direction2, true);
+                        const blockUpdateRequired: number = buffer.getBits(1);
+                        if (blockUpdateRequired === 1) {
+                            this.updatedPlayers[this.updatedPlayerCount++] = i1;
+                        }
+                    } else if (moveType === 3) {
+                        this.removePlayers[this.removePlayerCount++] = i1;
+                    }
+                }
             }
-        }}
+        }
     }
 
-    public method145(flag: boolean, i: number, j: number, k: number, l: number, i1: number, j1: number, k1: number, l1: number, i2: number) {
+    public method145(
+        flag: boolean,
+        i: number,
+        j: number,
+        k: number,
+        l: number,
+        i1: number,
+        j1: number,
+        k1: number,
+        l1: number,
+        i2: number
+    ) {
         let spawnObjectNode: SpawnObjectNode = null;
-        for (let spawnObjectNode_1: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode; spawnObjectNode_1 != null; spawnObjectNode_1 = this.aClass6_1261.next() as SpawnObjectNode) {{
-            if (spawnObjectNode_1.anInt1391 !== i || spawnObjectNode_1.anInt1393 !== j || spawnObjectNode_1.anInt1394 !== i2 || spawnObjectNode_1.anInt1392 !== l1) { continue; }
-            spawnObjectNode = spawnObjectNode_1;
-            break;
-        }}
+        for (
+            let spawnObjectNode_1: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode;
+            spawnObjectNode_1 != null;
+            spawnObjectNode_1 = this.aClass6_1261.next() as SpawnObjectNode
+        ) {
+            {
+                if (
+                    spawnObjectNode_1.anInt1391 !== i ||
+                    spawnObjectNode_1.anInt1393 !== j ||
+                    spawnObjectNode_1.anInt1394 !== i2 ||
+                    spawnObjectNode_1.anInt1392 !== l1
+                ) {
+                    continue;
+                }
+                spawnObjectNode = spawnObjectNode_1;
+                break;
+            }
+        }
         if (spawnObjectNode == null) {
             spawnObjectNode = new SpawnObjectNode();
             spawnObjectNode.anInt1391 = i;
             spawnObjectNode.anInt1392 = l1;
             spawnObjectNode.anInt1393 = j;
             spawnObjectNode.anInt1394 = i2;
-            this.method140(((-61 as number) | 0), spawnObjectNode);
+            this.method140((-61 as number) | 0, spawnObjectNode);
             this.aClass6_1261.insertBack(spawnObjectNode);
         }
         spawnObjectNode.anInt1384 = j1;
@@ -3915,7 +6705,7 @@ export class Game extends GameShell {
             const k11: number = this.anIntArray1032[i6];
             let byte0: number = buf.getSignedByteNegated();
             const offset: number = buf.getByteAdded();
-            const x: number = this.placementX + (offset >> 4 & 7);
+            const x: number = this.placementX + ((offset >> 4) & 7);
             const y: number = this.placementY + (offset & 7);
             let byte1: number = buf.getSignedByteAdded();
             const l19: number = buf.method550();
@@ -3924,7 +6714,11 @@ export class Game extends GameShell {
             let byte3: number = buf.getSignedByteAdded();
             const l21: number = buf.getUnsignedLEShort();
             let player: Player;
-            if (id === this.thisPlayerServerId) { player = Game.localPlayer; } else { player = this.players[id]; }
+            if (id === this.thisPlayerServerId) {
+                player = Game.localPlayer;
+            } else {
+                player = this.players[id];
+            }
             if (player != null) {
                 const class47: GameObjectDefinition = GameObjectDefinition.getDefinition(k);
                 const i22: number = this.anIntArrayArrayArray891[this.plane][x][y];
@@ -3945,7 +6739,7 @@ export class Game extends GameShell {
                     }
                     player.anInt1743 = x * 128 + i23 * 64;
                     player.anInt1745 = y * 128 + j23 * 64;
-                    player.anInt1744 = this.method110(player.anInt1745, player.anInt1743, ((9 as number) | 0), this.plane);
+                    player.anInt1744 = this.method110(player.anInt1745, player.anInt1743, (9 as number) | 0, this.plane);
                     if (byte1 > byte0) {
                         const byte4: number = byte1;
                         byte1 = byte0;
@@ -3965,7 +6759,7 @@ export class Game extends GameShell {
         }
         if (opcode === 106) {
             const offset: number = buf.getByteAdded();
-            const x: number = this.placementX + (offset >> 4 & 7);
+            const x: number = this.placementX + ((offset >> 4) & 7);
             const y: number = this.placementY + (offset & 7);
             const amount: number = buf.getLittleShortA();
             const id: number = buf.method550();
@@ -3974,7 +6768,9 @@ export class Game extends GameShell {
                 const item: Item = new Item();
                 item.itemId = id;
                 item.itemCount = amount;
-                if (this.groundItems[this.plane][x][y] == null) { this.groundItems[this.plane][x][y] = new LinkedList(); }
+                if (this.groundItems[this.plane][x][y] == null) {
+                    this.groundItems[this.plane][x][y] = new LinkedList();
+                }
                 this.groundItems[this.plane][x][y].insertBack(item);
                 this.processGroundItems(x, y);
             }
@@ -3987,7 +6783,7 @@ export class Game extends GameShell {
             const j9: number = l3 & 3;
             const i12: number = this.anIntArray1032[k6];
             const j14: number = buf.getUnsignedByte();
-            const x: number = this.placementX + (j14 >> 4 & 7);
+            const x: number = this.placementX + ((j14 >> 4) & 7);
             const y: number = this.placementY + (j14 & 7);
             if (x >= 0 && y >= 0 && x < 103 && y < 103) {
                 const l18: number = this.anIntArrayArrayArray891[this.plane][x][y];
@@ -3997,10 +6793,10 @@ export class Game extends GameShell {
                 if (i12 === 0) {
                     const wall: Wall = this.currentScene.method263(this.plane, 17734, x, y);
                     if (wall != null) {
-                        const k21: number = wall.hash >> 14 & 32767;
+                        const k21: number = (wall.hash >> 14) & 32767;
                         if (k6 === 2) {
                             wall.aRenderable769 = new GameObject(k21, 4 + j9, 2, j19, i20, l18, l20, i1, false);
-                            wall.aRenderable770 = new GameObject(k21, j9 + 1 & 3, 2, j19, i20, l18, l20, i1, false);
+                            wall.aRenderable770 = new GameObject(k21, (j9 + 1) & 3, 2, j19, i20, l18, l20, i1, false);
                         } else {
                             wall.aRenderable769 = new GameObject(k21, j9, k6, j19, i20, l18, l20, i1, false);
                         }
@@ -4008,16 +6804,54 @@ export class Game extends GameShell {
                 }
                 if (i12 === 1) {
                     const wallDecoration: WallDecoration = this.currentScene.method264(this.plane, y, x, false);
-                    if (wallDecoration != null) { wallDecoration.renderable = new GameObject(wallDecoration.hash >> 14 & 32767, 0, 4, j19, i20, l18, l20, i1, false); }
+                    if (wallDecoration != null) {
+                        wallDecoration.renderable = new GameObject(
+                            (wallDecoration.hash >> 14) & 32767,
+                            0,
+                            4,
+                            j19,
+                            i20,
+                            l18,
+                            l20,
+                            i1,
+                            false
+                        );
+                    }
                 }
                 if (i12 === 2) {
-                    const sceneSpawnRequest: SceneSpawnRequest = this.currentScene.method265(x, ((32 as number) | 0), y, this.plane);
-                    if (k6 === 11) { k6 = 10; }
-                    if (sceneSpawnRequest != null) { sceneSpawnRequest.aRenderable601 = new GameObject(sceneSpawnRequest.anInt125 >> 14 & 32767, j9, k6, j19, i20, l18, l20, i1, false); }
+                    const sceneSpawnRequest: SceneSpawnRequest = this.currentScene.method265(x, (32 as number) | 0, y, this.plane);
+                    if (k6 === 11) {
+                        k6 = 10;
+                    }
+                    if (sceneSpawnRequest != null) {
+                        sceneSpawnRequest.aRenderable601 = new GameObject(
+                            (sceneSpawnRequest.anInt125 >> 14) & 32767,
+                            j9,
+                            k6,
+                            j19,
+                            i20,
+                            l18,
+                            l20,
+                            i1,
+                            false
+                        );
+                    }
                 }
                 if (i12 === 3) {
                     const floorDecoration: FloorDecoration = this.currentScene.method266(this.plane, y, 0, x);
-                    if (floorDecoration != null) { floorDecoration.renderable = new GameObject(floorDecoration.hash >> 14 & 32767, j9, 22, j19, i20, l18, l20, i1, false); }
+                    if (floorDecoration != null) {
+                        floorDecoration.renderable = new GameObject(
+                            (floorDecoration.hash >> 14) & 32767,
+                            j9,
+                            22,
+                            j19,
+                            i20,
+                            l18,
+                            l20,
+                            i1,
+                            false
+                        );
+                    }
                 }
             }
             return;
@@ -4025,14 +6859,16 @@ export class Game extends GameShell {
         if (opcode === 107) {
             const id: number = buf.getUnsignedLEShort();
             const offset: number = buf.getByteNegated();
-            const x: number = this.placementX + (offset >> 4 & 7);
+            const x: number = this.placementX + ((offset >> 4) & 7);
             const y: number = this.placementY + (offset & 7);
             const amount: number = buf.method550();
             if (x >= 0 && y >= 0 && x < 104 && y < 104) {
                 const item: Item = new Item();
                 item.itemId = id;
                 item.itemCount = amount;
-                if (this.groundItems[this.plane][x][y] == null) { this.groundItems[this.plane][x][y] = new LinkedList(); }
+                if (this.groundItems[this.plane][x][y] == null) {
+                    this.groundItems[this.plane][x][y] = new LinkedList();
+                }
                 this.groundItems[this.plane][x][y].insertBack(item);
                 this.processGroundItems(x, y);
             }
@@ -4040,7 +6876,7 @@ export class Game extends GameShell {
         }
         if (opcode === 121) {
             const offset: number = buf.getUnsignedByte();
-            const x: number = this.placementX + (offset >> 4 & 7);
+            const x: number = this.placementX + ((offset >> 4) & 7);
             const y: number = this.placementY + (offset & 7);
             const id: number = buf.getUnsignedLEShort();
             const amount: number = buf.getUnsignedLEShort();
@@ -4048,11 +6884,15 @@ export class Game extends GameShell {
             if (x >= 0 && y >= 0 && x < 104 && y < 104) {
                 const list: LinkedList = this.groundItems[this.plane][x][y];
                 if (list != null) {
-                    for (let item: Item = list.first() as Item; item != null; item = list.next() as Item) {{
-                        if (item.itemId !== (id & 32767) || item.itemCount !== amount) { continue; }
-                        item.itemCount = newAmount;
-                        break;
-                    }}
+                    for (let item: Item = list.first() as Item; item != null; item = list.next() as Item) {
+                        {
+                            if (item.itemId !== (id & 32767) || item.itemCount !== amount) {
+                                continue;
+                            }
+                            item.itemCount = newAmount;
+                            break;
+                        }
+                    }
                     this.processGroundItems(x, y);
                 }
             }
@@ -4060,7 +6900,7 @@ export class Game extends GameShell {
         }
         if (opcode === 181) {
             const offset: number = buf.getUnsignedByte();
-            let x: number = this.placementX + (offset >> 4 & 7);
+            let x: number = this.placementX + ((offset >> 4) & 7);
             let y: number = this.placementY + (offset & 7);
             let i10: number = x + buf.getSignedByte();
             let l12: number = y + buf.getSignedByte();
@@ -4077,21 +6917,46 @@ export class Game extends GameShell {
                 y = y * 128 + 64;
                 i10 = i10 * 128 + 64;
                 l12 = l12 * 128 + 64;
-                const class50_sub1_sub4_sub2: Projectile = new Projectile(this.plane, i19, j21, y, k16, j20 + Game.pulseCycle, i21, l14, this.method110(y, x, ((9 as number) | 0), this.plane) - i18, x, k19 + Game.pulseCycle);
-                class50_sub1_sub4_sub2.trackTarget(i10, l12, this.method110(l12, i10, ((9 as number) | 0), this.plane) - i19, k19 + Game.pulseCycle);
+                const class50_sub1_sub4_sub2: Projectile = new Projectile(
+                    this.plane,
+                    i19,
+                    j21,
+                    y,
+                    k16,
+                    j20 + Game.pulseCycle,
+                    i21,
+                    l14,
+                    this.method110(y, x, (9 as number) | 0, this.plane) - i18,
+                    x,
+                    k19 + Game.pulseCycle
+                );
+                class50_sub1_sub4_sub2.trackTarget(
+                    i10,
+                    l12,
+                    this.method110(l12, i10, (9 as number) | 0, this.plane) - i19,
+                    k19 + Game.pulseCycle
+                );
                 this.aClass6_1282.insertBack(class50_sub1_sub4_sub2);
             }
             return;
         }
         if (opcode === 41) {
             const offset: number = buf.getUnsignedByte();
-            const x: number = this.placementX + (offset >> 4 & 7);
+            const x: number = this.placementX + ((offset >> 4) & 7);
             const y: number = this.placementY + (offset & 7);
             const soundId: number = buf.getUnsignedLEShort();
             const i13: number = buf.getUnsignedByte();
-            const i15: number = i13 >> 4 & 15;
+            const i15: number = (i13 >> 4) & 15;
             const type: number = i13 & 7;
-            if (Game.localPlayer.pathX[0] >= x - i15 && Game.localPlayer.pathX[0] <= x + i15 && Game.localPlayer.pathY[0] >= y - i15 && Game.localPlayer.pathY[0] <= y + i15 && this.aBoolean1301 && !Game.lowMemory && this.currentSound < 50) {
+            if (
+                Game.localPlayer.pathX[0] >= x - i15 &&
+                Game.localPlayer.pathX[0] <= x + i15 &&
+                Game.localPlayer.pathY[0] >= y - i15 &&
+                Game.localPlayer.pathY[0] <= y + i15 &&
+                this.aBoolean1301 &&
+                !Game.lowMemory &&
+                this.currentSound < 50
+            ) {
                 this.sound[this.currentSound] = soundId;
                 this.soundType[this.currentSound] = type;
                 this.soundDelay[this.currentSound] = SoundTrack.trackDelays[soundId];
@@ -4100,7 +6965,7 @@ export class Game extends GameShell {
         }
         if (opcode === 59) {
             const j2: number = buf.getUnsignedByte();
-            let i5: number = this.placementX + (j2 >> 4 & 7);
+            let i5: number = this.placementX + ((j2 >> 4) & 7);
             let l7: number = this.placementY + (j2 & 7);
             const k10: number = buf.getUnsignedLEShort();
             const j13: number = buf.getUnsignedByte();
@@ -4108,7 +6973,15 @@ export class Game extends GameShell {
             if (i5 >= 0 && l7 >= 0 && i5 < 104 && l7 < 104) {
                 i5 = i5 * 128 + 64;
                 l7 = l7 * 128 + 64;
-                const gameAnimableObject: GameAnimableObject = new GameAnimableObject(this.plane, Game.pulseCycle, j15, k10, this.method110(l7, i5, ((9 as number) | 0), this.plane) - j13, l7, i5);
+                const gameAnimableObject: GameAnimableObject = new GameAnimableObject(
+                    this.plane,
+                    Game.pulseCycle,
+                    j15,
+                    k10,
+                    this.method110(l7, i5, (9 as number) | 0, this.plane) - j13,
+                    l7,
+                    i5
+                );
                 this.aClass6_1210.insertBack(gameAnimableObject);
             }
             return;
@@ -4120,25 +6993,33 @@ export class Game extends GameShell {
             const l10: number = this.anIntArray1032[j5];
             const k13: number = buf.getLittleShortA();
             const k15: number = buf.getByteAdded();
-            const i17: number = this.placementX + (k15 >> 4 & 7);
+            const i17: number = this.placementX + ((k15 >> 4) & 7);
             const j18: number = this.placementY + (k15 & 7);
-            if (i17 >= 0 && j18 >= 0 && i17 < 104 && j18 < 104) { this.method145(true, this.plane, i17, i8, -1, j5, k13, 0, l10, j18); }
+            if (i17 >= 0 && j18 >= 0 && i17 < 104 && j18 < 104) {
+                this.method145(true, this.plane, i17, i8, -1, j5, k13, 0, l10, j18);
+            }
             return;
         }
         if (opcode === 208) {
             const id: number = buf.method550();
             const offset: number = buf.getByteAdded();
-            const x: number = this.placementX + (offset >> 4 & 7);
+            const x: number = this.placementX + ((offset >> 4) & 7);
             const y: number = this.placementY + (offset & 7);
             if (x >= 0 && y >= 0 && x < 104 && y < 104) {
                 const list: LinkedList = this.groundItems[this.plane][x][y];
                 if (list != null) {
-                    for (let item: Item = list.first() as Item; item != null; item = list.next() as Item) {{
-                        if (item.itemId !== (id & 32767)) { continue; }
-                        item.remove();
-                        break;
-                    }}
-                    if (list.first() == null) { this.groundItems[this.plane][x][y] = null; }
+                    for (let item: Item = list.first() as Item; item != null; item = list.next() as Item) {
+                        {
+                            if (item.itemId !== (id & 32767)) {
+                                continue;
+                            }
+                            item.remove();
+                            break;
+                        }
+                    }
+                    if (list.first() == null) {
+                        this.groundItems[this.plane][x][y] = null;
+                    }
                     this.processGroundItems(x, y);
                 }
             }
@@ -4146,21 +7027,24 @@ export class Game extends GameShell {
         }
         if (opcode === 88) {
             const i3: number = buf.getByteSubtracted();
-            const l5: number = this.placementX + (i3 >> 4 & 7);
+            const l5: number = this.placementX + ((i3 >> 4) & 7);
             const k8: number = this.placementY + (i3 & 7);
             const j11: number = buf.getByteSubtracted();
             const l13: number = j11 >> 2;
             const l15: number = j11 & 3;
             const j17: number = this.anIntArray1032[l13];
-            if (l5 >= 0 && k8 >= 0 && l5 < 104 && k8 < 104) { this.method145(true, this.plane, l5, l15, -1, l13, -1, 0, j17, k8); }
+            if (l5 >= 0 && k8 >= 0 && l5 < 104 && k8 < 104) {
+                this.method145(true, this.plane, l5, l15, -1, l13, -1, 0, j17, k8);
+            }
         }
     }
 
     public logout() {
         try {
-            if (this.gameConnection != null) { this.gameConnection.close(); }
-        } catch (_ex) {
-        }
+            if (this.gameConnection != null) {
+                this.gameConnection.close();
+            }
+        } catch (_ex) {}
         this.gameConnection = null;
         this.loggedIn = false;
         this.loginScreenState = 0;
@@ -4168,7 +7052,9 @@ export class Game extends GameShell {
         this.password = "";
         this.resetModelCaches();
         this.currentScene.method241();
-        for (let plane: number = 0; plane < 4; plane++) {this.currentCollisionMap[plane].reset(); }
+        for (let plane: number = 0; plane < 4; plane++) {
+            this.currentCollisionMap[plane].reset();
+        }
         this.stopMidi();
         this.currentSong = -1;
         this.nextSong = -1;
@@ -4176,7 +7062,9 @@ export class Game extends GameShell {
     }
 
     public method143(byte0: number) {
-        if (byte0 !== -40) { Game.aBoolean1207 = !Game.aBoolean1207; }
+        if (byte0 !== -40) {
+            Game.aBoolean1207 = !Game.aBoolean1207;
+        }
         if (Game.lowMemory && this.loadingStage === 2 && Region.onBuildTimePlane !== this.plane) {
             this.method125(null, "Loading - please wait.");
             this.loadingStage = 1;
@@ -4185,7 +7073,23 @@ export class Game extends GameShell {
         if (this.loadingStage === 1) {
             const i: number = this.method144(5);
             if (i !== 0 && new Date().getTime() - this.aLong1229 > 360000) {
-                SignLink.reportError(this.username + " glcfb serverseed_meh ," + i + "," + Game.lowMemory + "," + this.stores[0] + "," + this.onDemandRequester.immediateRequestsCount() + "," + this.plane + "," + this.chunkX + "," + this.chunkY);
+                SignLink.reportError(
+                    this.username +
+                        " glcfb serverseed_meh ," +
+                        i +
+                        "," +
+                        Game.lowMemory +
+                        "," +
+                        this.stores[0] +
+                        "," +
+                        this.onDemandRequester.immediateRequestsCount() +
+                        "," +
+                        this.plane +
+                        "," +
+                        this.chunkX +
+                        "," +
+                        this.chunkY
+                );
                 this.aLong1229 = new Date().getTime();
             }
         }
@@ -4197,89 +7101,105 @@ export class Game extends GameShell {
 
     public method150(i: number, j: number, k: number, l: number, i1: number, j1: number) {
         let k1: number = this.currentScene.method267(j, k, i);
-        i1 = (62 / i1 | 0);
+        i1 = (62 / i1) | 0;
         if (k1 !== 0) {
             const l1: number = this.currentScene.method271(j, k, i, k1);
-            const k2: number = l1 >> 6 & 3;
+            const k2: number = (l1 >> 6) & 3;
             const i3: number = l1 & 31;
             let k3: number = j1;
-            if (k1 > 0) { k3 = l; }
+            if (k1 > 0) {
+                k3 = l;
+            }
             const ai: number[] = this.minimapImage.pixels;
             const k4: number = 24624 + k * 4 + (103 - i) * 512 * 4;
-            const i5: number = k1 >> 14 & 32767;
+            const i5: number = (k1 >> 14) & 32767;
             const class47_2: GameObjectDefinition = GameObjectDefinition.getDefinition(i5);
             if (class47_2.anInt795 !== -1) {
                 const class50_sub1_sub1_sub3_2: IndexedImage = this.aClass50_Sub1_Sub1_Sub3Array1153[class47_2.anInt795];
                 if (class50_sub1_sub1_sub3_2 != null) {
-                    const i6: number = ((class47_2.sizeX * 4 - class50_sub1_sub1_sub3_2.width) / 2 | 0);
-                    const j6: number = ((class47_2.sizeY * 4 - class50_sub1_sub1_sub3_2.height) / 2 | 0);
+                    const i6: number = ((class47_2.sizeX * 4 - class50_sub1_sub1_sub3_2.width) / 2) | 0;
+                    const j6: number = ((class47_2.sizeY * 4 - class50_sub1_sub1_sub3_2.height) / 2) | 0;
                     class50_sub1_sub1_sub3_2.drawImage(48 + k * 4 + i6, 48 + (104 - i - class47_2.sizeY) * 4 + j6);
                 }
             } else {
-                if (i3 === 0 || i3 === 2) { if (k2 === 0) {
-                    ai[k4] = k3;
-                    ai[k4 + 512] = k3;
-                    ai[k4 + 1024] = k3;
-                    ai[k4 + 1536] = k3;
-                } else if (k2 === 1) {
-                    ai[k4] = k3;
-                    ai[k4 + 1] = k3;
-                    ai[k4 + 2] = k3;
-                    ai[k4 + 3] = k3;
-                } else if (k2 === 2) {
-                    ai[k4 + 3] = k3;
-                    ai[k4 + 3 + 512] = k3;
-                    ai[k4 + 3 + 1024] = k3;
-                    ai[k4 + 3 + 1536] = k3;
-                } else if (k2 === 3) {
-                    ai[k4 + 1536] = k3;
-                    ai[k4 + 1536 + 1] = k3;
-                    ai[k4 + 1536 + 2] = k3;
-                    ai[k4 + 1536 + 3] = k3;
+                if (i3 === 0 || i3 === 2) {
+                    if (k2 === 0) {
+                        ai[k4] = k3;
+                        ai[k4 + 512] = k3;
+                        ai[k4 + 1024] = k3;
+                        ai[k4 + 1536] = k3;
+                    } else if (k2 === 1) {
+                        ai[k4] = k3;
+                        ai[k4 + 1] = k3;
+                        ai[k4 + 2] = k3;
+                        ai[k4 + 3] = k3;
+                    } else if (k2 === 2) {
+                        ai[k4 + 3] = k3;
+                        ai[k4 + 3 + 512] = k3;
+                        ai[k4 + 3 + 1024] = k3;
+                        ai[k4 + 3 + 1536] = k3;
+                    } else if (k2 === 3) {
+                        ai[k4 + 1536] = k3;
+                        ai[k4 + 1536 + 1] = k3;
+                        ai[k4 + 1536 + 2] = k3;
+                        ai[k4 + 1536 + 3] = k3;
+                    }
                 }
+                if (i3 === 3) {
+                    if (k2 === 0) {
+                        ai[k4] = k3;
+                    } else if (k2 === 1) {
+                        ai[k4 + 3] = k3;
+                    } else if (k2 === 2) {
+                        ai[k4 + 3 + 1536] = k3;
+                    } else if (k2 === 3) {
+                        ai[k4 + 1536] = k3;
+                    }
                 }
-                if (i3 === 3) { if (k2 === 0) { ai[k4] = k3; } else if (k2 === 1) { ai[k4 + 3] = k3; } else if (k2 === 2) { ai[k4 + 3 + 1536] = k3; } else if (k2 === 3) { ai[k4 + 1536] = k3; } }
-                if (i3 === 2) { if (k2 === 3) {
-                    ai[k4] = k3;
-                    ai[k4 + 512] = k3;
-                    ai[k4 + 1024] = k3;
-                    ai[k4 + 1536] = k3;
-                } else if (k2 === 0) {
-                    ai[k4] = k3;
-                    ai[k4 + 1] = k3;
-                    ai[k4 + 2] = k3;
-                    ai[k4 + 3] = k3;
-                } else if (k2 === 1) {
-                    ai[k4 + 3] = k3;
-                    ai[k4 + 3 + 512] = k3;
-                    ai[k4 + 3 + 1024] = k3;
-                    ai[k4 + 3 + 1536] = k3;
-                } else if (k2 === 2) {
-                    ai[k4 + 1536] = k3;
-                    ai[k4 + 1536 + 1] = k3;
-                    ai[k4 + 1536 + 2] = k3;
-                    ai[k4 + 1536 + 3] = k3;
-                }
+                if (i3 === 2) {
+                    if (k2 === 3) {
+                        ai[k4] = k3;
+                        ai[k4 + 512] = k3;
+                        ai[k4 + 1024] = k3;
+                        ai[k4 + 1536] = k3;
+                    } else if (k2 === 0) {
+                        ai[k4] = k3;
+                        ai[k4 + 1] = k3;
+                        ai[k4 + 2] = k3;
+                        ai[k4 + 3] = k3;
+                    } else if (k2 === 1) {
+                        ai[k4 + 3] = k3;
+                        ai[k4 + 3 + 512] = k3;
+                        ai[k4 + 3 + 1024] = k3;
+                        ai[k4 + 3 + 1536] = k3;
+                    } else if (k2 === 2) {
+                        ai[k4 + 1536] = k3;
+                        ai[k4 + 1536 + 1] = k3;
+                        ai[k4 + 1536 + 2] = k3;
+                        ai[k4 + 1536 + 3] = k3;
+                    }
                 }
             }
         }
         k1 = this.currentScene.method269(j, k, i);
         if (k1 !== 0) {
             const i2: number = this.currentScene.method271(j, k, i, k1);
-            const l2: number = i2 >> 6 & 3;
+            const l2: number = (i2 >> 6) & 3;
             const j3: number = i2 & 31;
-            const l3: number = k1 >> 14 & 32767;
+            const l3: number = (k1 >> 14) & 32767;
             const class47_1: GameObjectDefinition = GameObjectDefinition.getDefinition(l3);
             if (class47_1.anInt795 !== -1) {
                 const class50_sub1_sub1_sub3_1: IndexedImage = this.aClass50_Sub1_Sub1_Sub3Array1153[class47_1.anInt795];
                 if (class50_sub1_sub1_sub3_1 != null) {
-                    const j5: number = ((class47_1.sizeX * 4 - class50_sub1_sub1_sub3_1.width) / 2 | 0);
-                    const k5: number = ((class47_1.sizeY * 4 - class50_sub1_sub1_sub3_1.height) / 2 | 0);
+                    const j5: number = ((class47_1.sizeX * 4 - class50_sub1_sub1_sub3_1.width) / 2) | 0;
+                    const k5: number = ((class47_1.sizeY * 4 - class50_sub1_sub1_sub3_1.height) / 2) | 0;
                     class50_sub1_sub1_sub3_1.drawImage(48 + k * 4 + j5, 48 + (104 - i - class47_1.sizeY) * 4 + k5);
                 }
             } else if (j3 === 9) {
                 let l4: number = 15658734;
-                if (k1 > 0) { l4 = 15597568; }
+                if (k1 > 0) {
+                    l4 = 15597568;
+                }
                 const ai1: number[] = this.minimapImage.pixels;
                 const l5: number = 24624 + k * 4 + (103 - i) * 512 * 4;
                 if (l2 === 0 || l2 === 2) {
@@ -4297,13 +7217,13 @@ export class Game extends GameShell {
         }
         k1 = this.currentScene.getFloorDecorationHash(j, k, i);
         if (k1 !== 0) {
-            const j2: number = k1 >> 14 & 32767;
+            const j2: number = (k1 >> 14) & 32767;
             const class47: GameObjectDefinition = GameObjectDefinition.getDefinition(j2);
             if (class47.anInt795 !== -1) {
                 const class50_sub1_sub1_sub3: IndexedImage = this.aClass50_Sub1_Sub1_Sub3Array1153[class47.anInt795];
                 if (class50_sub1_sub1_sub3 != null) {
-                    const i4: number = ((class47.sizeX * 4 - class50_sub1_sub1_sub3.width) / 2 | 0);
-                    const j4: number = ((class47.sizeY * 4 - class50_sub1_sub1_sub3.height) / 2 | 0);
+                    const i4: number = ((class47.sizeX * 4 - class50_sub1_sub1_sub3.width) / 2) | 0;
+                    const j4: number = ((class47.sizeY * 4 - class50_sub1_sub1_sub3.height) / 2) | 0;
                     class50_sub1_sub1_sub3.drawImage(48 + k * 4 + i4, 48 + (104 - i - class47.sizeY) * 4 + j4);
                 }
             }
@@ -4313,24 +7233,45 @@ export class Game extends GameShell {
     public renderViewport(plane: number) {
         const pixels: number[] = this.minimapImage.pixels;
         const pixelAmount: number = pixels.length;
-        for (let pixel: number = 0; pixel < pixelAmount; pixel++) {pixels[pixel] = 0; }
-        for (let viewportY: number = 1; viewportY < 103; viewportY++) {{
-            let drawPoint: number = 24628 + (103 - viewportY) * 512 * 4;
-            for (let viewportX: number = 1; viewportX < 103; viewportX++) {{
-                if ((this.currentSceneTileFlags[plane][viewportX][viewportY] & 24) === 0) { this.currentScene.renderMinimapDot(pixels, drawPoint, 512, plane, viewportX, viewportY); }
-                if (plane < 3 && (this.currentSceneTileFlags[plane + 1][viewportX][viewportY] & 8) !== 0) { this.currentScene.renderMinimapDot(pixels, drawPoint, 512, plane + 1, viewportX, viewportY); }
-                drawPoint += 4;
-            }}
-        }}
-        const primaryColour: number = ((238 + (((Math.random() * 20.0) as number) | 0)) - 10 << 16) + ((238 + (((Math.random() * 20.0) as number) | 0)) - 10 << 8) + ((238 + (((Math.random() * 20.0) as number) | 0)) - 10);
-        const secondaryColour: number = (238 + (((Math.random() * 20.0) as number) | 0)) - 10 << 16;
+        for (let pixel: number = 0; pixel < pixelAmount; pixel++) {
+            pixels[pixel] = 0;
+        }
+        for (let viewportY: number = 1; viewportY < 103; viewportY++) {
+            {
+                let drawPoint: number = 24628 + (103 - viewportY) * 512 * 4;
+                for (let viewportX: number = 1; viewportX < 103; viewportX++) {
+                    {
+                        if ((this.currentSceneTileFlags[plane][viewportX][viewportY] & 24) === 0) {
+                            this.currentScene.renderMinimapDot(pixels, drawPoint, 512, plane, viewportX, viewportY);
+                        }
+                        if (plane < 3 && (this.currentSceneTileFlags[plane + 1][viewportX][viewportY] & 8) !== 0) {
+                            this.currentScene.renderMinimapDot(pixels, drawPoint, 512, plane + 1, viewportX, viewportY);
+                        }
+                        drawPoint += 4;
+                    }
+                }
+            }
+        }
+        const primaryColour: number =
+            ((238 + (((Math.random() * 20.0) as number) | 0) - 10) << 16) +
+            ((238 + (((Math.random() * 20.0) as number) | 0) - 10) << 8) +
+            (238 + (((Math.random() * 20.0) as number) | 0) - 10);
+        const secondaryColour: number = (238 + (((Math.random() * 20.0) as number) | 0) - 10) << 16;
         this.minimapImage.createRasterizer();
-        for (let viewportY: number = 1; viewportY < 103; viewportY++) {{
-            for (let viewportX: number = 1; viewportX < 103; viewportX++) {{
-                if ((this.currentSceneTileFlags[plane][viewportX][viewportY] & 24) === 0) { this.method150(viewportY, plane, viewportX, secondaryColour, 563, primaryColour); }
-                if (plane < 3 && (this.currentSceneTileFlags[plane + 1][viewportX][viewportY] & 8) !== 0) { this.method150(viewportY, plane + 1, viewportX, secondaryColour, 563, primaryColour); }
-            }}
-        }}
+        for (let viewportY: number = 1; viewportY < 103; viewportY++) {
+            {
+                for (let viewportX: number = 1; viewportX < 103; viewportX++) {
+                    {
+                        if ((this.currentSceneTileFlags[plane][viewportX][viewportY] & 24) === 0) {
+                            this.method150(viewportY, plane, viewportX, secondaryColour, 563, primaryColour);
+                        }
+                        if (plane < 3 && (this.currentSceneTileFlags[plane + 1][viewportX][viewportY] & 8) !== 0) {
+                            this.method150(viewportY, plane + 1, viewportX, secondaryColour, 563, primaryColour);
+                        }
+                    }
+                }
+            }
+        }
         if (this.aClass18_1158 != null) {
             this.aClass18_1158.createRasterizer();
             Rasterizer3D.lineOffsets = this.anIntArray1002;
@@ -4342,57 +7283,103 @@ export class Game extends GameShell {
             this.outBuffer.putTriByte(2657152);
         }
         this.minimapHintCount = 0;
-        for (let viewportX: number = 0; viewportX < 104; viewportX++) {{
-            for (let viewportY: number = 0; viewportY < 104; viewportY++) {{
-                let floorHash: number = this.currentScene.getFloorDecorationHash(this.plane, viewportX, viewportY);
-                if (floorHash !== 0) {
-                    floorHash = floorHash >> 14 & 32767;
-                    const icon: number = GameObjectDefinition.getDefinition(floorHash).icon;
-                    if (icon >= 0) {
-                        let drawPointX: number = viewportX;
-                        let drawPointY: number = viewportY;
-                        if (icon !== 22 && icon !== 29 && icon !== 34 && icon !== 36 && icon !== 46 && icon !== 47 && icon !== 48) {
-                            const regionWidth: number = 104;
-                            const regionHeight: number = 104;
-                            const flags: number[][] = this.currentCollisionMap[this.plane].adjacency;
-                            for (let off: number = 0; off < 10; off++) {{
-                                const randPlane: number = (((Math.random() * 4.0) as number) | 0);
-                                if (randPlane === 0 && drawPointX > 0 && drawPointX > viewportX - 3 && (flags[drawPointX - 1][drawPointY] & 19398920) === 0) { drawPointX--; }
-                                if (randPlane === 1 && drawPointX < regionWidth - 1 && drawPointX < viewportX + 3 && (flags[drawPointX + 1][drawPointY] & 19399040) === 0) { drawPointX++; }
-                                if (randPlane === 2 && drawPointY > 0 && drawPointY > viewportY - 3 && (flags[drawPointX][drawPointY - 1] & 19398914) === 0) { drawPointY--; }
-                                if (randPlane === 3 && drawPointY < regionHeight - 1 && drawPointY < viewportY + 3 && (flags[drawPointX][drawPointY + 1] & 19398944) === 0) { drawPointY++; }
-                            }}
+        for (let viewportX: number = 0; viewportX < 104; viewportX++) {
+            {
+                for (let viewportY: number = 0; viewportY < 104; viewportY++) {
+                    {
+                        let floorHash: number = this.currentScene.getFloorDecorationHash(this.plane, viewportX, viewportY);
+                        if (floorHash !== 0) {
+                            floorHash = (floorHash >> 14) & 32767;
+                            const icon: number = GameObjectDefinition.getDefinition(floorHash).icon;
+                            if (icon >= 0) {
+                                let drawPointX: number = viewportX;
+                                let drawPointY: number = viewportY;
+                                if (icon !== 22 && icon !== 29 && icon !== 34 && icon !== 36 && icon !== 46 && icon !== 47 && icon !== 48) {
+                                    const regionWidth: number = 104;
+                                    const regionHeight: number = 104;
+                                    const flags: number[][] = this.currentCollisionMap[this.plane].adjacency;
+                                    for (let off: number = 0; off < 10; off++) {
+                                        {
+                                            const randPlane: number = ((Math.random() * 4.0) as number) | 0;
+                                            if (
+                                                randPlane === 0 &&
+                                                drawPointX > 0 &&
+                                                drawPointX > viewportX - 3 &&
+                                                (flags[drawPointX - 1][drawPointY] & 19398920) === 0
+                                            ) {
+                                                drawPointX--;
+                                            }
+                                            if (
+                                                randPlane === 1 &&
+                                                drawPointX < regionWidth - 1 &&
+                                                drawPointX < viewportX + 3 &&
+                                                (flags[drawPointX + 1][drawPointY] & 19399040) === 0
+                                            ) {
+                                                drawPointX++;
+                                            }
+                                            if (
+                                                randPlane === 2 &&
+                                                drawPointY > 0 &&
+                                                drawPointY > viewportY - 3 &&
+                                                (flags[drawPointX][drawPointY - 1] & 19398914) === 0
+                                            ) {
+                                                drawPointY--;
+                                            }
+                                            if (
+                                                randPlane === 3 &&
+                                                drawPointY < regionHeight - 1 &&
+                                                drawPointY < viewportY + 3 &&
+                                                (flags[drawPointX][drawPointY + 1] & 19398944) === 0
+                                            ) {
+                                                drawPointY++;
+                                            }
+                                        }
+                                    }
+                                }
+                                this.minimapHint[this.minimapHintCount] = this.worldMapHintIcons[icon];
+                                this.minimapHintX[this.minimapHintCount] = drawPointX;
+                                this.minimapHintY[this.minimapHintCount] = drawPointY;
+                                this.minimapHintCount++;
+                            }
                         }
-                        this.minimapHint[this.minimapHintCount] = this.worldMapHintIcons[icon];
-                        this.minimapHintX[this.minimapHintCount] = drawPointX;
-                        this.minimapHintY[this.minimapHintCount] = drawPointY;
-                        this.minimapHintCount++;
                     }
                 }
-            }}
-        }}
+            }
+        }
     }
 
     public method144(i: number): number {
-        for (let j: number = 0; j < this.aByteArrayArray838.length; j++) {{
-            if (this.aByteArrayArray838[j] == null && this.anIntArray857[j] !== -1) { return -1; }
-            if (this.aByteArrayArray1232[j] == null && this.anIntArray858[j] !== -1) { return -2; }
-        }}
-        let flag: boolean = true;
-        if (i < 5 || i > 5) { this.aBoolean953 = !this.aBoolean953; }
-        for (let k: number = 0; k < this.aByteArrayArray838.length; k++) {{
-            const abyte0: number[] = this.aByteArrayArray1232[k];
-            if (abyte0 != null) {
-                let l: number = (this.coordinates[k] >> 8) * 64 - this.nextTopLeftTileX;
-                let i1: number = (this.coordinates[k] & 255) * 64 - this.nextTopRightTileY;
-                if (this.aBoolean1163) {
-                    l = 10;
-                    i1 = 10;
+        for (let j: number = 0; j < this.aByteArrayArray838.length; j++) {
+            {
+                if (this.aByteArrayArray838[j] == null && this.anIntArray857[j] !== -1) {
+                    return -1;
                 }
-                flag = Region.method181(l, i1, abyte0, 24515) && flag;
+                if (this.aByteArrayArray1232[j] == null && this.anIntArray858[j] !== -1) {
+                    return -2;
+                }
             }
-        }}
-        if (!flag) { return -3; }
+        }
+        let flag: boolean = true;
+        if (i < 5 || i > 5) {
+            this.aBoolean953 = !this.aBoolean953;
+        }
+        for (let k: number = 0; k < this.aByteArrayArray838.length; k++) {
+            {
+                const abyte0: number[] = this.aByteArrayArray1232[k];
+                if (abyte0 != null) {
+                    let l: number = (this.coordinates[k] >> 8) * 64 - this.nextTopLeftTileX;
+                    let i1: number = (this.coordinates[k] & 255) * 64 - this.nextTopRightTileY;
+                    if (this.aBoolean1163) {
+                        l = 10;
+                        i1 = 10;
+                    }
+                    flag = Region.method181(l, i1, abyte0, 24515) && flag;
+                }
+            }
+        }
+        if (!flag) {
+            return -3;
+        }
         if (this.aBoolean1209) {
             return -4;
         } else {
@@ -4419,91 +7406,160 @@ export class Game extends GameShell {
             this.anInt1276 = -1;
             this.aClass6_1210.getNodeCount();
             this.aClass6_1282.getNodeCount();
-            Rasterizer3D.method495(((71 as number) | 0));
+            Rasterizer3D.method495((71 as number) | 0);
             this.resetModelCaches();
             this.currentScene.method241();
-            
-            for (let plane: number = 0; plane < 4; plane++) {this.currentCollisionMap[plane].reset(); }
-            for (let i1: number = 0; i1 < 4; i1++) {{
-                for (let l1: number = 0; l1 < 104; l1++) {{
-                    for (let k2: number = 0; k2 < 104; k2++) {this.currentSceneTileFlags[i1][l1][k2] = 0; }
-                }}
-            }}
+
+            for (let plane: number = 0; plane < 4; plane++) {
+                this.currentCollisionMap[plane].reset();
+            }
+            for (let i1: number = 0; i1 < 4; i1++) {
+                {
+                    for (let l1: number = 0; l1 < 104; l1++) {
+                        {
+                            for (let k2: number = 0; k2 < 104; k2++) {
+                                this.currentSceneTileFlags[i1][l1][k2] = 0;
+                            }
+                        }
+                    }
+                }
+            }
             const class8: Region = new Region(this.currentSceneTileFlags, 104, 104, this.anIntArrayArrayArray891);
             const l2: number = this.aByteArrayArray838.length;
             this.outBuffer.putOpcode(40);
             if (!this.aBoolean1163) {
-                for (let j3: number = 0; j3 < l2; j3++) {{
-                    const j4: number = (this.coordinates[j3] >> 8) * 64 - this.nextTopLeftTileX;
-                    const l5: number = (this.coordinates[j3] & 255) * 64 - this.nextTopRightTileY;
-                    const abyte0: number[] = this.aByteArrayArray838[j3];
-                    if (abyte0 != null) { class8.method174(l5, false, (this.chunkY - 6) * 8, j4, abyte0, (this.chunkX - 6) * 8, this.currentCollisionMap); }
-                }}
-                for (let k4: number = 0; k4 < l2; k4++) {{
-                    const i6: number = (this.coordinates[k4] >> 8) * 64 - this.nextTopLeftTileX;
-                    const l7: number = (this.coordinates[k4] & 255) * 64 - this.nextTopRightTileY;
-                    const abyte2: number[] = this.aByteArrayArray838[k4];
-                    if (abyte2 == null && this.chunkY < 800) { class8.initiateVertexHeights(i6, 64, l7, 64); }
-                }}
-                this.outBuffer.putOpcode(40);
-                for (let j6: number = 0; j6 < l2; j6++) {{
-                    const abyte1: number[] = this.aByteArrayArray1232[j6];
-                    if (abyte1 != null) {
-                        const l8: number = (this.coordinates[j6] >> 8) * 64 - this.nextTopLeftTileX;
-                        const k9: number = (this.coordinates[j6] & 255) * 64 - this.nextTopRightTileY;
-                        class8.method179(k9, this.currentCollisionMap, l8, -571, this.currentScene, abyte1);
+                for (let j3: number = 0; j3 < l2; j3++) {
+                    {
+                        const j4: number = (this.coordinates[j3] >> 8) * 64 - this.nextTopLeftTileX;
+                        const l5: number = (this.coordinates[j3] & 255) * 64 - this.nextTopRightTileY;
+                        const abyte0: number[] = this.aByteArrayArray838[j3];
+                        if (abyte0 != null) {
+                            class8.method174(l5, false, (this.chunkY - 6) * 8, j4, abyte0, (this.chunkX - 6) * 8, this.currentCollisionMap);
+                        }
                     }
-                }}
+                }
+                for (let k4: number = 0; k4 < l2; k4++) {
+                    {
+                        const i6: number = (this.coordinates[k4] >> 8) * 64 - this.nextTopLeftTileX;
+                        const l7: number = (this.coordinates[k4] & 255) * 64 - this.nextTopRightTileY;
+                        const abyte2: number[] = this.aByteArrayArray838[k4];
+                        if (abyte2 == null && this.chunkY < 800) {
+                            class8.initiateVertexHeights(i6, 64, l7, 64);
+                        }
+                    }
+                }
+                this.outBuffer.putOpcode(40);
+                for (let j6: number = 0; j6 < l2; j6++) {
+                    {
+                        const abyte1: number[] = this.aByteArrayArray1232[j6];
+                        if (abyte1 != null) {
+                            const l8: number = (this.coordinates[j6] >> 8) * 64 - this.nextTopLeftTileX;
+                            const k9: number = (this.coordinates[j6] & 255) * 64 - this.nextTopRightTileY;
+                            class8.method179(k9, this.currentCollisionMap, l8, -571, this.currentScene, abyte1);
+                        }
+                    }
+                }
             }
             if (this.aBoolean1163) {
-                for (let k3: number = 0; k3 < 4; k3++) {{
-                    for (let l4: number = 0; l4 < 13; l4++) {{
-                        for (let k6: number = 0; k6 < 13; k6++) {{
-                            let flag: boolean = false;
-                            const i9: number = this.constructedMapPalette[k3][l4][k6];
-                            if (i9 !== -1) {
-                                const l9: number = i9 >> 24 & 3;
-                                const j10: number = i9 >> 1 & 3;
-                                const l10: number = i9 >> 14 & 1023;
-                                const j11: number = i9 >> 3 & 2047;
-                                const l11: number = ((l10 / 8 | 0) << 8) + (j11 / 8 | 0);
-                                for (let j12: number = 0; j12 < this.coordinates.length; j12++) {{
-                                    if (this.coordinates[j12] !== l11 || this.aByteArrayArray838[j12] == null) { continue; }
-                                    class8.method168(j10, (j11 & 7) * 8, false, this.aByteArrayArray838[j12], k3, l9, l4 * 8, this.currentCollisionMap, k6 * 8, (l10 & 7) * 8);
-                                    flag = true;
-                                    break;
-                                }}
+                for (let k3: number = 0; k3 < 4; k3++) {
+                    {
+                        for (let l4: number = 0; l4 < 13; l4++) {
+                            {
+                                for (let k6: number = 0; k6 < 13; k6++) {
+                                    {
+                                        let flag: boolean = false;
+                                        const i9: number = this.constructedMapPalette[k3][l4][k6];
+                                        if (i9 !== -1) {
+                                            const l9: number = (i9 >> 24) & 3;
+                                            const j10: number = (i9 >> 1) & 3;
+                                            const l10: number = (i9 >> 14) & 1023;
+                                            const j11: number = (i9 >> 3) & 2047;
+                                            const l11: number = (((l10 / 8) | 0) << 8) + ((j11 / 8) | 0);
+                                            for (let j12: number = 0; j12 < this.coordinates.length; j12++) {
+                                                {
+                                                    if (this.coordinates[j12] !== l11 || this.aByteArrayArray838[j12] == null) {
+                                                        continue;
+                                                    }
+                                                    class8.method168(
+                                                        j10,
+                                                        (j11 & 7) * 8,
+                                                        false,
+                                                        this.aByteArrayArray838[j12],
+                                                        k3,
+                                                        l9,
+                                                        l4 * 8,
+                                                        this.currentCollisionMap,
+                                                        k6 * 8,
+                                                        (l10 & 7) * 8
+                                                    );
+                                                    flag = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (!flag) {
+                                            class8.method166(this.anInt1072, k3, k6 * 8, l4 * 8);
+                                        }
+                                    }
+                                }
                             }
-                            if (!flag) { class8.method166(this.anInt1072, k3, k6 * 8, l4 * 8); }
-                        }}
-                    }}
-                }}
-                for (let i5: number = 0; i5 < 13; i5++) {{
-                    for (let l6: number = 0; l6 < 13; l6++) {{
-                        const i8: number = this.constructedMapPalette[0][i5][l6];
-                        if (i8 === -1) { class8.initiateVertexHeights(i5 * 8, 8, l6 * 8, 8); }
-                    }}
-                }}
+                        }
+                    }
+                }
+                for (let i5: number = 0; i5 < 13; i5++) {
+                    {
+                        for (let l6: number = 0; l6 < 13; l6++) {
+                            {
+                                const i8: number = this.constructedMapPalette[0][i5][l6];
+                                if (i8 === -1) {
+                                    class8.initiateVertexHeights(i5 * 8, 8, l6 * 8, 8);
+                                }
+                            }
+                        }
+                    }
+                }
                 this.outBuffer.putOpcode(40);
-                for (let i7: number = 0; i7 < 4; i7++) {{
-                    for (let j8: number = 0; j8 < 13; j8++) {{
-                        for (let j9: number = 0; j9 < 13; j9++) {{
-                            const i10: number = this.constructedMapPalette[i7][j8][j9];
-                            if (i10 !== -1) {
-                                const k10: number = i10 >> 24 & 3;
-                                const i11: number = i10 >> 1 & 3;
-                                const k11: number = i10 >> 14 & 1023;
-                                const i12: number = i10 >> 3 & 2047;
-                                const k12: number = ((k11 / 8 | 0) << 8) + (i12 / 8 | 0);
-                                for (let l12: number = 0; l12 < this.coordinates.length; l12++) {{
-                                    if (this.coordinates[l12] !== k12 || this.aByteArrayArray1232[l12] == null) { continue; }
-                                    class8.method172(i7, this.currentCollisionMap, this.currentScene, false, this.aByteArrayArray1232[l12], j9 * 8, i11, (k11 & 7) * 8, j8 * 8, (i12 & 7) * 8, k10);
-                                    break;
-                                }}
+                for (let i7: number = 0; i7 < 4; i7++) {
+                    {
+                        for (let j8: number = 0; j8 < 13; j8++) {
+                            {
+                                for (let j9: number = 0; j9 < 13; j9++) {
+                                    {
+                                        const i10: number = this.constructedMapPalette[i7][j8][j9];
+                                        if (i10 !== -1) {
+                                            const k10: number = (i10 >> 24) & 3;
+                                            const i11: number = (i10 >> 1) & 3;
+                                            const k11: number = (i10 >> 14) & 1023;
+                                            const i12: number = (i10 >> 3) & 2047;
+                                            const k12: number = (((k11 / 8) | 0) << 8) + ((i12 / 8) | 0);
+                                            for (let l12: number = 0; l12 < this.coordinates.length; l12++) {
+                                                {
+                                                    if (this.coordinates[l12] !== k12 || this.aByteArrayArray1232[l12] == null) {
+                                                        continue;
+                                                    }
+                                                    class8.method172(
+                                                        i7,
+                                                        this.currentCollisionMap,
+                                                        this.currentScene,
+                                                        false,
+                                                        this.aByteArrayArray1232[l12],
+                                                        j9 * 8,
+                                                        i11,
+                                                        (k11 & 7) * 8,
+                                                        j8 * 8,
+                                                        (i12 & 7) * 8,
+                                                        k10
+                                                    );
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        }}
-                    }}
-                }}
+                        }
+                    }
+                }
             }
             this.outBuffer.putOpcode(40);
             class8.createRegionScene(this.currentCollisionMap, this.currentScene);
@@ -4513,57 +7569,88 @@ export class Game extends GameShell {
             }
             this.outBuffer.putOpcode(40);
             let l3: number = Region.lowestPlane;
-            if (l3 > this.plane) { l3 = this.plane; }
-            if (l3 < this.plane - 1) { l3 = this.plane - 1; }
-            if (Game.lowMemory) { this.currentScene.method242(Region.lowestPlane); } else { this.currentScene.method242(0); }
-            for (let j5: number = 0; j5 < 104; j5++) {{
-                for (let j7: number = 0; j7 < 104; j7++) {this.processGroundItems(j5, j7); }
-            }}
-            this.method18(((3 as number) | 0));
-        } catch (exception) {
-        }
+            if (l3 > this.plane) {
+                l3 = this.plane;
+            }
+            if (l3 < this.plane - 1) {
+                l3 = this.plane - 1;
+            }
+            if (Game.lowMemory) {
+                this.currentScene.method242(Region.lowestPlane);
+            } else {
+                this.currentScene.method242(0);
+            }
+            for (let j5: number = 0; j5 < 104; j5++) {
+                {
+                    for (let j7: number = 0; j7 < 104; j7++) {
+                        this.processGroundItems(j5, j7);
+                    }
+                }
+            }
+            this.method18((3 as number) | 0);
+        } catch (exception) {}
         GameObjectDefinition.modelCache.removeAll();
         this.outBuffer.putOpcode(78);
         this.outBuffer.putInt(1057001181);
         if (Game.lowMemory) {
             const k: number = this.onDemandRequester.fileCount(0);
-            for (let j1: number = 0; j1 < k; j1++) {{
-                const i2: number = this.onDemandRequester.modelId(j1);
-                if ((i2 & 121) === 0) { Model.resetModel(j1); }
-            }}
+            for (let j1: number = 0; j1 < k; j1++) {
+                {
+                    const i2: number = this.onDemandRequester.modelId(j1);
+                    if ((i2 & 121) === 0) {
+                        Model.resetModel(j1);
+                    }
+                }
+            }
         }
-        
+
         Rasterizer3D.method496(20);
         this.onDemandRequester.immediateRequestCount();
-        let l: number = ((this.chunkX - 6) / 8 | 0) - 1;
-        let k1: number = ((this.chunkX + 6) / 8 | 0) + 1;
-        let j2: number = ((this.chunkY - 6) / 8 | 0) - 1;
-        let i3: number = ((this.chunkY + 6) / 8 | 0) + 1;
-        i = (94 / i | 0);
+        let l: number = (((this.chunkX - 6) / 8) | 0) - 1;
+        let k1: number = (((this.chunkX + 6) / 8) | 0) + 1;
+        let j2: number = (((this.chunkY - 6) / 8) | 0) - 1;
+        let i3: number = (((this.chunkY + 6) / 8) | 0) + 1;
+        i = (94 / i) | 0;
         if (this.aBoolean1067) {
             l = 49;
             k1 = 50;
             j2 = 49;
             i3 = 50;
         }
-        for (let i4: number = l; i4 <= k1; i4++) {{
-            for (let k5: number = j2; k5 <= i3; k5++) {if (i4 === l || i4 === k1 || k5 === j2 || k5 === i3) {
-                const k7: number = this.onDemandRequester.regId(0, i4, k5, 0);
-                if (k7 !== -1) { this.onDemandRequester.passiveRequest(k7, 3); }
-                const k8: number = this.onDemandRequester.regId(0, i4, k5, 1);
-                if (k8 !== -1) { this.onDemandRequester.passiveRequest(k8, 3); }
-            }}
-        }}
+        for (let i4: number = l; i4 <= k1; i4++) {
+            {
+                for (let k5: number = j2; k5 <= i3; k5++) {
+                    if (i4 === l || i4 === k1 || k5 === j2 || k5 === i3) {
+                        const k7: number = this.onDemandRequester.regId(0, i4, k5, 0);
+                        if (k7 !== -1) {
+                            this.onDemandRequester.passiveRequest(k7, 3);
+                        }
+                        const k8: number = this.onDemandRequester.regId(0, i4, k5, 1);
+                        if (k8 !== -1) {
+                            this.onDemandRequester.passiveRequest(k8, 3);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public method18(byte0: number) {
-        if (byte0 !== 3) { return; }
-        for (let spawnObjectNode: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode; spawnObjectNode != null; spawnObjectNode = this.aClass6_1261.next() as SpawnObjectNode) {if (spawnObjectNode.anInt1390 === -1) {
-            spawnObjectNode.anInt1395 = 0;
-            this.method140(((-61 as number) | 0), spawnObjectNode);
-        } else {
-            spawnObjectNode.remove();
-        }}
+        if (byte0 !== 3) {
+            return;
+        }
+        for (
+            let spawnObjectNode: SpawnObjectNode = this.aClass6_1261.first() as SpawnObjectNode;
+            spawnObjectNode != null;
+            spawnObjectNode = this.aClass6_1261.next() as SpawnObjectNode
+        ) {
+            if (spawnObjectNode.anInt1390 === -1) {
+                spawnObjectNode.anInt1395 = 0;
+                this.method140((-61 as number) | 0, spawnObjectNode);
+            } else {
+                spawnObjectNode.remove();
+            }
+        }
     }
 
     public method140(byte0: number, spawnObjectNode: SpawnObjectNode) {
@@ -4571,14 +7658,34 @@ export class Game extends GameShell {
         let j: number = -1;
         let k: number = 0;
         let l: number = 0;
-        if (byte0 !== -61) { this.outBuffer.putByte(175); }
-        if (spawnObjectNode.anInt1392 === 0) { i = this.currentScene.method267(spawnObjectNode.anInt1391, spawnObjectNode.anInt1393, spawnObjectNode.anInt1394); }
-        if (spawnObjectNode.anInt1392 === 1) { i = this.currentScene.method268(spawnObjectNode.anInt1393, ((4 as number) | 0), spawnObjectNode.anInt1391, spawnObjectNode.anInt1394); }
-        if (spawnObjectNode.anInt1392 === 2) { i = this.currentScene.method269(spawnObjectNode.anInt1391, spawnObjectNode.anInt1393, spawnObjectNode.anInt1394); }
-        if (spawnObjectNode.anInt1392 === 3) { i = this.currentScene.getFloorDecorationHash(spawnObjectNode.anInt1391, spawnObjectNode.anInt1393, spawnObjectNode.anInt1394); }
+        if (byte0 !== -61) {
+            this.outBuffer.putByte(175);
+        }
+        if (spawnObjectNode.anInt1392 === 0) {
+            i = this.currentScene.method267(spawnObjectNode.anInt1391, spawnObjectNode.anInt1393, spawnObjectNode.anInt1394);
+        }
+        if (spawnObjectNode.anInt1392 === 1) {
+            i = this.currentScene.method268(
+                spawnObjectNode.anInt1393,
+                (4 as number) | 0,
+                spawnObjectNode.anInt1391,
+                spawnObjectNode.anInt1394
+            );
+        }
+        if (spawnObjectNode.anInt1392 === 2) {
+            i = this.currentScene.method269(spawnObjectNode.anInt1391, spawnObjectNode.anInt1393, spawnObjectNode.anInt1394);
+        }
+        if (spawnObjectNode.anInt1392 === 3) {
+            i = this.currentScene.getFloorDecorationHash(spawnObjectNode.anInt1391, spawnObjectNode.anInt1393, spawnObjectNode.anInt1394);
+        }
         if (i !== 0) {
-            const i1: number = this.currentScene.method271(spawnObjectNode.anInt1391, spawnObjectNode.anInt1393, spawnObjectNode.anInt1394, i);
-            j = i >> 14 & 32767;
+            const i1: number = this.currentScene.method271(
+                spawnObjectNode.anInt1391,
+                spawnObjectNode.anInt1393,
+                spawnObjectNode.anInt1394,
+                i
+            );
+            j = (i >> 14) & 32767;
             k = i1 & 31;
             l = i1 >> 6;
         }
@@ -4595,38 +7702,65 @@ export class Game extends GameShell {
         }
         let maxValue: number = -99999999;
         let mostValuable: Item = null;
-        for (let item: Item = linkedList.first() as Item; item != null; item = linkedList.next() as Item) {{
-            const definition: ItemDefinition = ItemDefinition.lookup(item.itemId);
-            let value: number = definition.value;
-            if (definition.stackable) { value *= item.itemCount + 1; }
-            if (value > maxValue) {
-                maxValue = value;
-                mostValuable = item;
+        for (let item: Item = linkedList.first() as Item; item != null; item = linkedList.next() as Item) {
+            {
+                const definition: ItemDefinition = ItemDefinition.lookup(item.itemId);
+                let value: number = definition.value;
+                if (definition.stackable) {
+                    value *= item.itemCount + 1;
+                }
+                if (value > maxValue) {
+                    maxValue = value;
+                    mostValuable = item;
+                }
             }
-        }}
+        }
         linkedList.addFirst(mostValuable as Node);
         let first: any = null;
         let second: any = null;
-        for (let item: Item = linkedList.first() as Item; item != null; item = linkedList.next() as Item) {{
-            if (item.itemId !== ((mostValuable) as Item).itemId && first == null) { first = item; }
-            if (item.itemId !== ((mostValuable) as Item).itemId && item.itemId !== ((first) as Item).itemId && second == null) { second = item; }
-        }}
+        for (let item: Item = linkedList.first() as Item; item != null; item = linkedList.next() as Item) {
+            {
+                if (item.itemId !== (mostValuable as Item).itemId && first == null) {
+                    first = item;
+                }
+                if (item.itemId !== (mostValuable as Item).itemId && item.itemId !== (first as Item).itemId && second == null) {
+                    second = item;
+                }
+            }
+        }
         const key: number = x + (y << 7) + 1610612736;
-        this.currentScene.method248(this.method110(y * 128 + 64, x * 128 + 64, ((9 as number) | 0), this.plane), this.plane, ((mostValuable) as Renderable), ((first) as Renderable), key, ((second) as Renderable), 2, y, x);
+        this.currentScene.method248(
+            this.method110(y * 128 + 64, x * 128 + 64, (9 as number) | 0, this.plane),
+            this.plane,
+            mostValuable as Renderable,
+            first as Renderable,
+            key,
+            second as Renderable,
+            2,
+            y,
+            x
+        );
     }
 
     public method110(i: number, j: number, byte0: number, k: number): number {
         const l: number = j >> 7;
         const i1: number = i >> 7;
-        if (l < 0 || i1 < 0 || l > 103 || i1 > 103) { return 0; }
+        if (l < 0 || i1 < 0 || l > 103 || i1 > 103) {
+            return 0;
+        }
         let j1: number = k;
-        if (j1 < 3 && (this.currentSceneTileFlags[1][l][i1] & 2) === 2) { j1++; }
+        if (j1 < 3 && (this.currentSceneTileFlags[1][l][i1] & 2) === 2) {
+            j1++;
+        }
         const k1: number = j & 127;
         const l1: number = i & 127;
-        if (byte0 !== 9) { this.aBoolean953 = !this.aBoolean953; }
-        const i2: number = this.anIntArrayArrayArray891[j1][l][i1] * (128 - k1) + this.anIntArrayArrayArray891[j1][l + 1][i1] * k1 >> 7;
-        const j2: number = this.anIntArrayArrayArray891[j1][l][i1 + 1] * (128 - k1) + this.anIntArrayArrayArray891[j1][l + 1][i1 + 1] * k1 >> 7;
-        return i2 * (128 - l1) + j2 * l1 >> 7;
+        if (byte0 !== 9) {
+            this.aBoolean953 = !this.aBoolean953;
+        }
+        const i2: number = (this.anIntArrayArrayArray891[j1][l][i1] * (128 - k1) + this.anIntArrayArrayArray891[j1][l + 1][i1] * k1) >> 7;
+        const j2: number =
+            (this.anIntArrayArrayArray891[j1][l][i1 + 1] * (128 - k1) + this.anIntArrayArrayArray891[j1][l + 1][i1 + 1] * k1) >> 7;
+        return (i2 * (128 - l1) + j2 * l1) >> 7;
     }
 
     public method125(s: string, s1: string) {
@@ -4634,7 +7768,9 @@ export class Game extends GameShell {
             this.aClass18_1158.createRasterizer();
             Rasterizer3D.lineOffsets = this.anIntArray1002;
             let j: number = 151;
-            if (s != null) { j -= 7; }
+            if (s != null) {
+                j -= 7;
+            }
             this.fontNormal.drawStringLeft(s1, 257, j, 0);
             this.fontNormal.drawStringLeft(s1, 256, j - 1, 16777215);
             j += 15;
@@ -4651,9 +7787,23 @@ export class Game extends GameShell {
             let k: number = 251;
             const c: string = "\u012c";
             const byte0: number = 50;
-            Rasterizer.drawFilledRectangle(383 - (((c) => c.charCodeAt == null ? c as any : c.charCodeAt(0))(c) / 2 | 0), k - 5 - (byte0 / 2 | 0), (c).charCodeAt(0), byte0, 0);
-            Rasterizer.drawUnfilledRectangle(383 - (((c) => c.charCodeAt == null ? c as any : c.charCodeAt(0))(c) / 2 | 0), k - 5 - (byte0 / 2 | 0), (c).charCodeAt(0), byte0, 16777215);
-            if (s != null) { k -= 7; }
+            Rasterizer.drawFilledRectangle(
+                383 - (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0),
+                k - 5 - ((byte0 / 2) | 0),
+                c.charCodeAt(0),
+                byte0,
+                0
+            );
+            Rasterizer.drawUnfilledRectangle(
+                383 - (((c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(c) / 2) | 0),
+                k - 5 - ((byte0 / 2) | 0),
+                c.charCodeAt(0),
+                byte0,
+                16777215
+            );
+            if (s != null) {
+                k -= 7;
+            }
             this.fontNormal.drawStringLeft(s1, 383, k, 0);
             this.fontNormal.drawStringLeft(s1, 382, k - 1, 16777215);
             k += 15;
@@ -4666,49 +7816,69 @@ export class Game extends GameShell {
     }
 
     public method112(byte0: number, i: number) {
-        if (byte0 !== 36) { this.outBuffer.putByte(6); }
+        if (byte0 !== 36) {
+            this.outBuffer.putByte(6);
+        }
         const class13: Widget = Widget.forId(i);
-        for (let j: number = 0; j < class13.children.length; j++) {{
-            if (class13.children[j] === -1) { break; }
-            const class13_1: Widget = Widget.forId(class13.children[j]);
-            if (class13_1.type === 1) { this.method112(((36 as number) | 0), class13_1.id); }
-            class13_1.anInt235 = 0;
-            class13_1.anInt227 = 0;
-        }}
+        for (let j: number = 0; j < class13.children.length; j++) {
+            {
+                if (class13.children[j] === -1) {
+                    break;
+                }
+                const class13_1: Widget = Widget.forId(class13.children[j]);
+                if (class13_1.type === 1) {
+                    this.method112((36 as number) | 0, class13_1.id);
+                }
+                class13_1.anInt235 = 0;
+                class13_1.anInt227 = 0;
+            }
+        }
     }
 
     public updateVarp(i: number, j: number) {
         this.packetSize += i;
         const action: number = Varp.cache[j].anInt712;
-        if (action === 0) { return; }
+        if (action === 0) {
+            return;
+        }
         const config: number = this.widgetSettings[j];
         if (action === 1) {
-            if (config === 1) { Rasterizer3D.method501(0.9); }
-            if (config === 2) { Rasterizer3D.method501(0.8); }
-            if (config === 3) { Rasterizer3D.method501(0.7); }
-            if (config === 4) { Rasterizer3D.method501(0.6); }
+            if (config === 1) {
+                Rasterizer3D.method501(0.9);
+            }
+            if (config === 2) {
+                Rasterizer3D.method501(0.8);
+            }
+            if (config === 3) {
+                Rasterizer3D.method501(0.7);
+            }
+            if (config === 4) {
+                Rasterizer3D.method501(0.6);
+            }
             ItemDefinition.rgbImageCache.removeAll();
             this.aBoolean1046 = true;
         }
         if (action === 3) {
             const flag: boolean = this.musicEnabled;
             if (config === 0) {
-                this.adjustMidiVolume$boolean$byte$int(this.musicEnabled, ((8 as number) | 0), 0);
+                this.adjustMidiVolume$boolean$byte$int(this.musicEnabled, (8 as number) | 0, 0);
                 this.musicEnabled = true;
             }
             if (config === 1) {
-                this.adjustMidiVolume$boolean$byte$int(this.musicEnabled, ((8 as number) | 0), -400);
+                this.adjustMidiVolume$boolean$byte$int(this.musicEnabled, (8 as number) | 0, -400);
                 this.musicEnabled = true;
             }
             if (config === 2) {
-                this.adjustMidiVolume$boolean$byte$int(this.musicEnabled, ((8 as number) | 0), -800);
+                this.adjustMidiVolume$boolean$byte$int(this.musicEnabled, (8 as number) | 0, -800);
                 this.musicEnabled = true;
             }
             if (config === 3) {
-                this.adjustMidiVolume$boolean$byte$int(this.musicEnabled, ((8 as number) | 0), -1200);
+                this.adjustMidiVolume$boolean$byte$int(this.musicEnabled, (8 as number) | 0, -1200);
                 this.musicEnabled = true;
             }
-            if (config === 4) { this.musicEnabled = false; }
+            if (config === 4) {
+                this.musicEnabled = false;
+            }
             if (this.musicEnabled !== flag && !Game.lowMemory) {
                 if (this.musicEnabled) {
                     this.nextSong = this.currentSong;
@@ -4738,20 +7908,30 @@ export class Game extends GameShell {
                 this.aBoolean1301 = true;
                 this.setWaveVolume(-1200);
             }
-            if (config === 4) { this.aBoolean1301 = false; }
+            if (config === 4) {
+                this.aBoolean1301 = false;
+            }
         }
-        if (action === 5) { this.anInt1300 = config; }
-        if (action === 6) { this.anInt998 = config; }
+        if (action === 5) {
+            this.anInt1300 = config;
+        }
+        if (action === 6) {
+            this.anInt998 = config;
+        }
         if (action === 8) {
             this.anInt1223 = config;
             this.redrawChatbox = true;
         }
-        if (action === 9) { this.anInt955 = config; }
+        if (action === 9) {
+            this.anInt955 = config;
+        }
     }
 
     public adjustMidiVolume$boolean$byte$int(flag: boolean, byte0: number, volume: number) {
         SignLink.midiVolume = volume;
-        if (flag) { SignLink.midi = "voladjust"; }
+        if (flag) {
+            SignLink.midi = "voladjust";
+        }
     }
 
     public stopMidi() {
@@ -4760,7 +7940,7 @@ export class Game extends GameShell {
         SignLink.fadeMidi = 0;
         SignLink.midi = "stop";
     }
-    
+
     public setWaveVolume(j: number) {
         SignLink.waveVolume = j;
     }
@@ -4853,8 +8033,7 @@ export class Game extends GameShell {
     }
 
     public async startUp() {
-        if (Configuration.JAGGRAB_ENABLED)
-            await this.requestArchiveCrcs();
+        if (Configuration.JAGGRAB_ENABLED) await this.requestArchiveCrcs();
 
         this.drawLoadingText(20, "Starting up");
         await this.initStores();
@@ -5940,6 +9119,1404 @@ export class Game extends GameShell {
         class50_sub1_sub1_sub1 = null;
         abyte0 = null;
         ai = null;
+    }
+
+    public processMenuActions(id: number) {
+        if (id < 0) {
+            return;
+        }
+        const first: number = this.firstMenuOperand[id];
+        const second: number = this.secondMenuOperand[id];
+        let action: number = this.menuActionTypes[id];
+        const clicked: number = this.selectedMenuActions[id];
+        if (action >= 2000) {
+            action -= 2000;
+        }
+        if (this.inputType !== 0 && action !== 1016) {
+            this.inputType = 0;
+            this.redrawChatbox = true;
+        }
+        if (action === 200) {
+            const player: Player = this.players[clicked];
+            if (player != null) {
+                this.walk(
+                    false,
+                    false,
+                    player.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    player.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(245);
+                this.outBuffer.putLEShortAdded(clicked);
+            }
+        }
+        if (action === 227) {
+            Game.anInt1165;
+            Game.anInt1165++;
+            if (Game.anInt1165 >= 62) {
+                this.outBuffer.putOpcode(165);
+                this.outBuffer.putByte(206);
+                Game.anInt1165 = 0;
+            }
+            this.outBuffer.putOpcode(228);
+            this.outBuffer.putLEShortDup(first);
+            this.outBuffer.putShortAdded(clicked);
+            this.outBuffer.putShort(second);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 876) {
+            const player: Player = this.players[clicked];
+            if (player != null) {
+                this.walk(
+                    false,
+                    false,
+                    player.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    player.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(45);
+                this.outBuffer.putShortAdded(clicked);
+            }
+        }
+        if (action === 921) {
+            const npc: Npc = this.npcs[clicked];
+            if (npc != null) {
+                this.walk(false, false, npc.pathY[0], Game.localPlayer.pathY[0], 1, 1, 2, 0, npc.pathX[0], 0, 0, Game.localPlayer.pathX[0]);
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(67);
+                this.outBuffer.putShortAdded(clicked);
+            }
+        }
+        if (action === 961) {
+            Game.anInt1139 = Game.anInt1139 + clicked;
+            if (Game.anInt1139 >= 115) {
+                this.outBuffer.putOpcode(126);
+                this.outBuffer.putByte(125);
+                Game.anInt1139 = 0;
+            }
+            this.outBuffer.putOpcode(203);
+            this.outBuffer.putShortAdded(second);
+            this.outBuffer.putLEShortDup(first);
+            this.outBuffer.putLEShortDup(clicked);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 467 && this.method80(second, 0, first, clicked)) {
+            this.outBuffer.putOpcode(152);
+            this.outBuffer.putLEShortDup((clicked >> 14) & 32767);
+            this.outBuffer.putLEShortDup(this.anInt1148);
+            this.outBuffer.putLEShortDup(this.anInt1149);
+            this.outBuffer.putLEShortDup(second + this.nextTopRightTileY);
+            this.outBuffer.putShort(this.anInt1147);
+            this.outBuffer.putLEShortAdded(first + this.nextTopLeftTileX);
+        }
+        if (action === 9) {
+            this.outBuffer.putOpcode(3);
+            this.outBuffer.putShortAdded(clicked);
+            this.outBuffer.putShort(second);
+            this.outBuffer.putShort(first);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 553) {
+            const npc: Npc = this.npcs[clicked];
+            if (npc != null) {
+                this.walk(false, false, npc.pathY[0], Game.localPlayer.pathY[0], 1, 1, 2, 0, npc.pathX[0], 0, 0, Game.localPlayer.pathX[0]);
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(42);
+                this.outBuffer.putLEShortDup(clicked);
+            }
+        }
+        if (action === 677) {
+            const player: Player = this.players[clicked];
+            if (player != null) {
+                this.walk(
+                    false,
+                    false,
+                    player.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    player.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(116);
+                this.outBuffer.putLEShortDup(clicked);
+            }
+        }
+        if (
+            action === Actions.ADD_FRIEND ||
+            action === Actions.ADD_IGNORE ||
+            action === Actions.REMOVE_FRIEND ||
+            action === Actions.REMOVE_IGNORE
+        ) {
+            const s: string = this.menuActionTexts[id];
+            const l1: number = s.indexOf("@whi@");
+            if (l1 !== -1) {
+                const l3: number = TextUtils.nameToLong(s.substring(l1 + 5).trim());
+                if (action === Actions.ADD_FRIEND) {
+                    this.addFriend(l3);
+                }
+                if (action === Actions.ADD_IGNORE) {
+                    this.addIgnore(this.anInt1154, l3);
+                }
+                if (action === Actions.REMOVE_FRIEND) {
+                    this.removeFriend(l3);
+                }
+                if (action === Actions.REMOVE_IGNORE) {
+                    this.removeIgnore(325, l3);
+                }
+            }
+        }
+        if (action === 930) {
+            let flag: boolean = this.walk(
+                false,
+                false,
+                second,
+                Game.localPlayer.pathY[0],
+                0,
+                0,
+                2,
+                0,
+                first,
+                0,
+                0,
+                Game.localPlayer.pathX[0]
+            );
+            if (!flag) {
+                flag = this.walk(false, false, second, Game.localPlayer.pathY[0], 1, 1, 2, 0, first, 0, 0, Game.localPlayer.pathX[0]);
+            }
+            this.anInt1020 = this.clickX;
+            this.anInt1021 = this.clickY;
+            this.crossType = 2;
+            this.crossIndex = 0;
+            this.outBuffer.putOpcode(54);
+            this.outBuffer.putShortAdded(clicked);
+            this.outBuffer.putLEShortDup(second + this.nextTopRightTileY);
+            this.outBuffer.putShort(first + this.nextTopLeftTileX);
+        }
+        if (action === 399) {
+            this.outBuffer.putOpcode(24);
+            this.outBuffer.putLEShortDup(second);
+            this.outBuffer.putLEShortDup(clicked);
+            this.outBuffer.putShortAdded(first);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 347) {
+            const class50_sub1_sub4_sub3_sub1_2: Npc = this.npcs[clicked];
+            if (class50_sub1_sub4_sub3_sub1_2 != null) {
+                this.walk(
+                    false,
+                    false,
+                    class50_sub1_sub4_sub3_sub1_2.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    class50_sub1_sub4_sub3_sub1_2.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(57);
+                this.outBuffer.putShort(clicked);
+                this.outBuffer.putLEShortDup(this.anInt1149);
+                this.outBuffer.putLEShortAdded(this.anInt1148);
+                this.outBuffer.putShort(this.anInt1147);
+            }
+        }
+        if (action === Actions.TOGGLE_SETTING_WIDGET) {
+            this.outBuffer.putOpcode(79);
+            this.outBuffer.putShort(second);
+            const widget: Widget = Widget.forId(second);
+            if (widget.opcodes != null && widget.opcodes[0][0] === 5) {
+                const setting: number = widget.opcodes[0][1];
+                this.widgetSettings[setting] = 1 - this.widgetSettings[setting];
+                this.updateVarp(0, setting);
+                this.redrawTabArea = true;
+            }
+        }
+        if (action === 493) {
+            const class50_sub1_sub4_sub3_sub2_3: Player = this.players[clicked];
+            if (class50_sub1_sub4_sub3_sub2_3 != null) {
+                this.walk(
+                    false,
+                    false,
+                    class50_sub1_sub4_sub3_sub2_3.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    class50_sub1_sub4_sub3_sub2_3.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(233);
+                this.outBuffer.putShortAdded(clicked);
+            }
+        }
+        if (action === 14) {
+            if (!this.menuOpen) {
+                this.currentScene.method279(0, this.clickX - 4, this.clickY - 4);
+            } else {
+                this.currentScene.method279(0, first - 4, second - 4);
+            }
+        }
+        if (action === 903) {
+            this.outBuffer.putOpcode(1);
+            this.outBuffer.putShort(clicked);
+            this.outBuffer.putLEShortDup(this.anInt1147);
+            this.outBuffer.putLEShortDup(this.anInt1149);
+            this.outBuffer.putLEShortAdded(this.anInt1148);
+            this.outBuffer.putShortAdded(first);
+            this.outBuffer.putShortAdded(second);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 361) {
+            this.outBuffer.putOpcode(36);
+            this.outBuffer.putShort(this.anInt1172);
+            this.outBuffer.putShortAdded(second);
+            this.outBuffer.putShortAdded(first);
+            this.outBuffer.putShortAdded(clicked);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 118) {
+            const class50_sub1_sub4_sub3_sub1_3: Npc = this.npcs[clicked];
+            if (class50_sub1_sub4_sub3_sub1_3 != null) {
+                this.walk(
+                    false,
+                    false,
+                    class50_sub1_sub4_sub3_sub1_3.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    class50_sub1_sub4_sub3_sub1_3.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                Game.anInt1235 = Game.anInt1235 + clicked;
+                if (Game.anInt1235 >= 143) {
+                    this.outBuffer.putOpcode(157);
+                    this.outBuffer.putInt(0);
+                    Game.anInt1235 = 0;
+                }
+                this.outBuffer.putOpcode(13);
+                this.outBuffer.putLEShortAdded(clicked);
+            }
+        }
+        if (action === 376 && this.method80(second, 0, first, clicked)) {
+            this.outBuffer.putOpcode(210);
+            this.outBuffer.putShort(this.anInt1172);
+            this.outBuffer.putLEShortDup((clicked >> 14) & 32767);
+            this.outBuffer.putShortAdded(first + this.nextTopLeftTileX);
+            this.outBuffer.putLEShortDup(second + this.nextTopRightTileY);
+        }
+        if (action === 432) {
+            const class50_sub1_sub4_sub3_sub1_4: Npc = this.npcs[clicked];
+            if (class50_sub1_sub4_sub3_sub1_4 != null) {
+                this.walk(
+                    false,
+                    false,
+                    class50_sub1_sub4_sub3_sub1_4.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    class50_sub1_sub4_sub3_sub1_4.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(8);
+                this.outBuffer.putLEShortDup(clicked);
+            }
+        }
+        if (action === Actions.CLOSE_WIDGETS) {
+            this.closeWidgets();
+        }
+        if (action === 918) {
+            const class50_sub1_sub4_sub3_sub2_4: Player = this.players[clicked];
+            if (class50_sub1_sub4_sub3_sub2_4 != null) {
+                this.walk(
+                    false,
+                    false,
+                    class50_sub1_sub4_sub3_sub2_4.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    class50_sub1_sub4_sub3_sub2_4.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(31);
+                this.outBuffer.putShort(clicked);
+                this.outBuffer.putLEShortDup(this.anInt1172);
+            }
+        }
+        if (action === 67) {
+            const class50_sub1_sub4_sub3_sub1_5: Npc = this.npcs[clicked];
+            if (class50_sub1_sub4_sub3_sub1_5 != null) {
+                this.walk(
+                    false,
+                    false,
+                    class50_sub1_sub4_sub3_sub1_5.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    class50_sub1_sub4_sub3_sub1_5.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(104);
+                this.outBuffer.putShortAdded(this.anInt1172);
+                this.outBuffer.putLEShortDup(clicked);
+            }
+        }
+        if (action === 68) {
+            let flag1: boolean = this.walk(
+                false,
+                false,
+                second,
+                Game.localPlayer.pathY[0],
+                0,
+                0,
+                2,
+                0,
+                first,
+                0,
+                0,
+                Game.localPlayer.pathX[0]
+            );
+            if (!flag1) {
+                flag1 = this.walk(false, false, second, Game.localPlayer.pathY[0], 1, 1, 2, 0, first, 0, 0, Game.localPlayer.pathX[0]);
+            }
+            this.anInt1020 = this.clickX;
+            this.anInt1021 = this.clickY;
+            this.crossType = 2;
+            this.crossIndex = 0;
+            this.outBuffer.putOpcode(77);
+            this.outBuffer.putShortAdded(first + this.nextTopLeftTileX);
+            this.outBuffer.putShort(second + this.nextTopRightTileY);
+            this.outBuffer.putLEShortAdded(clicked);
+        }
+        if (action === 684) {
+            let flag2: boolean = this.walk(
+                false,
+                false,
+                second,
+                Game.localPlayer.pathY[0],
+                0,
+                0,
+                2,
+                0,
+                first,
+                0,
+                0,
+                Game.localPlayer.pathX[0]
+            );
+            if (!flag2) {
+                flag2 = this.walk(false, false, second, Game.localPlayer.pathY[0], 1, 1, 2, 0, first, 0, 0, Game.localPlayer.pathX[0]);
+            }
+            this.anInt1020 = this.clickX;
+            this.anInt1021 = this.clickY;
+            this.crossType = 2;
+            this.crossIndex = 0;
+            if ((clicked & 3) === 0) {
+                Game.anInt1052;
+            }
+            Game.anInt1052++;
+            if (Game.anInt1052 >= 84) {
+                this.outBuffer.putOpcode(222);
+                this.outBuffer.putTriByte(11257922);
+                Game.anInt1052 = 0;
+            }
+            this.outBuffer.putOpcode(71);
+            this.outBuffer.putLEShortAdded(clicked);
+            this.outBuffer.putLEShortAdded(first + this.nextTopLeftTileX);
+            this.outBuffer.putShortAdded(second + this.nextTopRightTileY);
+        }
+        if (action === Actions.ACCEPT_TRADE || action === Actions.ACCEPT_CHALLENGE) {
+            let name: string = this.menuActionTexts[id];
+            const colour: number = name.indexOf("@whi@");
+            if (colour !== -1) {
+                name = name.substring(colour + 5).trim();
+                const username: string = TextUtils.formatName(TextUtils.longToName(TextUtils.nameToLong(name)));
+                let found: boolean = false;
+                for (let index: number = 0; index < this.localPlayerCount; index++) {
+                    {
+                        const player: Player = this.players[this.playerList[index]];
+                        if (
+                            player == null ||
+                            player.playerName == null ||
+                            !/* equalsIgnoreCase */ ((o1, o2) => o1.toUpperCase() === (o2 === null ? o2 : o2.toUpperCase()))(
+                                player.playerName,
+                                username
+                            )
+                        ) {
+                            continue;
+                        }
+                        this.walk(
+                            false,
+                            false,
+                            player.pathY[0],
+                            Game.localPlayer.pathY[0],
+                            1,
+                            1,
+                            2,
+                            0,
+                            player.pathX[0],
+                            0,
+                            0,
+                            Game.localPlayer.pathX[0]
+                        );
+                        if (action === Actions.ACCEPT_TRADE) {
+                            this.outBuffer.putOpcode(116);
+                            this.outBuffer.putLEShortDup(this.playerList[index]);
+                        }
+                        if (action === Actions.ACCEPT_CHALLENGE) {
+                            this.outBuffer.putOpcode(245);
+                            this.outBuffer.putLEShortAdded(this.playerList[index]);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    this.addChatMessage("", "Unable to find " + username, 0);
+                }
+            }
+        }
+        if (action === 225) {
+            this.outBuffer.putOpcode(177);
+            this.outBuffer.putShortAdded(first);
+            this.outBuffer.putLEShortDup(clicked);
+            this.outBuffer.putLEShortDup(second);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === Actions.USABLE_WIDGET) {
+            const widget: Widget = Widget.forId(second);
+            this.widgetSelected = 1;
+            this.anInt1172 = second;
+            this.anInt1173 = widget.optionAttributes;
+            this.itemSelected = 0;
+            this.redrawTabArea = true;
+            let prefix: string = widget.optionCircumfix;
+            if (prefix.indexOf(" ") !== -1) {
+                prefix = prefix.substring(0, prefix.indexOf(" "));
+            }
+            let suffix: string = widget.optionCircumfix;
+            if (suffix.indexOf(" ") !== -1) {
+                suffix = suffix.substring(suffix.indexOf(" ") + 1);
+            }
+            this.selectedWidgetName = prefix + " " + widget.optionText + " " + suffix;
+            if (this.anInt1173 === 16) {
+                this.redrawTabArea = true;
+                this.anInt1285 = 3;
+                this.aBoolean950 = true;
+            }
+            return;
+        }
+        if (action === 891) {
+            this.outBuffer.putOpcode(4);
+            this.outBuffer.putLEShortDup(first);
+            this.outBuffer.putLEShortAdded(clicked);
+            this.outBuffer.putLEShortAdded(second);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 894) {
+            this.outBuffer.putOpcode(158);
+            this.outBuffer.putLEShortAdded(first);
+            this.outBuffer.putLEShortAdded(clicked);
+            this.outBuffer.putLEShortDup(second);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 1280) {
+            this.method80(second, 0, first, clicked);
+            this.outBuffer.putOpcode(55);
+            this.outBuffer.putLEShortDup((clicked >> 14) & 32767);
+            this.outBuffer.putLEShortDup(second + this.nextTopRightTileY);
+            this.outBuffer.putShort(first + this.nextTopLeftTileX);
+        }
+        if (action === 35) {
+            this.method80(second, 0, first, clicked);
+            this.outBuffer.putOpcode(181);
+            this.outBuffer.putShortAdded(first + this.nextTopLeftTileX);
+            this.outBuffer.putLEShortDup(second + this.nextTopRightTileY);
+            this.outBuffer.putLEShortDup((clicked >> 14) & 32767);
+        }
+        if (action === 888) {
+            this.method80(second, 0, first, clicked);
+            this.outBuffer.putOpcode(50);
+            this.outBuffer.putShortAdded(second + this.nextTopRightTileY);
+            this.outBuffer.putLEShortDup((clicked >> 14) & 32767);
+            this.outBuffer.putLEShortAdded(first + this.nextTopLeftTileX);
+        }
+        if (action === 324) {
+            this.outBuffer.putOpcode(161);
+            this.outBuffer.putLEShortAdded(first);
+            this.outBuffer.putLEShortAdded(clicked);
+            this.outBuffer.putLEShortDup(second);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === Actions.EXAMINE_ITEM) {
+            const definition: ItemDefinition = ItemDefinition.lookup(clicked);
+            const widget: Widget = Widget.forId(second);
+            let description: string;
+            if (widget != null && widget.itemAmounts[first] >= 100000) {
+                description = widget.itemAmounts[first] + " x " + definition.name;
+            } else if (definition.description != null) {
+                description = new String(definition.description) as string;
+            } else {
+                description = "It's a " + definition.name + ".";
+            }
+            this.addChatMessage("", description, 0);
+        }
+        if (action === 352) {
+            const class13_2: Widget = Widget.forId(second);
+            let flag7: boolean = true;
+            if (class13_2.contentType > 0) {
+                flag7 = this.handleWidgetDynamicAction(class13_2);
+            }
+            if (flag7) {
+                this.outBuffer.putOpcode(79);
+                this.outBuffer.putShort(second);
+            }
+        }
+        if (action === 1412) {
+            const k1: number = (clicked >> 14) & 32767;
+            const class47: GameObjectDefinition = GameObjectDefinition.getDefinition(k1);
+            let s9: string;
+            if (class47.description != null) {
+                s9 = new String(class47.description) as string;
+            } else {
+                s9 = "It's a " + class47.name + ".";
+            }
+            this.addChatMessage("", s9, 0);
+        }
+        if (action === 575 && !this.aBoolean1239) {
+            this.outBuffer.putOpcode(226);
+            this.outBuffer.putShort(second);
+            this.aBoolean1239 = true;
+        }
+        if (action === 892) {
+            this.method80(second, 0, first, clicked);
+            this.outBuffer.putOpcode(136);
+            this.outBuffer.putShort(first + this.nextTopLeftTileX);
+            this.outBuffer.putLEShortDup(second + this.nextTopRightTileY);
+            this.outBuffer.putShort((clicked >> 14) & 32767);
+        }
+        if (action === 270) {
+            let flag3: boolean = this.walk(
+                false,
+                false,
+                second,
+                Game.localPlayer.pathY[0],
+                0,
+                0,
+                2,
+                0,
+                first,
+                0,
+                0,
+                Game.localPlayer.pathX[0]
+            );
+            if (!flag3) {
+                flag3 = this.walk(false, false, second, Game.localPlayer.pathY[0], 1, 1, 2, 0, first, 0, 0, Game.localPlayer.pathX[0]);
+            }
+            this.anInt1020 = this.clickX;
+            this.anInt1021 = this.clickY;
+            this.crossType = 2;
+            this.crossIndex = 0;
+            this.outBuffer.putOpcode(230);
+            this.outBuffer.putLEShortDup(clicked);
+            this.outBuffer.putShortAdded(first + this.nextTopLeftTileX);
+            this.outBuffer.putShort(second + this.nextTopRightTileY);
+        }
+        if (action === 596) {
+            const class50_sub1_sub4_sub3_sub2_5: Player = this.players[clicked];
+            if (class50_sub1_sub4_sub3_sub2_5 != null) {
+                this.walk(
+                    false,
+                    false,
+                    class50_sub1_sub4_sub3_sub2_5.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    class50_sub1_sub4_sub3_sub2_5.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(143);
+                this.outBuffer.putLEShortDup(this.anInt1149);
+                this.outBuffer.putLEShortAdded(this.anInt1147);
+                this.outBuffer.putShort(this.anInt1148);
+                this.outBuffer.putShortAdded(clicked);
+            }
+        }
+        if (action === 100) {
+            let flag4: boolean = this.walk(
+                false,
+                false,
+                second,
+                Game.localPlayer.pathY[0],
+                0,
+                0,
+                2,
+                0,
+                first,
+                0,
+                0,
+                Game.localPlayer.pathX[0]
+            );
+            if (!flag4) {
+                flag4 = this.walk(false, false, second, Game.localPlayer.pathY[0], 1, 1, 2, 0, first, 0, 0, Game.localPlayer.pathX[0]);
+            }
+            this.anInt1020 = this.clickX;
+            this.anInt1021 = this.clickY;
+            this.crossType = 2;
+            this.crossIndex = 0;
+            this.outBuffer.putOpcode(211);
+            this.outBuffer.putLEShortAdded(this.anInt1147);
+            this.outBuffer.putShortAdded(this.anInt1149);
+            this.outBuffer.putLEShortAdded(second + this.nextTopRightTileY);
+            this.outBuffer.putLEShortAdded(first + this.nextTopLeftTileX);
+            this.outBuffer.putLEShortDup(this.anInt1148);
+            this.outBuffer.putLEShortDup(clicked);
+        }
+        if (action === 1668) {
+            const class50_sub1_sub4_sub3_sub1_6: Npc = this.npcs[clicked];
+            if (class50_sub1_sub4_sub3_sub1_6 != null) {
+                let class37: ActorDefinition = class50_sub1_sub4_sub3_sub1_6.npcDefinition;
+                if (class37.childrenIds != null) {
+                    class37 = class37.getChildDefinition();
+                }
+                if (class37 != null) {
+                    let s10: string;
+                    if (class37.description != null) {
+                        s10 = new String(class37.description) as string;
+                    } else {
+                        s10 = "It's a " + class37.name + ".";
+                    }
+                    this.addChatMessage("", s10, 0);
+                }
+            }
+        }
+        if (action === 26) {
+            let flag5: boolean = this.walk(
+                false,
+                false,
+                second,
+                Game.localPlayer.pathY[0],
+                0,
+                0,
+                2,
+                0,
+                first,
+                0,
+                0,
+                Game.localPlayer.pathX[0]
+            );
+            if (!flag5) {
+                flag5 = this.walk(false, false, second, Game.localPlayer.pathY[0], 1, 1, 2, 0, first, 0, 0, Game.localPlayer.pathX[0]);
+            }
+            this.anInt1020 = this.clickX;
+            this.anInt1021 = this.clickY;
+            this.crossType = 2;
+            this.crossIndex = 0;
+            Game.anInt1100;
+            Game.anInt1100++;
+            if (Game.anInt1100 >= 120) {
+                this.outBuffer.putOpcode(95);
+                this.outBuffer.putInt(0);
+                Game.anInt1100 = 0;
+            }
+            this.outBuffer.putOpcode(100);
+            this.outBuffer.putShort(first + this.nextTopLeftTileX);
+            this.outBuffer.putShortAdded(second + this.nextTopRightTileY);
+            this.outBuffer.putLEShortAdded(clicked);
+        }
+        if (action === 444) {
+            this.outBuffer.putOpcode(91);
+            this.outBuffer.putLEShortDup(clicked);
+            this.outBuffer.putLEShortAdded(first);
+            this.outBuffer.putShort(second);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 507) {
+            const string: string = this.menuActionTexts[id];
+            const i_389_: number = string.indexOf("@whi@");
+            if (i_389_ !== -1) {
+                if (this.openInterfaceId === -1) {
+                    this.closeWidgets();
+                    this.reportedName = string.substring(i_389_ + 5).trim();
+                    this.reportMutePlayer = false;
+                    this.reportAbuseInterfaceID = this.openInterfaceId = Widget.anInt246;
+                } else {
+                    this.addChatMessage("", "Please close the interface you have open before using 'report abuse'", 0);
+                }
+            }
+        }
+        if (action === 389) {
+            this.method80(second, 0, first, clicked);
+            this.outBuffer.putOpcode(241);
+            this.outBuffer.putShort((clicked >> 14) & 32767);
+            this.outBuffer.putShort(first + this.nextTopLeftTileX);
+            this.outBuffer.putShortAdded(second + this.nextTopRightTileY);
+        }
+        if (action === 564) {
+            this.outBuffer.putOpcode(231);
+            this.outBuffer.putLEShortAdded(second);
+            this.outBuffer.putLEShortDup(first);
+            this.outBuffer.putShort(clicked);
+            this.atInventoryLoopCycle = 0;
+            this.anInt1330 = second;
+            this.anInt1331 = first;
+            this.atInventoryInterfaceType = 2;
+            if (Widget.forId(second).parentId === this.openInterfaceId) {
+                this.atInventoryInterfaceType = 1;
+            }
+            if (Widget.forId(second).parentId === this.backDialogueId) {
+                this.atInventoryInterfaceType = 3;
+            }
+        }
+        if (action === 984) {
+            const s3: string = this.menuActionTexts[id];
+            const l2: number = s3.indexOf("@whi@");
+            if (l2 !== -1) {
+                const l4: number = TextUtils.nameToLong(s3.substring(l2 + 5).trim());
+                let k3: number = -1;
+                for (let i4: number = 0; i4 < this.friendsCount; i4++) {
+                    {
+                        if (this.friends[i4] !== l4) {
+                            continue;
+                        }
+                        k3 = i4;
+                        break;
+                    }
+                }
+                if (k3 !== -1 && this.friendWorlds[k3] > 0) {
+                    this.redrawChatbox = true;
+                    this.inputType = 0;
+                    this.messagePromptRaised = true;
+                    this.chatMessage = "";
+                    this.friendsListAction = 3;
+                    this.aLong1141 = this.friends[k3];
+                    this.chatboxInputMessage = "Enter message to send to " + this.friendUsernames[k3];
+                }
+            }
+        }
+        if (action === Actions.RESET_SETTING_WIDGET) {
+            this.outBuffer.putOpcode(79);
+            this.outBuffer.putShort(second);
+            const widget: Widget = Widget.forId(second);
+            if (widget.opcodes != null && widget.opcodes[0][0] === 5) {
+                const operand: number = widget.opcodes[0][1];
+                if (this.widgetSettings[operand] !== widget.conditionValues[0]) {
+                    this.widgetSettings[operand] = widget.conditionValues[0];
+                    this.updateVarp(0, operand);
+                    this.redrawTabArea = true;
+                }
+            }
+        }
+        if (action === 318) {
+            const class50_sub1_sub4_sub3_sub1_7: Npc = this.npcs[clicked];
+            if (class50_sub1_sub4_sub3_sub1_7 != null) {
+                this.walk(
+                    false,
+                    false,
+                    class50_sub1_sub4_sub3_sub1_7.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    class50_sub1_sub4_sub3_sub1_7.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(112);
+                this.outBuffer.putLEShortDup(clicked);
+            }
+        }
+        if (action === 199) {
+            let flag6: boolean = this.walk(
+                false,
+                false,
+                second,
+                Game.localPlayer.pathY[0],
+                0,
+                0,
+                2,
+                0,
+                first,
+                0,
+                0,
+                Game.localPlayer.pathX[0]
+            );
+            if (!flag6) {
+                flag6 = this.walk(false, false, second, Game.localPlayer.pathY[0], 1, 1, 2, 0, first, 0, 0, Game.localPlayer.pathX[0]);
+            }
+            this.anInt1020 = this.clickX;
+            this.anInt1021 = this.clickY;
+            this.crossType = 2;
+            this.crossIndex = 0;
+            this.outBuffer.putOpcode(83);
+            this.outBuffer.putLEShortDup(clicked);
+            this.outBuffer.putShort(second + this.nextTopRightTileY);
+            this.outBuffer.putLEShortDup(this.anInt1172);
+            this.outBuffer.putLEShortAdded(first + this.nextTopLeftTileX);
+        }
+        if (action === 55) {
+            this.method44(Game.aBoolean1190, this.dialogueId);
+            this.dialogueId = -1;
+            this.redrawChatbox = true;
+        }
+        if (action === 52) {
+            this.itemSelected = 1;
+            this.anInt1147 = first;
+            this.anInt1148 = second;
+            this.anInt1149 = clicked;
+            this.aString1150 = /* valueOf */ new String(ItemDefinition.lookup(clicked).name).toString();
+            this.widgetSelected = 0;
+            this.redrawTabArea = true;
+            return;
+        }
+        if (action === 1564) {
+            const class16_1: ItemDefinition = ItemDefinition.lookup(clicked);
+            let s6: string;
+            if (class16_1.description != null) {
+                s6 = new String(class16_1.description) as string;
+            } else {
+                s6 = "It's a " + class16_1.name + ".";
+            }
+            this.addChatMessage("", s6, 0);
+        }
+        if (action === 408) {
+            const class50_sub1_sub4_sub3_sub2_6: Player = this.players[clicked];
+            if (class50_sub1_sub4_sub3_sub2_6 != null) {
+                this.walk(
+                    false,
+                    false,
+                    class50_sub1_sub4_sub3_sub2_6.pathY[0],
+                    Game.localPlayer.pathY[0],
+                    1,
+                    1,
+                    2,
+                    0,
+                    class50_sub1_sub4_sub3_sub2_6.pathX[0],
+                    0,
+                    0,
+                    Game.localPlayer.pathX[0]
+                );
+                this.anInt1020 = this.clickX;
+                this.anInt1021 = this.clickY;
+                this.crossType = 2;
+                this.crossIndex = 0;
+                this.outBuffer.putOpcode(194);
+                this.outBuffer.putLEShortDup(clicked);
+            }
+        }
+        this.itemSelected = 0;
+        this.widgetSelected = 0;
+        this.redrawTabArea = true;
+    }
+
+    public handleWidgetDynamicAction(widget: Widget): boolean {
+        const type: number = widget.contentType;
+        if (this.friendListStatus === 2) {
+            if (type === 201) {
+                this.redrawChatbox = true;
+                this.inputType = 0;
+                this.messagePromptRaised = true;
+                this.chatMessage = "";
+                this.friendsListAction = 1;
+                this.chatboxInputMessage = "Enter name of friend to add to list";
+            }
+            if (type === 202) {
+                this.redrawChatbox = true;
+                this.inputType = 0;
+                this.messagePromptRaised = true;
+                this.chatMessage = "";
+                this.friendsListAction = 2;
+                this.chatboxInputMessage = "Enter name of friend to delete from list";
+            }
+        }
+        if (type === 205) {
+            this.anInt873 = 250;
+            return true;
+        }
+        if (type === 501) {
+            this.redrawChatbox = true;
+            this.inputType = 0;
+            this.messagePromptRaised = true;
+            this.chatMessage = "";
+            this.friendsListAction = 4;
+            this.chatboxInputMessage = "Enter name of player to add to list";
+        }
+        if (type === 502) {
+            this.redrawChatbox = true;
+            this.inputType = 0;
+            this.messagePromptRaised = true;
+            this.chatMessage = "";
+            this.friendsListAction = 5;
+            this.chatboxInputMessage = "Enter name of player to delete from list";
+        }
+        if (type >= 300 && type <= 313) {
+            const k: number = ((type - 300) / 2) | 0;
+            const j1: number = type & 1;
+            let i2: number = this.characterEditIdentityKits[k];
+            if (i2 !== -1) {
+                do {
+                    {
+                        if (j1 === 0 && --i2 < 0) {
+                            i2 = IdentityKit.count - 1;
+                        }
+                        if (j1 === 1 && ++i2 >= IdentityKit.count) {
+                            i2 = 0;
+                        }
+                    }
+                } while (
+                    IdentityKit.cache[i2].widgetDisplayed ||
+                    IdentityKit.cache[i2].partId !== k + (this.characterEditChangeGenger ? 0 : 7)
+                );
+                this.characterEditIdentityKits[k] = i2;
+                this.aBoolean1277 = true;
+            }
+        }
+        if (type >= 314 && type <= 323) {
+            const l: number = ((type - 314) / 2) | 0;
+            const k1: number = type & 1;
+            let j2: number = this.characterEditColors[l];
+            if (k1 === 0 && --j2 < 0) {
+                j2 = Game.playerColours[l].length - 1;
+            }
+            if (k1 === 1 && ++j2 >= Game.playerColours[l].length) {
+                j2 = 0;
+            }
+            this.characterEditColors[l] = j2;
+            this.aBoolean1277 = true;
+        }
+        if (type === 324 && !this.characterEditChangeGenger) {
+            this.characterEditChangeGenger = true;
+            this.method25();
+        }
+        if (type === 325 && this.characterEditChangeGenger) {
+            this.characterEditChangeGenger = false;
+            this.method25();
+        }
+        if (type === 326) {
+            this.outBuffer.putOpcode(163);
+            this.outBuffer.putByte(this.characterEditChangeGenger ? 0 : 1);
+            for (let i1: number = 0; i1 < 7; i1++) {
+                this.outBuffer.putByte(this.characterEditIdentityKits[i1]);
+            }
+            for (let l1: number = 0; l1 < 5; l1++) {
+                this.outBuffer.putByte(this.characterEditColors[l1]);
+            }
+            return true;
+        }
+        if (type === 620) {
+            this.reportMutePlayer = !this.reportMutePlayer;
+        }
+        if (type >= 601 && type <= 613) {
+            this.closeWidgets();
+            if (this.reportedName.length > 0) {
+                this.outBuffer.putOpcode(184);
+                this.outBuffer.putLong(TextUtils.nameToLong(this.reportedName));
+                this.outBuffer.putByte(type - 601);
+                this.outBuffer.putByte(this.reportMutePlayer ? 1 : 0);
+            }
+        }
+        return false;
+    }
+
+    public closeWidgets() {
+        this.outBuffer.putOpcode(110);
+        if (this.anInt1089 !== -1) {
+            this.method44(Game.aBoolean1190, this.anInt1089);
+            this.anInt1089 = -1;
+            this.redrawTabArea = true;
+            this.aBoolean1239 = false;
+            this.aBoolean950 = true;
+        }
+        if (this.backDialogueId !== -1) {
+            this.method44(Game.aBoolean1190, this.backDialogueId);
+            this.backDialogueId = -1;
+            this.redrawChatbox = true;
+            this.aBoolean1239 = false;
+        }
+        if (this.anInt1053 !== -1) {
+            this.method44(Game.aBoolean1190, this.anInt1053);
+            this.anInt1053 = -1;
+            this.aBoolean1046 = true;
+        }
+        if (this.anInt960 !== -1) {
+            this.method44(Game.aBoolean1190, this.anInt960);
+            this.anInt960 = -1;
+        }
+        if (this.openInterfaceId !== -1) {
+            this.method44(Game.aBoolean1190, this.openInterfaceId);
+            this.openInterfaceId = -1;
+        }
+    }
+
+    public method80(dstY: number, j: number, dstX: number, l: number): boolean {
+        const i1: number = (l >> 14) & 32767;
+        const j1: number = this.currentScene.method271(this.plane, dstX, dstY, l);
+        if (j1 === -1) {
+            return false;
+        }
+        const objectType: number = j1 & 31;
+        const l1: number = (j1 >> 6) & 3;
+        if (objectType === 10 || objectType === 11 || objectType === 22) {
+            const class47: GameObjectDefinition = GameObjectDefinition.getDefinition(i1);
+            let i2: number;
+            let j2: number;
+            if (l1 === 0 || l1 === 2) {
+                i2 = class47.sizeX;
+                j2 = class47.sizeY;
+            } else {
+                i2 = class47.sizeY;
+                j2 = class47.sizeX;
+            }
+            let k2: number = class47.anInt764;
+            if (l1 !== 0) {
+                k2 = ((k2 << l1) & 15) + (k2 >> (4 - l1));
+            }
+            this.walk(true, false, dstY, Game.localPlayer.pathY[0], i2, j2, 2, 0, dstX, k2, 0, Game.localPlayer.pathX[0]);
+        } else {
+            this.walk(true, false, dstY, Game.localPlayer.pathY[0], 0, 0, 2, objectType + 1, dstX, 0, l1, Game.localPlayer.pathX[0]);
+        }
+        this.anInt1020 = this.clickX;
+        this.anInt1021 = this.clickY;
+        this.crossType = 2;
+        this.crossIndex = 0;
+        this.packetSize += j;
+        return true;
+    }
+
+    public removeFriend(l: number) {
+        try {
+            if (l === 0) {
+                return;
+            }
+            for (let j: number = 0; j < this.friendsCount; j++) {
+                {
+                    if (this.friends[j] !== l) {
+                        continue;
+                    }
+                    this.friendsCount--;
+                    this.redrawTabArea = true;
+                    for (let k: number = j; k < this.friendsCount; k++) {
+                        {
+                            this.friendUsernames[k] = this.friendUsernames[k + 1];
+                            this.friendWorlds[k] = this.friendWorlds[k + 1];
+                            this.friends[k] = this.friends[k + 1];
+                        }
+                    }
+                    this.outBuffer.putOpcode(141);
+                    this.outBuffer.putLong(l);
+                    break;
+                }
+            }
+        } catch (runtimeexception) {
+            SignLink.reportError("38799, " + l + ", " + runtimeexception.toString());
+        }
+        throw Error(); // TODO check why???
+    }
+
+    public removeIgnore(i: number, l: number) {
+        try {
+            if (l === 0) {
+                return;
+            }
+            for (let j: number = 0; j < this.ignoresCount; j++) {
+                {
+                    if (this.ignores[j] !== l) {
+                        continue;
+                    }
+                    this.ignoresCount--;
+                    this.redrawTabArea = true;
+                    for (let k: number = j; k < this.ignoresCount; k++) {
+                        this.ignores[k] = this.ignores[k + 1];
+                    }
+                    this.outBuffer.putOpcode(160);
+                    this.outBuffer.putLong(l);
+                    break;
+                }
+            }
+            i = (42 / i) | 0;
+            return;
+        } catch (runtimeexception) {
+            SignLink.reportError("45745, " + i + ", " + l + ", " + runtimeexception.toString());
+        }
+        throw Error(); // TODO check why???
+    }
+
+    public addFriend(name: number) {
+        try {
+            if (name === 0) {
+                return;
+            }
+            if (this.friendsCount >= 100 && this.playerMembers !== 1) {
+                this.addChatMessage("", "Your friendlist is full. Max of 100 for free users, and 200 for members", 0);
+                return;
+            }
+            if (this.friendsCount >= 200) {
+                this.addChatMessage("", "Your friendlist is full. Max of 100 for free users, and 200 for members", 0);
+                return;
+            }
+            const username: string = TextUtils.formatName(TextUtils.longToName(name));
+            for (let index: number = 0; index < this.friendsCount; index++) {
+                if (this.friends[index] === name) {
+                    this.addChatMessage("", username + " is already on your friend list", 0);
+                    return;
+                }
+            }
+            for (let index: number = 0; index < this.ignoresCount; index++) {
+                if (this.ignores[index] === name) {
+                    this.addChatMessage("", "Please remove " + username + " from your ignore list first", 0);
+                    return;
+                }
+            }
+            if (
+                /* equals */ ((o1: any, o2: any) => {
+                    if (o1 && o1.equals) {
+                        return o1.equals(o2);
+                    } else {
+                        return o1 === o2;
+                    }
+                })(username, Game.localPlayer.playerName) as any
+            ) {
+                return;
+            }
+            this.friendUsernames[this.friendsCount] = username;
+            this.friends[this.friendsCount] = name;
+            this.friendWorlds[this.friendsCount] = 0;
+            this.friendsCount++;
+            this.redrawTabArea = true;
+            this.outBuffer.putOpcode(120);
+            this.outBuffer.putLong(name);
+            return;
+        } catch (runtimeexception) {
+            SignLink.reportError("94629, " + name + ", , " + runtimeexception.toString());
+        }
+        throw Error();
+    }
+
+    public addIgnore(i: number, name: number) {
+        try {
+            if (name === 0) {
+                return;
+            }
+            if (this.ignoresCount >= 100) {
+                this.addChatMessage("", "Your ignore list is full. Max of 100 hit", 0);
+                return;
+            }
+            const username: string = TextUtils.formatName(TextUtils.longToName(name));
+            for (let index: number = 0; index < this.ignoresCount; index++) {
+                if (this.ignores[index] === name) {
+                    this.addChatMessage("", username + " is already on your ignore list", 0);
+                    return;
+                }
+            }
+            for (let index: number = 0; index < this.friendsCount; index++) {
+                if (this.friends[index] === name) {
+                    this.addChatMessage("", "Please remove " + username + " from your friend list first", 0);
+                    return;
+                }
+            }
+            this.ignores[this.ignoresCount++] = name;
+            this.redrawTabArea = true;
+            this.outBuffer.putOpcode(217);
+            this.outBuffer.putLong(name);
+            return;
+        } catch (runtimeexception) {
+            SignLink.reportError("27939, " + i + ", " + name + ", " + runtimeexception.toString());
+        }
+        throw Error();
     }
 
     initArchives() {
