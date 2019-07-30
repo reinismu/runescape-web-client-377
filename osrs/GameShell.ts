@@ -292,7 +292,7 @@ export class GameShell {
             this.mouseWheelY = mouseY;
             return;
         }
-        if (mouseevent.metaKey) {
+        if (mouseevent.metaKey || mouseevent.button === 2) {
             this.eventMouseButtonPressed = 2;
             this.mouseButtonPressed = 2;
         } else {

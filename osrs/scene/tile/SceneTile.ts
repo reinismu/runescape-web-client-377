@@ -37,7 +37,7 @@ export class SceneTile extends Node {
 
     public anInt1410: number;
 
-    public anInt1411: number;
+    public physicalLevel: number;
 
     public draw: boolean;
 
@@ -68,7 +68,7 @@ export class SceneTile extends Node {
         if (this.cameraAngle === undefined) { this.cameraAngle = null; }
         if (this.sceneSpawnRequestCount === undefined) { this.sceneSpawnRequestCount = 0; }
         if (this.anInt1410 === undefined) { this.anInt1410 = 0; }
-        if (this.anInt1411 === undefined) { this.anInt1411 = 0; }
+        if (this.physicalLevel === undefined) { this.physicalLevel = 0; }
         if (this.draw === undefined) { this.draw = false; }
         if (this.visible === undefined) { this.visible = false; }
         if (this.drawEntities === undefined) { this.drawEntities = false; }

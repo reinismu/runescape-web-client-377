@@ -61,6 +61,8 @@ import { ChatEncoder } from "./util/ChatEncoder";
 import { Actions } from "./Actions";
 import { tsMethodSignature } from "@babel/types";
 import { ParallelExecutor, sleep } from "./ParallelExecutor";
+import { array3d, array2d } from "./Arrays";
+import Long from "long";
 
 function init_SKILL_EXPERIENCE() {
     const bitfield = Array(99).fill(0);
@@ -268,7 +270,7 @@ export class Game extends GameShell {
     aBoolean1016: boolean = false;
     aBoolean1097: boolean = false;
     buffer: Buffer = Buffer.allocate(1);
-    username: string = "Promises";
+    username: string = "Wildy" + Math.floor(Math.random() * 1000);;
     password: string = "Testing";
     aBoolean1283: boolean;
 
@@ -316,7 +318,7 @@ export class Game extends GameShell {
     thisPlayerId: number = 2047;
     aClass6_1282: LinkedList = new LinkedList();
     aClass6_1210: LinkedList = new LinkedList();
-    groundItems: LinkedList[][][] = Array(4).fill(Array(104).fill(Array(104).fill(null)));
+    groundItems: LinkedList[][][] = array3d(4, 104, 104, null);
     aClass6_1261: LinkedList = new LinkedList();
     friendListStatus: number = 0;
     friendsCount: number = 0;
@@ -367,7 +369,7 @@ export class Game extends GameShell {
     aBoolean1209: boolean = false;
     chunkX: number = 0;
     chunkY: number = 0;
-    constructedMapPalette: number[][][] = Array(4).fill(Array(13).fill(Array(13).fill(0)));
+    constructedMapPalette: number[][][] = array3d(4, 13,13,0);
     anInt1072: number = 20411;
     aBoolean1067: boolean = false;
     minimapHintCount: number = 0;
@@ -403,7 +405,7 @@ export class Game extends GameShell {
     anIntArray852: number[] = Array(5).fill(0);
     anIntArray991: number[] = Array(5).fill(0);
     quakeTimes: number[] = Array(5).fill(0);
-    friends: number[] = Array(200).fill(0); // TODO fix longs
+    friends: Long[] = Array(200).fill(new Long(0,0));
     friendWorlds: number[] = Array(200).fill(0);
     friendUsernames: string[] = Array(200).fill(null);
     anIntArray1032: number[] = [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3];
@@ -423,7 +425,7 @@ export class Game extends GameShell {
     anInt878: number = 0;
     aBoolean1038: boolean = true;
     ignoresCount: number = 0;
-    ignores: number[] = Array(100).fill(0); // TODO fix longs
+    ignores: Long[] = Array(100).fill(new Long(0,0));
     anIntArray1081: number[] = [1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
     playerMembers: number = 0;
     removePlayerCount: number = 0;
@@ -512,8 +514,8 @@ export class Game extends GameShell {
     aString1150: string = null;
     selectedWidgetName: string = null;
     anInt1173: number = 0;
-    anIntArrayArray885: number[][] = Array(104).fill(Array(104).fill(0));
-    cost: number[][] = Array(104).fill(Array(104).fill(0));
+    anIntArrayArray885: number[][] = array2d(104,104,0);
+    cost: number[][] = array2d(104,104,0);
     anIntArray1123: number[] = Array(4000).fill(0);
     anIntArray1124: number[] = Array(4000).fill(0);
     anInt1126: number = 0;
@@ -533,7 +535,7 @@ export class Game extends GameShell {
     reportAbuseInterfaceID: number = -1;
     chatMessage: string = "";
     friendsListAction: number = 0;
-    aLong1141: number = 0; // TODO fix long
+    aLong1141: Long = new Long(0,0);
     chatboxInputMessage: string = "";
     anInt1154: number = -916;
     anInt1262: number = 0;
@@ -555,7 +557,7 @@ export class Game extends GameShell {
     anInt921: number = 8;
     anInt1287: number = 0x332d25;
     anInt1138: number = 0;
-    anIntArrayArray886: number[][] = Array(104).fill(Array(104).fill(0));
+    anIntArrayArray886: number[][] = array2d(104,104,0);
     anInt939: number = 0;
     screenX: number = -1;
     screenY: number = -1;
@@ -1078,12 +1080,12 @@ export class Game extends GameShell {
                 if (player != null && player.isVisible()) {
                     const playerX: number = ((player.worldX / 32) | 0) - ((Game.localPlayer.worldX / 32) | 0);
                     const playerY: number = ((player.worldY / 32) | 0) - ((Game.localPlayer.worldY / 32) | 0);
-                    const name: number = TextUtils.nameToLong(player.playerName);
+                    const name: Long = TextUtils.nameToLong(player.playerName);
                     let isFriend: boolean = false;
                     let isTeammate: boolean = false;
                     for (let x: number = 0; x < this.friendsCount; x++) {
                         {
-                            if (name !== this.friends[x] || this.friendWorlds[x] === 0) {
+                            if (!name.eq(this.friends[x]) || this.friendWorlds[x] === 0) {
                                 continue;
                             }
                             isFriend = true;
@@ -3887,8 +3889,8 @@ export class Game extends GameShell {
                 await this.drawLoginScreen(true);
             }
             this.gameConnection = new BufferedConnection(this, await this.openSocket(Configuration.GAME_PORT + Game.portOffset));
-            const base37name: number = TextUtils.nameToLong(username);
-            const hash: number = (((base37name >> 16) & 31) as number) | 0;
+            const base37name: Long = TextUtils.nameToLong(username);
+            const hash: number = ((base37name.shiftRight(16).toNumber() & 31) as number) | 0;
             this.outBuffer.currentPosition = 0;
             this.outBuffer.putByte(14);
             this.outBuffer.putByte(hash);
@@ -4656,11 +4658,11 @@ export class Game extends GameShell {
                         this.messagePromptRaised = false;
                         this.redrawChatbox = true;
                         if (this.friendsListAction === 1) {
-                            const l: number = TextUtils.nameToLong(this.chatMessage);
+                            const l: Long = TextUtils.nameToLong(this.chatMessage);
                             this.addFriend(l);
                         }
                         if (this.friendsListAction === 2 && this.friendsCount > 0) {
-                            const l1: number = TextUtils.nameToLong(this.chatMessage);
+                            const l1: Long = TextUtils.nameToLong(this.chatMessage);
                             this.removeFriend(l1);
                         }
                         if (this.friendsListAction === 3 && this.chatMessage.length > 0) {
@@ -4682,12 +4684,12 @@ export class Game extends GameShell {
                             }
                         }
                         if (this.friendsListAction === 4 && this.ignoresCount < 100) {
-                            const l2: number = TextUtils.nameToLong(this.chatMessage);
+                            const l2: Long = TextUtils.nameToLong(this.chatMessage);
                             this.addIgnore(this.anInt1154, l2);
                         }
                         if (this.friendsListAction === 5 && this.ignoresCount > 0) {
-                            const l3: number = TextUtils.nameToLong(this.chatMessage);
-                            this.removeIgnore(325, l3);
+                            const l3: Long = TextUtils.nameToLong(this.chatMessage);
+                            this.removeIgnore(l3);
                         }
                     }
                 } else if (this.inputType === 1) {
@@ -7590,7 +7592,6 @@ export class Game extends GameShell {
                 if (this.incomingRandom != null) {
                     this.opcode = (this.opcode - this.incomingRandom.nextInt()) & 255;
                 }
-                console.log("Received packet with opcode: " + this.opcode);
                 this.packetSize = PacketConstants.PACKET_SIZES[this.opcode];
                 available--;
             }
@@ -7964,11 +7965,11 @@ export class Game extends GameShell {
                     })(message, ":tradereq:")
                 ) {
                     const s3: string = message.substring(0, message.indexOf(":"));
-                    const l18: number = TextUtils.nameToLong(s3);
+                    const l18: Long = TextUtils.nameToLong(s3);
                     let flag1: boolean = false;
                     for (let l27: number = 0; l27 < this.ignoresCount; l27++) {
                         {
-                            if (this.ignores[l27] !== l18) {
+                            if (!this.ignores[l27].eq(l18)) {
                                 continue;
                             }
                             flag1 = true;
@@ -7986,11 +7987,11 @@ export class Game extends GameShell {
                     })(message, ":duelreq:")
                 ) {
                     const s4: string = message.substring(0, message.indexOf(":"));
-                    const l19: number = TextUtils.nameToLong(s4);
+                    const l19: Long = TextUtils.nameToLong(s4);
                     let flag2: boolean = false;
                     for (let i28: number = 0; i28 < this.ignoresCount; i28++) {
                         {
-                            if (this.ignores[i28] !== l19) {
+                            if (!this.ignores[i28].eq(l19)) {
                                 continue;
                             }
                             flag2 = true;
@@ -8008,11 +8009,11 @@ export class Game extends GameShell {
                     })(message, ":chalreq:")
                 ) {
                     const s5: string = message.substring(0, message.indexOf(":"));
-                    const l20: number = TextUtils.nameToLong(s5);
+                    const l20: Long = TextUtils.nameToLong(s5);
                     let flag3: boolean = false;
                     for (let j28: number = 0; j28 < this.ignoresCount; j28++) {
                         {
-                            if (this.ignores[j28] !== l20) {
+                            if (!this.ignores[j28].eq(l20)) {
                                 continue;
                             }
                             flag3 = true;
@@ -8136,12 +8137,12 @@ export class Game extends GameShell {
                 return true;
             }
             if (this.opcode === 78) {
-                const friend: number = this.buffer.getLong();
+                const friend: Long = this.buffer.getLong();
                 const nodeId: number = this.buffer.getUnsignedByte();
                 let s7: string = TextUtils.formatName(TextUtils.longToName(friend));
                 for (let k25: number = 0; k25 < this.friendsCount; k25++) {
                     {
-                        if (friend !== this.friends[k25]) {
+                        if (!friend.eq(this.friends[k25])) {
                             continue;
                         }
                         if (this.friendWorlds[k25] !== nodeId) {
@@ -8179,7 +8180,7 @@ export class Game extends GameShell {
                                 const s10: string = this.friendUsernames[j30];
                                 this.friendUsernames[j30] = this.friendUsernames[j30 + 1];
                                 this.friendUsernames[j30 + 1] = s10;
-                                const l33: number = this.friends[j30];
+                                const l33: Long = this.friends[j30];
                                 this.friends[j30] = this.friends[j30 + 1];
                                 this.friends[j30 + 1] = l33;
                                 this.redrawTabArea = true;
@@ -8255,7 +8256,7 @@ export class Game extends GameShell {
                 return true;
             }
             if (this.opcode === 135) {
-                const l6: number = this.buffer.getLong();
+                const l6: Long = this.buffer.getLong();
                 const i19: number = this.buffer.getInt();
                 const j23: number = this.buffer.getUnsignedByte();
                 let flag4: boolean = false;
@@ -8271,7 +8272,7 @@ export class Game extends GameShell {
                 if (j23 <= 1) {
                     for (let k30: number = 0; k30 < this.ignoresCount; k30++) {
                         {
-                            if (this.ignores[k30] !== l6) {
+                            if (!this.ignores[k30].eq(l6)) {
                                 continue;
                             }
                             flag4 = true;
@@ -9203,12 +9204,12 @@ export class Game extends GameShell {
             const length: number = buffer.getByteAdded();
             const currentPosition: number = buffer.currentPosition;
             if (player.playerName != null && player.visible) {
-                const nameLong: number = TextUtils.nameToLong(player.playerName);
+                const nameLong: Long = TextUtils.nameToLong(player.playerName);
                 let ignored: boolean = false;
                 if (rights <= 1) {
                     for (let i: number = 0; i < this.ignoresCount; i++) {
                         {
-                            if (this.ignores[i] !== nameLong) {
+                            if (!this.ignores[i].eq(nameLong)) {
                                 continue;
                             }
                             ignored = true;
@@ -9219,7 +9220,7 @@ export class Game extends GameShell {
                 if (!ignored && !this.inTutorialIsland) {
                     try {
                         this.chatBuffer.currentPosition = 0;
-                        buffer.getBytesAdded(Array.from(this.chatBuffer.buffer), 0, length);
+                        buffer.getBytesAdded(this.chatBuffer.buffer, 0, length);
                         this.chatBuffer.currentPosition = 0;
                         const message: string = ChatCensor.censorString(ChatEncoder.get(length, this.chatBuffer));
                         player.forcedChat = message;
@@ -10659,7 +10660,7 @@ export class Game extends GameShell {
             }
         }
         const key: number = x + (y << 7) + 1610612736;
-        this.currentScene.method248(
+        this.currentScene.addItemPile(
             this.getTileHeight(y * 128 + 64, x * 128 + 64, (9 as number) | 0, this.plane),
             this.plane,
             mostValuable as Renderable,
@@ -10961,7 +10962,7 @@ export class Game extends GameShell {
     public async startUp() {
         if (Configuration.JAGGRAB_ENABLED) await this.requestArchiveCrcs();
 
-        this.drawLoadingText(20, "Starting up");
+        await this.drawLoadingText(20, "Starting up");
         await this.initStores();
         this.initArchives();
         this.initTypeFaces();
@@ -10976,8 +10977,8 @@ export class Game extends GameShell {
         const chatArchive: Archive = this.requestArchive(7, "wordenc", this.archiveHashes[7], 50, "chat system");
         const soundArchive: Archive = this.requestArchive(8, "sounds", this.archiveHashes[8], 55, "sound effects");
 
-        this.currentSceneTileFlags = Array<Array<Array<number>>>(4).fill(Array<Array<number>>(104).fill(Array<number>(104).fill(0)));
-        this.anIntArrayArrayArray891 = Array<Array<Array<number>>>(4).fill(Array<Array<number>>(105).fill(Array<number>(105).fill(0)));
+        this.currentSceneTileFlags = array3d(4, 104, 104, 0);
+        this.anIntArrayArrayArray891 = array3d(4, 105, 105, 0);
 
         this.currentScene = new Scene(this.anIntArrayArrayArray891, 104, 4, 104, 5);
         for (let j: number = 0; j < 4; j++) {
@@ -11015,7 +11016,7 @@ export class Game extends GameShell {
             }
         }
 
-        this.drawLoadingText(65, "Requesting animations");
+        await this.drawLoadingText(65, "Requesting animations");
 
         let fileRequestCount: number = this.onDemandRequester.fileCount(1);
         for (let i: number = 0; i < fileRequestCount; i++) {
@@ -11057,7 +11058,7 @@ export class Game extends GameShell {
         }
 
         if (this.stores[0] != null) {
-            this.drawLoadingText(75, "Requesting maps");
+            await this.drawLoadingText(75, "Requesting maps");
             this.onDemandRequester.request(3, this.onDemandRequester.regId(0, 47, 48, 0));
             this.onDemandRequester.request(3, this.onDemandRequester.regId(0, 47, 48, 1));
             this.onDemandRequester.request(3, this.onDemandRequester.regId(0, 48, 48, 0));
@@ -11075,7 +11076,7 @@ export class Game extends GameShell {
                 {
                     const total: number = fileRequestCount - this.onDemandRequester.immediateRequestsCount();
                     if (total > 0) {
-                        this.drawLoadingText(75, "Loading maps - " + (((total * 100) / fileRequestCount) | 0) + "%");
+                        await this.drawLoadingText(75, "Loading maps - " + (((total * 100) / fileRequestCount) | 0) + "%");
                     }
                     this.method77(false);
                     try {
@@ -11133,7 +11134,7 @@ export class Game extends GameShell {
                 }
             }
         }
-        this.drawLoadingText(80, "Unpacking media");
+        await this.drawLoadingText(80, "Unpacking media");
 
         this.inventoryBackgroundImage = new IndexedImage(archiveMedia, "invback", 0);
         this.chatboxBackgroundImage = new IndexedImage(archiveMedia, "chatback", 0);
@@ -11245,7 +11246,7 @@ export class Game extends GameShell {
                 }
             }
         }
-        this.drawLoadingText(83, "Unpacking textures");
+        await this.drawLoadingText(83, "Unpacking textures");
 
         Rasterizer3D.loadIndexedImages(textureArchive);
         Rasterizer3D.method501(0.8);
@@ -11267,11 +11268,11 @@ export class Game extends GameShell {
             const buffer: Buffer = new Buffer(bytes);
             SoundTrack.load(buffer);
         }
-        this.drawLoadingText(95, "Unpacking interfaces");
+        await this.drawLoadingText(95, "Unpacking interfaces");
 
         const typefaces: TypeFace[] = [this.fontSmall, this.fontNormal, this.fontBold, this.fontFancy];
         Widget.load(archiveInterface, typefaces, archiveMedia);
-        this.drawLoadingText(100, "Preparing game engine");
+        await this.drawLoadingText(100, "Preparing game engine");
 
         for (let y: number = 0; y < 33; y++) {
             {
@@ -12230,7 +12231,7 @@ export class Game extends GameShell {
             const s: string = this.menuActionTexts[id];
             const l1: number = s.indexOf("@whi@");
             if (l1 !== -1) {
-                const l3: number = TextUtils.nameToLong(s.substring(l1 + 5).trim());
+                const l3: Long = TextUtils.nameToLong(s.substring(l1 + 5).trim());
                 if (action === Actions.ADD_FRIEND) {
                     this.addFriend(l3);
                 }
@@ -12241,7 +12242,7 @@ export class Game extends GameShell {
                     this.removeFriend(l3);
                 }
                 if (action === Actions.REMOVE_IGNORE) {
-                    this.removeIgnore(325, l3);
+                    this.removeIgnore(l3);
                 }
             }
         }
@@ -12976,11 +12977,11 @@ export class Game extends GameShell {
             const s3: string = this.menuActionTexts[id];
             const l2: number = s3.indexOf("@whi@");
             if (l2 !== -1) {
-                const l4: number = TextUtils.nameToLong(s3.substring(l2 + 5).trim());
+                const l4: Long = TextUtils.nameToLong(s3.substring(l2 + 5).trim());
                 let k3: number = -1;
                 for (let i4: number = 0; i4 < this.friendsCount; i4++) {
                     {
-                        if (this.friends[i4] !== l4) {
+                        if (!this.friends[i4].eq(l4)) {
                             continue;
                         }
                         k3 = i4;
@@ -13293,14 +13294,14 @@ export class Game extends GameShell {
         return true;
     }
 
-    public removeFriend(l: number) {
+    public removeFriend(l: Long) {
         try {
-            if (l === 0) {
+            if (l.isZero()) {
                 return;
             }
             for (let j: number = 0; j < this.friendsCount; j++) {
                 {
-                    if (this.friends[j] !== l) {
+                    if (!this.friends[j].eq(l)) {
                         continue;
                     }
                     this.friendsCount--;
@@ -13323,14 +13324,14 @@ export class Game extends GameShell {
         throw Error(); // TODO check why???
     }
 
-    public removeIgnore(i: number, l: number) {
+    public removeIgnore(l: Long) {
         try {
-            if (l === 0) {
+            if (l.isZero()) {
                 return;
             }
             for (let j: number = 0; j < this.ignoresCount; j++) {
                 {
-                    if (this.ignores[j] !== l) {
+                    if (!this.ignores[j].eq(l)) {
                         continue;
                     }
                     this.ignoresCount--;
@@ -13343,17 +13344,16 @@ export class Game extends GameShell {
                     break;
                 }
             }
-            i = (42 / i) | 0;
             return;
         } catch (runtimeexception) {
-            SignLink.reportError("45745, " + i + ", " + l + ", " + runtimeexception.toString());
+            SignLink.reportError("45745, " + l + ", " + runtimeexception.toString());
         }
         throw Error(); // TODO check why???
     }
 
-    public addFriend(name: number) {
+    public addFriend(name: Long) {
         try {
-            if (name === 0) {
+            if (name.isZero()) {
                 return;
             }
             if (this.friendsCount >= 100 && this.playerMembers !== 1) {
@@ -13366,13 +13366,13 @@ export class Game extends GameShell {
             }
             const username: string = TextUtils.formatName(TextUtils.longToName(name));
             for (let index: number = 0; index < this.friendsCount; index++) {
-                if (this.friends[index] === name) {
+                if (this.friends[index].eq(name)) {
                     this.addChatMessage("", username + " is already on your friend list", 0);
                     return;
                 }
             }
             for (let index: number = 0; index < this.ignoresCount; index++) {
-                if (this.ignores[index] === name) {
+                if (!this.ignores[index].eq(name)) {
                     this.addChatMessage("", "Please remove " + username + " from your ignore list first", 0);
                     return;
                 }
@@ -13402,9 +13402,9 @@ export class Game extends GameShell {
         throw Error();
     }
 
-    public addIgnore(i: number, name: number) {
+    public addIgnore(i: number, name: Long) {
         try {
-            if (name === 0) {
+            if (name.isZero()) {
                 return;
             }
             if (this.ignoresCount >= 100) {
@@ -13413,13 +13413,13 @@ export class Game extends GameShell {
             }
             const username: string = TextUtils.formatName(TextUtils.longToName(name));
             for (let index: number = 0; index < this.ignoresCount; index++) {
-                if (this.ignores[index] === name) {
+                if (!this.ignores[index].eq(name)) {
                     this.addChatMessage("", username + " is already on your ignore list", 0);
                     return;
                 }
             }
             for (let index: number = 0; index < this.friendsCount; index++) {
-                if (this.friends[index] === name) {
+                if (this.friends[index].eq(name)) {
                     this.addChatMessage("", "Please remove " + username + " from your friend list first", 0);
                     return;
                 }

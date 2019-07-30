@@ -17,5 +17,5 @@
 * server https://github.com/apollo-rsps/apollo
 * caches https://www.mediafire.com/?xng9h28c0811s
 
-* rust bzip2 https://docs.rs/bzip2/0.3.3/bzip2/
+* rust bzip2 https://docs.rs/bzip2/0.3.3/bzip2/ <-- not compiling with to wasm
 

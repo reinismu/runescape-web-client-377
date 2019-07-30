@@ -7,6 +7,7 @@ import { Skins } from "../Skins";
 import { VertexNormal } from "../VertexNormal";
 import { ModelHeader } from "./ModelHeader";
 import { Renderable } from "./Renderable";
+import { array2d } from "../../Arrays";
 
 export class Model extends Renderable {
     public static __static_initialized: boolean = false;
@@ -28,9 +29,9 @@ export class Model extends Renderable {
     public static anIntArray1690: number[] = Array(4096).fill(0);
     public static anIntArray1691: number[] = Array(4096).fill(0);
     public static anIntArray1692: number[] = Array(4096).fill(0);
-    public static anIntArrayArray1693: number[][] = Array(1500).fill(Array(512).fill(0));
+    public static anIntArrayArray1693: number[][] = array2d(1500,512,0);
     public static anIntArray1694: number[] = Array(12).fill(0);
-    public static anIntArrayArray1695: number[][] = Array(12).fill(Array(2000).fill(0));
+    public static anIntArrayArray1695: number[][] = array2d(12,2000,0); 
     public static anIntArray1696: number[] = Array(2000).fill(0);
     public static anIntArray1697: number[] = Array(2000).fill(0);
     public static anIntArray1698: number[] = Array(12).fill(0);

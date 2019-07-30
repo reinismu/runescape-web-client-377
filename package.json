@@ -5,18 +5,24 @@
   "main": "index.js",
   "scripts": {
     "dev": "parcel serve index.html",
+    "dev-js": "parcel serve dist/ts/index.html",
+    "serve-prod": "serve dist",
     "build": "parcel build index.html",
+    "build-hard": "rm -rf dist && parcel build index.html --no-source-maps",
     "test": "jest",
     "rs-test": "ts-jest",
+    "setup-js-build": "cp -r client_cache dist/ts && cp -r wasm dist/ts && cp index.html dist/ts",
     "test-watch": "jest --watch"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@hot-loader/react-dom": "^16.8.6",
+    "@material-ui/core": "^4.3.1",
     "@stardazed/crc32": "^1.0.0",
     "@types/big-integer": "0.0.31",
     "@types/file-saver": "^2.0.1",
+    "@types/long": "^4.0.0",
     "@types/pako": "^1.0.1",
     "@types/ws": "^6.0.1",
     "axios": "^0.19.0",
@@ -24,10 +30,11 @@
     "cyclic-32": "^1.1.0",
     "isaac-crypto": "^2.0.4",
     "jpeg-js": "^0.3.5",
+    "long": "^4.0.0",
     "pako": "^1.0.10",
-    "react-hot-loader": "^4.12.10",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-hot-loader": "^4.12.10",
     "ws": "^7.1.1"
   },
   "devDependencies": {
@@ -45,6 +52,7 @@
     "parcel-bundler": "^1.12.3",
     "parcel-plugin-wasm.rs": "^1.2.11",
     "rs-jest": "^1.1.0",
+    "serve": "^11.1.0",
     "ts-jest": "^24.0.2",
     "typescript": "^3.5.3"
   }

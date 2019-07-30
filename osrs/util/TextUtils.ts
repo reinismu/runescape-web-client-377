@@ -1,5 +1,5 @@
-
 import { rs_hash_string } from "./../../wasm/src/lib.rs";
+import Long from "long";
 
 export class TextUtils {
     public static VALID_CHARACTERS: string[] = [
@@ -42,57 +42,49 @@ export class TextUtils {
         "9"
     ];
 
-    public static nameToLong(name: string): number {
-        let longName: number = 0;
+    public static nameToLong(name: string): Long {
+        let longName: Long = new Long(0, 0);
         for (let i: number = 0; i < name.length && i < 12; i++) {
             {
                 const ch: string = name.charAt(i);
-                longName *= 37;
+                longName = longName.mul(37);
                 if (
                     (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) >= "A".charCodeAt(0) &&
                     (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) <= "Z".charCodeAt(0)
                 ) {
-                    longName += 1 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) - 65;
+                    longName = longName.add(1 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) - 65);
                 } else if (
                     (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) >= "a".charCodeAt(0) &&
                     (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) <= "z".charCodeAt(0)
                 ) {
-                    longName += 1 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) - 97;
+                    longName = longName.add(1 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) - 97);
                 } else if (
                     (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) >= "0".charCodeAt(0) &&
                     (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) <= "9".charCodeAt(0)
                 ) {
-                    longName += 27 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) - 48;
+                    longName = longName.add(27 + (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(ch) - 48);
                 }
             }
         }
-        for (; longName % 37 === 0 && longName !== 0; longName = (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(longName / 37)) {}
+        for (; longName.mod(37).isZero() && !longName.isZero(); longName = longName.div(37)) {}
         return longName;
     }
 
-    public static longToName(longName: number): string {
-        if (longName <= 0 || longName >= 6582952005840035281) {
+    public static longToName(longName: Long): string {
+        if (longName.lessThan(0) || longName.greaterThan(6582952005840035281)) {
             return "invalid_name";
         }
-        if (longName % 37 === 0) {
+        if (longName.div(37).isZero()) {
             return "invalid_name";
         }
         let length: number = 0;
-        const name: string[] = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(null);
-            }
-            return a;
-        })(12);
-        while (longName !== 0) {
-            {
-                const tmp: number = longName;
-                longName = (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(longName / 37);
-                name[11 - length++] = TextUtils.VALID_CHARACTERS[((tmp - longName * 37) as number) | 0];
-            }
+        const name: string[] = Array(12).fill("");
+        while (!longName.isZero()) {
+            const tmp: Long = new Long(longName.low, longName.high);
+            longName = longName.div(37);
+            name[11 - length++] = TextUtils.VALID_CHARACTERS[tmp.sub(longName.mul(37)).toNumber()];
         }
-        return ((str, index, len) => str.substring(index, index + len))(name.join(""), 12 - length, length) as string;
+        return name.join("");
     }
 
     public static spriteToHash(sprite: string): number {
@@ -128,7 +120,7 @@ export class TextUtils {
                     (c => (c.charCodeAt == null ? (c as any) : c.charCodeAt(0)))(formatedName[0]) + 65 - 97
                 );
             }
-            return new String(formatedName) as string;
+            return formatedName.join("");
         } else {
             return name;
         }

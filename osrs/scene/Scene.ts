@@ -14,6 +14,7 @@ import { GenericTile } from "./tile/GenericTile";
 import { SceneTile } from "./tile/SceneTile";
 import { Wall } from "./tile/Wall";
 import { WallDecoration } from "./tile/WallDecoration";
+import { array2d, array3d } from "../Arrays";
 
 export class Scene {
     public static anInt444: number = 0;
@@ -70,7 +71,7 @@ export class Scene {
     public static anInt487: number = 4;
 
     public static anIntArray488: number[] = Array(Scene.anInt487).fill(0);
-    public static aSceneClusterArrayArray554: SceneCluster[][] = Array(Scene.anInt487).fill(Array(500).fill(null));
+    public static aSceneClusterArrayArray554: SceneCluster[][] = array2d(Scene.anInt487, 500, null);
     public static anInt490: number = 0;
 
     public static aClass39Array491: SceneCluster[] = Array(500).fill(null);
@@ -134,7 +135,7 @@ export class Scene {
         41,
         41
     ];
-    public static aBooleanArrayArrayArrayArray506: boolean[][][][] = Array(8).fill(Array(32).fill(Array(51).fill(Array(51).fill(false))));
+    public static aBooleanArrayArrayArrayArray506: boolean[][][][] = Array(8).fill(array3d(32, 51, 51, false));
     public static aBooleanArrayArray507: boolean[][] = null;
 
     public static anInt508: number = 0;
@@ -469,7 +470,11 @@ export class Scene {
                     for (let i1: number = 0; i1 < scenetile_15_.sceneSpawnRequestCount; i1++) {
                         {
                             const sceneSpawnRequest: SceneSpawnRequest = scenetile_15_.sceneSpawnRequests[i1];
-                            if (((sceneSpawnRequest.hash >> 29) & 3) === 2 && sceneSpawnRequest.relativeX === i && sceneSpawnRequest.relativeY === j) {
+                            if (
+                                ((sceneSpawnRequest.hash >> 29) & 3) === 2 &&
+                                sceneSpawnRequest.relativeX === i &&
+                                sceneSpawnRequest.relativeY === j
+                            ) {
                                 sceneSpawnRequest.anInt113--;
                             }
                         }
@@ -484,14 +489,14 @@ export class Scene {
         this.tiles[3][i][j] = null;
     }
 
-    public method245(i: number, j: number, k: number, l: number) {
+    public setPhysicalLevel(i: number, j: number, k: number, l: number) {
         const sceneTile: SceneTile = this.tiles[i][j][k];
         if (sceneTile != null) {
-            sceneTile.anInt1411 = l;
+            sceneTile.physicalLevel = l;
         }
     }
 
-    public method246(
+    public addTile(
         i: number,
         j: number,
         k: number,
@@ -562,7 +567,7 @@ export class Scene {
         this.tiles[j1][i][j].floorDecoration = floorDecoration;
     }
 
-    public method248(
+    public addItemPile(
         i: number,
         plane: number,
         renderable_59_: Renderable,
@@ -1465,7 +1470,7 @@ export class Scene {
                                 const class50_sub3: SceneTile = aclass50_sub3[j2][l2];
                                 if (class50_sub3 != null) {
                                     if (
-                                        class50_sub3.anInt1411 > j ||
+                                        class50_sub3.physicalLevel > j ||
                                         (!Scene.aBooleanArrayArray507[j2 - Scene.screenCenterX + 25][l2 - Scene.screenCenterZ + 25] &&
                                             this.anIntArrayArrayArray455[l1][j2][l2] - l < 2000)
                                     ) {
@@ -1728,16 +1733,7 @@ export class Scene {
                     if (tileFromList.paint != null) {
                         if (!this.isTileOccluded(l, i, j)) {
                             flag1 = true;
-                            this.drawTileUnderlay(
-                                tileFromList.paint,
-                                l,
-                                Scene.pitchSin,
-                                Scene.pitchCos,
-                                Scene.yawSin,
-                                Scene.yawCos,
-                                i,
-                                j
-                            );
+                            this.drawTileUnderlay(tileFromList.paint, l, Scene.pitchSin, Scene.pitchCos, Scene.yawSin, Scene.yawCos, i, j);
                         }
                     } else if (tileFromList.complexTile != null && !this.isTileOccluded(l, i, j)) {
                         flag1 = true;
@@ -2034,7 +2030,10 @@ export class Scene {
                                                     if (l4 < sceneSpawnRequest_1.offsetY) {
                                                         l6 += 2;
                                                     }
-                                                    if ((l6 & class50_sub3_21.wallCullDirection) !== tileFromList.wallCullOppositeDirection) {
+                                                    if (
+                                                        (l6 & class50_sub3_21.wallCullDirection) !==
+                                                        tileFromList.wallCullOppositeDirection
+                                                    ) {
                                                         continue;
                                                     }
                                                     tileFromList.drawEntities = true;
@@ -2282,7 +2281,10 @@ export class Scene {
                                 wall_2.hash
                             );
                         }
-                        if ((wall_2.orientationA & tileFromList.wallDrawFlags) !== 0 && !this.isWallOccluded(l, i, j, wall_2.orientationA)) {
+                        if (
+                            (wall_2.orientationA & tileFromList.wallDrawFlags) !== 0 &&
+                            !this.isWallOccluded(l, i, j, wall_2.orientationA)
+                        ) {
                             wall_2.aRenderable769.renderAtPoint(
                                 0,
                                 Scene.pitchSin,

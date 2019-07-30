@@ -4,6 +4,7 @@ import { ISAACCipher } from "./ISAACCipher";
 import bigInt from "big-integer";
 import { rs_encrypt_bytes } from "../../wasm/src/lib.rs";
 import { Configuration } from "../Configuration";
+import Long from "long";
 
 function createCRC32Table(): number[] {
     let pos: number = 0;
@@ -220,15 +221,9 @@ export class Buffer extends CacheableNode {
         this.buffer[this.currentPosition++] = ((value >> 24) as number) | 0;
     }
 
-    public putLong(value: number) {
-        this.buffer[this.currentPosition++] = ((((value >> 56) as number) | 0) as number) | 0;
-        this.buffer[this.currentPosition++] = ((((value >> 48) as number) | 0) as number) | 0;
-        this.buffer[this.currentPosition++] = ((((value >> 40) as number) | 0) as number) | 0;
-        this.buffer[this.currentPosition++] = ((((value >> 32) as number) | 0) as number) | 0;
-        this.buffer[this.currentPosition++] = ((((value >> 24) as number) | 0) as number) | 0;
-        this.buffer[this.currentPosition++] = ((((value >> 16) as number) | 0) as number) | 0;
-        this.buffer[this.currentPosition++] = ((((value >> 8) as number) | 0) as number) | 0;
-        this.buffer[this.currentPosition++] = (((value as number) | 0) as number) | 0;
+    public putLong(value: Long) {
+        this.putInt(value.high);
+        this.putInt(value.low);
     }
 
     public putString(str: string) {
@@ -289,11 +284,10 @@ export class Buffer extends CacheableNode {
         ) | 0;
     }
 
-    public getLong(): number {
+    public getLong(): Long {
         const l: number = this.getInt() & 4294967295;
         const l1: number = this.getInt() & 4294967295;
-
-        return (l << 32) + l1;
+        return new Long(l1, l);
     }
 
     public getString(): string {
@@ -501,7 +495,7 @@ export class Buffer extends CacheableNode {
         }
     }
 
-    public getBytesAdded(bytes: number[], start: number, len: number) {
+    public getBytesAdded(bytes: Int8Array, start: number, len: number) {
         for (let pos: number = start; pos < start + len; pos++) {
             bytes[pos] = ((this.buffer[this.currentPosition++] - 128) as number) | 0;
         }

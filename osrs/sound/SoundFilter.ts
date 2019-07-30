@@ -1,9 +1,10 @@
 import { Buffer } from "../net/Buffer";
 import { SoundTrackEnvelope } from "./SoundTrackEnvelope";
+import { array2d } from "../Arrays";
 
 export class SoundFilter {
 
-    public static _coefficient: number[][] = Array(2).fill(Array(8).fill(0));
+    public static _coefficient: number[][] = array2d(2, 8, 0);
     public static coefficient: number[][];
     public static _invUnity: number = 0;
 

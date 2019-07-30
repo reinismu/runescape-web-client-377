@@ -1,19 +1,8 @@
 import React from "react";
 import { Game } from "../osrs/Game";
 
-interface State {
-    // game: Game | null;
-}
-
-
-if (module.hot) {
-    module.hot.accept(function() {
-        // module or one of its dependencies was just updated
-        console.log("accepted reload");
-      });
-}
-export class WebScape extends React.Component<{}, State> {
-    static game: Game = null
+export class WebScape extends React.Component {
+    static game: Game = null;
     state = { game: null };
     private canvasRef = React.createRef<HTMLCanvasElement>();
 
@@ -27,7 +16,15 @@ export class WebScape extends React.Component<{}, State> {
     render() {
         return (
             <div>
-                <canvas ref={this.canvasRef} width={765} height={503} tabIndex={1} />
+                <canvas
+                    ref={this.canvasRef}
+                    width={765}
+                    height={503}
+                    tabIndex={1}
+                    onContextMenu={(mouseEvent) => {
+                        mouseEvent.preventDefault();
+                    }}
+                />
             </div>
         );
     }

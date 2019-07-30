@@ -115,24 +115,8 @@ export class ChatCensor {
     }
 
     public static censorString(string: string): string {
-        let censoredString: string[] = /* toCharArray */(string).split("");
-        ChatCensor.formatLegalCharacters(censoredString);
-        const censoredStringTrimmed: string = (new String(censoredString) as string).trim();
-        censoredString = /* toCharArray */(censoredStringTrimmed.toLowerCase()).split("");
-        const censoredStringLowercased: string = censoredStringTrimmed.toLowerCase();
-        ChatCensor.method391(censoredString, 0);
-        ChatCensor.method386(censoredString, ChatCensor.anInt733);
-        ChatCensor.method387(3, censoredString);
-        ChatCensor.method400(3, censoredString);
-        for (let i: number = 0; i < ChatCensor.toCharArray.length; i++) {{
-            for (let j: number = -1; (j = censoredStringLowercased.indexOf(ChatCensor.toCharArray[i], j + 1)) !== -1; ) {{
-                const ac1: string[] = /* toCharArray */(ChatCensor.toCharArray[i]).split("");
-                for (let k: number = 0; k < ac1.length; k++) {censoredString[k + j] = ac1[k]; }
-            }}
-        }}
-        ChatCensor.method384(0, censoredString, /* toCharArray */(censoredStringTrimmed).split(""));
-        ChatCensor.method385(1, censoredString);
-        return (new String(censoredString) as string).trim();
+        // We all big boys and girls here!
+        return string;
     }
 
     public static method384(i: number, ac: string[], ac1: string[]) {

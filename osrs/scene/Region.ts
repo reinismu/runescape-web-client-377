@@ -9,6 +9,7 @@ import { OnDemandRequester } from "../net/requester/OnDemandRequester";
 import { Scene } from "./Scene";
 import { CollisionMap } from "./util/CollisionMap";
 import { TiledUtils } from "./util/TiledUtils";
+import { noise } from "../../wasm/src/lib.rs";
 
 export class Region {
     public static hueRandomizer: number = (((Math.random() * 17.0) as number) | 0) - 8;
@@ -26,10 +27,7 @@ export class Region {
     public static lowMemory: boolean = true;
 
     public static calculateNoise(x: number, seed: number): number {
-        let n: number = x + seed * 57;
-        n = (n << 13) ^ n;
-        const noise: number = (n * (n * n * 15731 + 789221) + 1376312589) & 2147483647;
-        return (noise >> 19) & 255;
+        return noise(x, seed);
     }
 
     public static method163(i: number, i_0_: number, i_1_: number): number {
@@ -908,7 +906,7 @@ export class Region {
                                                     Rasterizer3D.getRgbLookupTableId[Region.trimHSLLightness(hslBitsetRandomized, 96)];
                                             }
                                             if (overlayFloorId === 0) {
-                                                scene.method246(
+                                                scene.addTile(
                                                     plane,
                                                     x,
                                                     y,
@@ -948,7 +946,7 @@ export class Region {
                                                     hslBitset = this.getHSLBitset(floor.hue2, floor.saturation, floor.lightness);
                                                     rgbBitset = Rasterizer3D.getRgbLookupTableId[this.method182(floor.hslColor2, 96)];
                                                 }
-                                                scene.method246(
+                                                scene.addTile(
                                                     plane,
                                                     x,
                                                     y,
@@ -981,7 +979,7 @@ export class Region {
                 for (let i_104_: number = 1; i_104_ < this.regionSizeY - 1; i_104_++) {
                     {
                         for (let i_105_: number = 1; i_105_ < this.regionSizeX - 1; i_105_++) {
-                            scene.method245(plane, i_105_, i_104_, this.getVisibilityPlaneFor(i_104_, plane, i_105_, (0 as number) | 0));
+                            scene.setPhysicalLevel(plane, i_105_, i_104_, this.getVisibilityPlaneFor(i_104_, plane, i_105_, (0 as number) | 0));
                         }
                     }
                 }
@@ -2200,7 +2198,7 @@ export class Region {
                             i_279_ = 0;
                         }
                         if (i_276_ === 0) {
-                            this.vertexHeights[0][i_275_][i_277_] = -i_279_ * 8;
+                            this.vertexHeights[0][i_275_][i_277_] = (i_279_ != 0 ) ? -i_279_ * 8 : 0;
                         } else {
                             this.vertexHeights[i_276_][i_275_][i_277_] = this.vertexHeights[i_276_ - 1][i_275_][i_277_] - i_279_ * 8;
                             break;
