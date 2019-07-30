@@ -59,25 +59,17 @@ import { Actor } from "./media/renderable/actor/Actor";
 import { SkillConstants } from "./util/SkillConstants";
 import { ChatEncoder } from "./util/ChatEncoder";
 import { Actions } from "./Actions";
-
-interface GameConfig {
-    host: string;
-}
-
-const sleep = milliseconds => {
-    return new Promise(resolve => setTimeout(resolve, milliseconds));
-};
+import { tsMethodSignature } from "@babel/types";
+import { ParallelExecutor, sleep } from "./ParallelExecutor";
 
 function init_SKILL_EXPERIENCE() {
     const bitfield = Array(99).fill(0);
     let value: number = 0;
     for (let level: number = 0; level < 99; level++) {
-        {
-            const realLevel: number = level + 1;
-            const expDiff: number = (((realLevel as number) + 300.0 * Math.pow(2.0, (realLevel as number) / 7.0)) as number) | 0;
-            value += expDiff;
-            bitfield[level] = (value / 4) | 0;
-        }
+        const realLevel: number = level + 1;
+        const expDiff: number = (((realLevel as number) + 300.0 * Math.pow(2.0, (realLevel as number) / 7.0)) as number) | 0;
+        value += expDiff;
+        bitfield[level] = (value / 4) | 0;
     }
     return bitfield;
 }
@@ -95,6 +87,8 @@ function init_BITFIELD_MAX_VALUE() {
 }
 
 export class Game extends GameShell {
+    public static parallelExecutor: ParallelExecutor = new ParallelExecutor();
+
     public static pulseCycle: number = 0;
     public static portOffset: number = 0;
     public static BITFIELD_MAX_VALUE: number[] = init_BITFIELD_MAX_VALUE();
@@ -192,7 +186,6 @@ export class Game extends GameShell {
     anInt1048: number = 0;
     anInt1322: number = 0;
     aString1027: string = null;
-    startedRenderingFlames: boolean = false;
     renderDelay: number = 0;
     currentSceneTileFlags: number[][][] = null;
     anIntArrayArrayArray891: number[][][] = null;
@@ -271,7 +264,6 @@ export class Game extends GameShell {
     aClass18_913: ProducingGraphicsBuffer = null;
     aClass18_914: ProducingGraphicsBuffer = null;
 
-    processFlamesBound = this.processFlamesCycle.bind(this);
     startUpError: boolean = false;
     aBoolean1016: boolean = false;
     aBoolean1097: boolean = false;
@@ -662,6 +654,7 @@ export class Game extends GameShell {
     }
 
     public async doLogic() {
+
         if (this.aBoolean1016 || this.startUpError || this.aBoolean1097) {
             return;
         }
@@ -11362,7 +11355,8 @@ export class Game extends GameShell {
         Scene.method277(500, 800, 512, 334, ai);
         ChatCensor.load(chatArchive);
         this.mouseCapturer = new MouseCapturer(this);
-        this.mouseCapturer.run();
+        Game.parallelExecutor.start(this.mouseCapturer);
+        // this.mouseCapturer.run();
         GameObject.client = this;
         GameObjectDefinition.client = this;
         ActorDefinition.client = this;
@@ -11753,13 +11747,15 @@ export class Game extends GameShell {
 
     public async run() {
         if (this.shouldRenderFlames) {
-            this.processFlamesCycle();
+            Game.parallelExecutor.startRaw(this.processFlamesCycle, this);
+            // this.processFlamesCycle();
         } else {
             super.run();
         }
     }
 
-    processFlamesCycle() {
+    async processFlamesCycle(): Promise<boolean> {
+        console.log("hello123");
         // this.aBoolean1320 = true;
         // try {
         //     if (!this.startedRenderingFlames) {
@@ -11772,7 +11768,7 @@ export class Game extends GameShell {
         //     this.renderFlames();
         // } catch (ignored) {}
         // return 20;
-
+        // console.log("whu2");
         this.aBoolean1320 = true;
         try {
             this.flameCycle++;
@@ -11780,11 +11776,12 @@ export class Game extends GameShell {
             this.calculateFlamePositions();
             this.renderFlames();
         } catch (ignored) {}
-
+        await sleep(50);
         if (this.startedRenderingFlames) {
-            setTimeout(this.processFlamesBound, 50);
+            return true;
         } else {
             this.aBoolean1320 = false;
+            return false;
         }
     }
 

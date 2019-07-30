@@ -44,15 +44,18 @@ import { Configuration } from "./Configuration";
 //         btoa(String.fromCharCode.apply(null, new Int8Array(tileData)));
 // }
 
+const game = new Game(document.getElementById("gameCanvas") as HTMLCanvasElement);
+
 async function startGame() {
-    const game = new Game(document.getElementById("gameCanvas") as HTMLCanvasElement);
     await game.initializeApplication(765, 503);
 }
-startGame().then(() => {
-    console.log("Game stopped!");
-}).catch(error => {
-    console.error(error);
-});
+startGame()
+    .then(() => {
+        console.log("Game stopped!");
+    })
+    .catch(error => {
+        console.error(error);
+    });
 
 // async function testSocket() {
 //     const socket = new Socket("localhost", 43594);

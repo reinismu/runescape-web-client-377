@@ -7,8 +7,9 @@ import { Requester } from "./Requester";
 import { ungzip } from "pako";
 import { Socket } from "../Socket";
 import { crc32 } from "@stardazed/crc32";
+import { sleep, Runnable } from "../../ParallelExecutor";
 
-export class OnDemandRequester extends Requester {
+export class OnDemandRequester extends Requester implements Runnable{
     public anInt1334: number;
 
     public modelIndex: number[];
@@ -63,13 +64,7 @@ export class OnDemandRequester extends Requester {
 
     public anInt1363: number;
 
-    public inputBuffer: number[] = (s => {
-        const a = [];
-        while (s-- > 0) {
-            a.push(0);
-        }
-        return a;
-    })(500);
+    public inputBuffer: number[] = Array(500).fill(0);
 
     public regLandIndex: number[];
 
@@ -92,8 +87,6 @@ export class OnDemandRequester extends Requester {
     public lastSocketOpen: number;
 
     public requestFails: number;
-
-    runBound = this.run.bind(this);
 
     constructor() {
         super();
@@ -431,13 +424,14 @@ export class OnDemandRequester extends Requester {
         return onDemandNode;
     }
 
-    public async run() {
+    public async run(): Promise<boolean> {
         try {
             this.cycle++;
             let toWait: number = 20;
             if (this.highestPriority === 0 && this.client.stores[0] != null) {
                 toWait = 50;
             }
+            await sleep(toWait);
 
             this.expectData = true;
             for (let i: number = 0; i < 100; i++) {
@@ -516,12 +510,11 @@ export class OnDemandRequester extends Requester {
                     }
                 }
             }
-            if (this.running) {
-                setTimeout(this.runBound, toWait);
-            }
+            return this.running;
         } catch (exception) {
             console.error(exception);
         }
+        return false;
     }
 
     public async remainingRequest(i: number) {
@@ -667,7 +660,7 @@ export class OnDemandRequester extends Requester {
         }
         this.client = client;
         this.running = true;
-        this.run();
+        Game.parallelExecutor.start(this);
     }
 
     public immediateRequestCount() {

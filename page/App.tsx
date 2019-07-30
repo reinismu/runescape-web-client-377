@@ -2,14 +2,13 @@ import React from 'react';
 import { hot } from 'react-hot-loader';
 import Counter from './Counter';
 import { Problem } from './Problem';
+import { WebScape } from './WebScape';
 
 const App = () => {
   return (
-    <h1>
-      <Problem />
-      Hello, wo.<br />
-      <Counter />
-    </h1>
+    <div>
+      <WebScape />
+    </div>
   );
 };
 

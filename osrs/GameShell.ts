@@ -3,6 +3,8 @@ import { ProducingGraphicsBuffer } from "./media/ProducingGraphicsBuffer";
 import { Graphics } from "./graphics/Graphics";
 import { Font } from "./graphics/Font";
 import { Color } from "./graphics/Color";
+import { Game } from "./Game";
+import { sleep } from "./ParallelExecutor";
 
 interface LoopData {
     opos: number;
@@ -101,7 +103,6 @@ export class GameShell {
         intex: 0
     };
     public runInitialized = false;
-    mainLoopBound = this.mainLoop.bind(this);
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -141,10 +142,10 @@ export class GameShell {
                 this.optims[optim] = new Date().getTime();
             }
         }
-        this.mainLoop();
+        Game.parallelExecutor.startRaw(this.mainLoop, this);
     }
 
-    public async mainLoop() {
+    public async mainLoop(): Promise<boolean> {
         const ld = this.loopData;
         if (this.gameState > 0) {
             this.gameState--;
@@ -183,6 +184,7 @@ export class GameShell {
         if (ld.del < this.mindel) {
             ld.del = this.mindel;
         }
+        await sleep(ld.del)
 
         for (; ld.count < 256; ld.count += ld.ratio) {
             {
@@ -217,8 +219,9 @@ export class GameShell {
 
         if (this.gameState === -1) {
             this.exit();
+            return false;
         } else if (this.gameState >= 0) {
-            setTimeout(this.mainLoopBound, ld.del);
+            return true;
         }
     }
 

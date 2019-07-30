@@ -1,6 +1,7 @@
 import { Game } from "../Game";
+import { Runnable, sleep } from "../ParallelExecutor";
 
-export class MouseCapturer {
+export class MouseCapturer implements Runnable {
     public _client: Game;
 
     public capturing: boolean = true;
@@ -15,8 +16,6 @@ export class MouseCapturer {
 
     public coordsX: number[] = Array(500).fill(0);
 
-    runBound = this.run.bind(this);
-
     public constructor(_client: Game) {
         if (this._client === undefined) {
             this._client = null;
@@ -30,14 +29,13 @@ export class MouseCapturer {
         this.client = _client;
     }
 
-    public async run() {
+    public async run(): Promise<boolean> {
         if (this.coord < 500) {
             this.coordsX[this.coord] = this.client.mouseX;
             this.coordsY[this.coord] = this.client.mouseY;
             this.coord++;
         }
-        if (this.capturing) {
-            setTimeout(this.runBound, 50);
-        }
+        await sleep(50);
+        return this.capturing;
     }
 }
