@@ -155,7 +155,7 @@ export class TypeFace extends Rasterizer {
 
     public drawShadowedSeededAlphaString(string: string, x: number, y: number, colour: number, seed: number) {
         if (string == null) { return; }
-        const alpha: number = 192 + (this.getRandomInt(123456) & 31);
+        const alpha: number = 255 // 192 + (this.getRandomInt(123456) & 31);
         y -= this.characterDefaultHeight;
         for (let index: number = 0; index < string.length; index++) {if (((c) => c.charCodeAt == null ? c as any : c.charCodeAt(0))(string.charAt(index)) == "@".charCodeAt(0) && index + 4 < string.length && ((c) => c.charCodeAt == null ? c as any : c.charCodeAt(0))(string.charAt(index + 4)) == "@".charCodeAt(0)) {
             const stringColour: number = this.getColour(string.substring(index + 1, index + 4));
@@ -168,7 +168,7 @@ export class TypeFace extends Rasterizer {
                 this.drawAlphaCharacter(x + this.characterXOffsets[(c).charCodeAt(0)], true, colour, this.characterPixels[(c).charCodeAt(0)], y + this.characterYOffsets[(c).charCodeAt(0)], this.characterHeights[(c).charCodeAt(0)], this.characterWidths[(c).charCodeAt(0)], alpha);
             }
             x += this.characterScreenWidths[(c).charCodeAt(0)];
-            if ((this.getRandomInt(234253) & 3) === 0) { x++; }
+            // if ((this.getRandomInt(234253) & 3) === 0) { x++; }
         }}
     }
 

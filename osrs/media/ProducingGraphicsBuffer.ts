@@ -62,7 +62,7 @@ export class ProducingGraphicsBuffer {
 
         // //invert
         let a = 255;
-
-        return pixel == 0 ? 0 : (a << 24) + (b << 16) + (g << 8) + r;
+        const black = (255 << 24);
+        return pixel == 0 ? black : (a << 24) + (b << 16) + (g << 8) + r;
     }
 }
