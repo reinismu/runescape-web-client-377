@@ -9,15 +9,15 @@ import { WallDecoration } from "./WallDecoration";
 
 export class SceneTile extends Node {
 
-    public anInt1397: number;
+    public plane: number;
 
-    public anInt1398: number;
+    public x: number;
 
-    public anInt1399: number;
+    public y: number;
 
-    public anInt1400: number;
+    public renderLevel: number;
 
-    public genericTile: GenericTile;
+    public paint: GenericTile;
 
     public complexTile: ComplexTile;
 
@@ -39,28 +39,28 @@ export class SceneTile extends Node {
 
     public anInt1411: number;
 
-    public aBoolean1412: boolean;
+    public draw: boolean;
 
-    public aBoolean1413: boolean;
+    public visible: boolean;
 
-    public aBoolean1414: boolean;
+    public drawEntities: boolean;
 
-    public anInt1415: number;
+    public wallCullDirection: number;
 
-    public anInt1416: number;
+    public wallUncullDirection: number;
 
-    public anInt1417: number;
+    public wallCullOppositeDirection: number;
 
-    public anInt1418: number;
+    public wallDrawFlags: number;
 
-    public aClass50_Sub3_1419: SceneTile;
+    public bridge: SceneTile;
     public constructor(i: number, j: number, k: number) {
         super();
-        if (this.anInt1397 === undefined) { this.anInt1397 = 0; }
-        if (this.anInt1398 === undefined) { this.anInt1398 = 0; }
-        if (this.anInt1399 === undefined) { this.anInt1399 = 0; }
-        if (this.anInt1400 === undefined) { this.anInt1400 = 0; }
-        if (this.genericTile === undefined) { this.genericTile = null; }
+        if (this.plane === undefined) { this.plane = 0; }
+        if (this.x === undefined) { this.x = 0; }
+        if (this.y === undefined) { this.y = 0; }
+        if (this.renderLevel === undefined) { this.renderLevel = 0; }
+        if (this.paint === undefined) { this.paint = null; }
         if (this.complexTile === undefined) { this.complexTile = null; }
         if (this.wall === undefined) { this.wall = null; }
         if (this.wallDecoration === undefined) { this.wallDecoration = null; }
@@ -69,16 +69,16 @@ export class SceneTile extends Node {
         if (this.sceneSpawnRequestCount === undefined) { this.sceneSpawnRequestCount = 0; }
         if (this.anInt1410 === undefined) { this.anInt1410 = 0; }
         if (this.anInt1411 === undefined) { this.anInt1411 = 0; }
-        if (this.aBoolean1412 === undefined) { this.aBoolean1412 = false; }
-        if (this.aBoolean1413 === undefined) { this.aBoolean1413 = false; }
-        if (this.aBoolean1414 === undefined) { this.aBoolean1414 = false; }
-        if (this.anInt1415 === undefined) { this.anInt1415 = 0; }
-        if (this.anInt1416 === undefined) { this.anInt1416 = 0; }
-        if (this.anInt1417 === undefined) { this.anInt1417 = 0; }
-        if (this.anInt1418 === undefined) { this.anInt1418 = 0; }
-        if (this.aClass50_Sub3_1419 === undefined) { this.aClass50_Sub3_1419 = null; }
-        this.anInt1400 = this.anInt1397 = i;
-        this.anInt1398 = j;
-        this.anInt1399 = k;
+        if (this.draw === undefined) { this.draw = false; }
+        if (this.visible === undefined) { this.visible = false; }
+        if (this.drawEntities === undefined) { this.drawEntities = false; }
+        if (this.wallCullDirection === undefined) { this.wallCullDirection = 0; }
+        if (this.wallUncullDirection === undefined) { this.wallUncullDirection = 0; }
+        if (this.wallCullOppositeDirection === undefined) { this.wallCullOppositeDirection = 0; }
+        if (this.wallDrawFlags === undefined) { this.wallDrawFlags = 0; }
+        if (this.bridge === undefined) { this.bridge = null; }
+        this.renderLevel = this.plane = i;
+        this.x = j;
+        this.y = k;
     }
 }

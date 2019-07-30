@@ -7,7 +7,7 @@ export class Wall {
 
     public y: number;
 
-    public faceUnknown: number;
+    public orientationA: number;
 
     public face: number;
 
@@ -23,7 +23,7 @@ export class Wall {
         if (this.plane === undefined) { this.plane = 0; }
         if (this.x === undefined) { this.x = 0; }
         if (this.y === undefined) { this.y = 0; }
-        if (this.faceUnknown === undefined) { this.faceUnknown = 0; }
+        if (this.orientationA === undefined) { this.orientationA = 0; }
         if (this.face === undefined) { this.face = 0; }
         if (this.aRenderable769 === undefined) { this.aRenderable769 = null; }
         if (this.aRenderable770 === undefined) { this.aRenderable770 = null; }

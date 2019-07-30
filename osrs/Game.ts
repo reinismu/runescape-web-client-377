@@ -9754,8 +9754,8 @@ export class Game extends GameShell {
                         k6 = 10;
                     }
                     if (sceneSpawnRequest != null) {
-                        sceneSpawnRequest.aRenderable601 = new GameObject(
-                            (sceneSpawnRequest.anInt125 >> 14) & 32767,
+                        sceneSpawnRequest.renderable = new GameObject(
+                            (sceneSpawnRequest.hash >> 14) & 32767,
                             j9,
                             k6,
                             j19,

@@ -24,7 +24,7 @@ export class Scene {
 
     public static anInt462: number = 0;
 
-    public static anInt463: number = 0;
+    public static cycle: number = 0;
 
     public static anInt464: number = 0;
 
@@ -34,25 +34,25 @@ export class Scene {
 
     public static anInt467: number = 0;
 
-    public static anInt468: number = 0;
+    public static screenCenterX: number = 0;
 
-    public static anInt469: number = 0;
+    public static screenCenterZ: number = 0;
 
-    public static anInt470: number = 0;
+    public static cameraX2: number = 0;
 
-    public static anInt471: number = 0;
+    public static cameraY2: number = 0;
 
-    public static anInt472: number = 0;
+    public static cameraZ2: number = 0;
 
-    public static anInt473: number = 0;
+    public static pitchSin: number = 0;
 
-    public static anInt474: number = 0;
+    public static pitchCos: number = 0;
 
-    public static anInt475: number = 0;
+    public static yawSin: number = 0;
 
-    public static anInt476: number = 0;
+    public static yawCos: number = 0;
 
-    public static aSceneSpawnRequestArray477: SceneSpawnRequest[] = Array(100).fill(null);
+    public static entityBuffer: SceneSpawnRequest[] = Array(100).fill(null);
     public static anIntArray478: number[] = [53, -53, -53, 53];
     public static anIntArray479: number[] = [-53, -53, 53, 53];
     public static anIntArray480: number[] = [-45, 45, 45, -45];
@@ -74,11 +74,11 @@ export class Scene {
     public static anInt490: number = 0;
 
     public static aClass39Array491: SceneCluster[] = Array(500).fill(null);
-    public static aClass6_492: LinkedList = new LinkedList();
+    public static tileList: LinkedList = new LinkedList();
     public static anIntArray493: number[] = [19, 55, 38, 155, 255, 110, 137, 205, 76];
     public static anIntArray494: number[] = [160, 192, 80, 96, 0, 144, 80, 48, 160];
-    public static anIntArray495: number[] = [76, 8, 137, 4, 0, 1, 38, 2, 19];
-    public static anIntArray496: number[] = [0, 0, 2, 0, 0, 2, 1, 1, 0];
+    public static TILE_WALL_DRAW_FLAGS_1: number[] = [76, 8, 137, 4, 0, 1, 38, 2, 19];
+    public static WALL_UNCULL_FLAGS_0: number[] = [0, 0, 2, 0, 0, 2, 1, 1, 0];
     public static anIntArray497: number[] = [2, 0, 0, 2, 0, 0, 0, 4, 4];
     public static anIntArray498: number[] = [0, 4, 4, 8, 0, 0, 8, 0, 0];
     public static anIntArray499: number[] = [1, 1, 0, 0, 0, 8, 0, 0, 8];
@@ -150,10 +150,10 @@ export class Scene {
     public static anInt513: number = 0;
 
     public static method240() {
-        Scene.aSceneSpawnRequestArray477 = null;
+        Scene.entityBuffer = null;
         Scene.anIntArray488 = null;
         Scene.aSceneClusterArrayArray554 = null;
-        Scene.aClass6_492 = null;
+        Scene.tileList = null;
         Scene.aBooleanArrayArrayArrayArray506 = null;
         Scene.aBooleanArrayArray507 = null;
     }
@@ -199,10 +199,10 @@ export class Scene {
             {
                 for (let k1: number = 0; k1 < 2048; k1 += 64) {
                     {
-                        Scene.anInt473 = Model.SINE[j1];
-                        Scene.anInt474 = Model.COSINE[j1];
-                        Scene.anInt475 = Model.SINE[k1];
-                        Scene.anInt476 = Model.COSINE[k1];
+                        Scene.pitchSin = Model.SINE[j1];
+                        Scene.pitchCos = Model.COSINE[j1];
+                        Scene.yawSin = Model.SINE[k1];
+                        Scene.yawCos = Model.COSINE[k1];
                         const i2: number = ((j1 - 128) / 32) | 0;
                         const k2: number = (k1 / 64) | 0;
                         for (let i3: number = -26; i3 <= 26; i3++) {
@@ -272,10 +272,10 @@ export class Scene {
     }
 
     public static method278(i: number, j: number, k: number, l: number): boolean {
-        const i1: number = (i * Scene.anInt475 + j * Scene.anInt476) >> 16;
-        const j1: number = (i * Scene.anInt476 - j * Scene.anInt475) >> 16;
-        const k1: number = (l * Scene.anInt473 + j1 * Scene.anInt474) >> 16;
-        const l1: number = (l * Scene.anInt474 - j1 * Scene.anInt473) >> 16;
+        const i1: number = (i * Scene.yawSin + j * Scene.yawCos) >> 16;
+        const j1: number = (i * Scene.yawCos - j * Scene.yawSin) >> 16;
+        const k1: number = (l * Scene.pitchSin + j1 * Scene.pitchCos) >> 16;
+        const l1: number = (l * Scene.pitchCos - j1 * Scene.pitchSin) >> 16;
         if (k1 < 50 || k1 > 3500) {
             return false;
         }
@@ -441,8 +441,8 @@ export class Scene {
             this.sceneSpawnRequests[k1] = null;
         }
         this.anInt458 = 0;
-        for (let l1: number = 0; l1 < Scene.aSceneSpawnRequestArray477.length; l1++) {
-            Scene.aSceneSpawnRequestArray477[l1] = null;
+        for (let l1: number = 0; l1 < Scene.entityBuffer.length; l1++) {
+            Scene.entityBuffer[l1] = null;
         }
     }
 
@@ -465,11 +465,11 @@ export class Scene {
             {
                 const scenetile_15_: SceneTile = (this.tiles[k][i][j] = this.tiles[k + 1][i][j]);
                 if (scenetile_15_ != null) {
-                    scenetile_15_.anInt1397--;
+                    scenetile_15_.plane--;
                     for (let i1: number = 0; i1 < scenetile_15_.sceneSpawnRequestCount; i1++) {
                         {
                             const sceneSpawnRequest: SceneSpawnRequest = scenetile_15_.sceneSpawnRequests[i1];
-                            if (((sceneSpawnRequest.anInt125 >> 29) & 3) === 2 && sceneSpawnRequest.x === i && sceneSpawnRequest.y === j) {
+                            if (((sceneSpawnRequest.hash >> 29) & 3) === 2 && sceneSpawnRequest.relativeX === i && sceneSpawnRequest.relativeY === j) {
                                 sceneSpawnRequest.anInt113--;
                             }
                         }
@@ -480,7 +480,7 @@ export class Scene {
         if (this.tiles[0][i][j] == null) {
             this.tiles[0][i][j] = new SceneTile(0, i, j);
         }
-        this.tiles[0][i][j].aClass50_Sub3_1419 = scenetile;
+        this.tiles[0][i][j].bridge = scenetile;
         this.tiles[3][i][j] = null;
     }
 
@@ -520,7 +520,7 @@ export class Scene {
                     this.tiles[i5][j][k] = new SceneTile(i5, j, k);
                 }
             }
-            this.tiles[i][j][k].genericTile = genericTile;
+            this.tiles[i][j][k].paint = genericTile;
             return;
         }
         if (l === 1) {
@@ -530,7 +530,7 @@ export class Scene {
                     this.tiles[j5][j][k] = new SceneTile(j5, j, k);
                 }
             }
-            this.tiles[i][j][k].genericTile = genericTile_1;
+            this.tiles[i][j][k].paint = genericTile_1;
             return;
         }
         const complexTile: ComplexTile = new ComplexTile(j2, k3, i2, k1, j, i3, j3, l4, l2, i4, 0, k2, l, l1, j4, j1, k4, l3, k, i1);
@@ -586,10 +586,10 @@ export class Scene {
         if (sceneTile != null) {
             for (let l1: number = 0; l1 < sceneTile.sceneSpawnRequestCount; l1++) {
                 if (
-                    sceneTile.sceneSpawnRequests[l1].aRenderable601 != null &&
-                    ((sceneTile.sceneSpawnRequests[l1].aRenderable601 instanceof Model) as any)
+                    sceneTile.sceneSpawnRequests[l1].renderable != null &&
+                    ((sceneTile.sceneSpawnRequests[l1].renderable instanceof Model) as any)
                 ) {
-                    const i2: number = (sceneTile.sceneSpawnRequests[l1].aRenderable601 as Model).anInt1675;
+                    const i2: number = (sceneTile.sceneSpawnRequests[l1].renderable as Model).anInt1675;
                     if (i2 > k1) {
                         k1 = i2;
                     }
@@ -624,7 +624,7 @@ export class Scene {
             wall.plane = plane;
             wall.aRenderable769 = renderable;
             wall.aRenderable770 = renderable_68_;
-            wall.faceUnknown = faceUnknown;
+            wall.orientationA = faceUnknown;
             wall.face = face;
             for (let j2: number = l1; j2 >= 0; j2--) {
                 if (this.tiles[j2][x][y] == null) {
@@ -786,18 +786,18 @@ export class Scene {
             }
         }
         const sceneSpawnRequest: SceneSpawnRequest = new SceneSpawnRequest();
-        sceneSpawnRequest.anInt125 = j2;
+        sceneSpawnRequest.hash = j2;
         sceneSpawnRequest.config = byte0;
         sceneSpawnRequest.anInt113 = i;
-        sceneSpawnRequest.anInt115 = x;
-        sceneSpawnRequest.anInt116 = y;
-        sceneSpawnRequest.anInt114 = z;
-        sceneSpawnRequest.aRenderable601 = renderable;
+        sceneSpawnRequest.x = x;
+        sceneSpawnRequest.y = y;
+        sceneSpawnRequest.tileHeight = z;
+        sceneSpawnRequest.renderable = renderable;
         sceneSpawnRequest.anInt118 = i2;
-        sceneSpawnRequest.x = j;
-        sceneSpawnRequest.y = k;
-        sceneSpawnRequest.anInt120 = j + l - 1;
-        sceneSpawnRequest.anInt122 = k + i1 - 1;
+        sceneSpawnRequest.relativeX = j;
+        sceneSpawnRequest.relativeY = k;
+        sceneSpawnRequest.offsetX = j + l - 1;
+        sceneSpawnRequest.offsetY = k + i1 - 1;
         for (let i3: number = j; i3 < j + l; i3++) {
             {
                 for (let j3: number = k; j3 < k + i1; j3++) {
@@ -847,9 +847,9 @@ export class Scene {
     }
 
     public method256(sceneSpawnRequest: SceneSpawnRequest) {
-        for (let j: number = sceneSpawnRequest.x; j <= sceneSpawnRequest.anInt120; j++) {
+        for (let j: number = sceneSpawnRequest.relativeX; j <= sceneSpawnRequest.offsetX; j++) {
             {
-                for (let k: number = sceneSpawnRequest.y; k <= sceneSpawnRequest.anInt122; k++) {
+                for (let k: number = sceneSpawnRequest.relativeY; k <= sceneSpawnRequest.offsetY; k++) {
                     {
                         const class50_sub3: SceneTile = this.tiles[sceneSpawnRequest.anInt113][j][k];
                         if (class50_sub3 != null) {
@@ -927,7 +927,7 @@ export class Scene {
         for (let i1: number = 0; i1 < class50_sub3.sceneSpawnRequestCount; i1++) {
             {
                 const sceneSpawnRequest: SceneSpawnRequest = class50_sub3.sceneSpawnRequests[i1];
-                if (((sceneSpawnRequest.anInt125 >> 29) & 3) === 2 && sceneSpawnRequest.x === l && sceneSpawnRequest.y === i) {
+                if (((sceneSpawnRequest.hash >> 29) & 3) === 2 && sceneSpawnRequest.relativeX === l && sceneSpawnRequest.relativeY === i) {
                     this.method256(sceneSpawnRequest);
                     return;
                 }
@@ -991,7 +991,7 @@ export class Scene {
         for (let i1: number = 0; i1 < class50_sub3.sceneSpawnRequestCount; i1++) {
             {
                 const sceneSpawnRequest: SceneSpawnRequest = class50_sub3.sceneSpawnRequests[i1];
-                if (((sceneSpawnRequest.anInt125 >> 29) & 3) === 2 && sceneSpawnRequest.x === i && sceneSpawnRequest.y === j) {
+                if (((sceneSpawnRequest.hash >> 29) & 3) === 2 && sceneSpawnRequest.relativeX === i && sceneSpawnRequest.relativeY === j) {
                     return sceneSpawnRequest;
                 }
             }
@@ -1037,8 +1037,8 @@ export class Scene {
         for (let l: number = 0; l < class50_sub3.sceneSpawnRequestCount; l++) {
             {
                 const sceneSpawnRequest: SceneSpawnRequest = class50_sub3.sceneSpawnRequests[l];
-                if (((sceneSpawnRequest.anInt125 >> 29) & 3) === 2 && sceneSpawnRequest.x === j && sceneSpawnRequest.y === k) {
-                    return sceneSpawnRequest.anInt125;
+                if (((sceneSpawnRequest.hash >> 29) & 3) === 2 && sceneSpawnRequest.relativeX === j && sceneSpawnRequest.relativeY === k) {
+                    return sceneSpawnRequest.hash;
                 }
             }
         }
@@ -1069,7 +1069,7 @@ export class Scene {
             return class50_sub3.floorDecoration.config & 255;
         }
         for (let i1: number = 0; i1 < class50_sub3.sceneSpawnRequestCount; i1++) {
-            if (class50_sub3.sceneSpawnRequests[i1].anInt125 === l) {
+            if (class50_sub3.sceneSpawnRequests[i1].hash === l) {
                 return class50_sub3.sceneSpawnRequests[i1].config & 255;
             }
         }
@@ -1100,19 +1100,19 @@ export class Scene {
                                             const sceneSpawnRequest: SceneSpawnRequest = class50_sub3.sceneSpawnRequests[k1];
                                             if (
                                                 sceneSpawnRequest != null &&
-                                                sceneSpawnRequest.aRenderable601 != null &&
-                                                sceneSpawnRequest.aRenderable601.verticesNormal != null
+                                                sceneSpawnRequest.renderable != null &&
+                                                sceneSpawnRequest.renderable.verticesNormal != null
                                             ) {
                                                 this.method274(
                                                     j1,
                                                     l,
                                                     0,
-                                                    sceneSpawnRequest.anInt120 - sceneSpawnRequest.x + 1,
-                                                    sceneSpawnRequest.aRenderable601 as Model,
+                                                    sceneSpawnRequest.offsetX - sceneSpawnRequest.relativeX + 1,
+                                                    sceneSpawnRequest.renderable as Model,
                                                     i1,
-                                                    sceneSpawnRequest.anInt122 - sceneSpawnRequest.y + 1
+                                                    sceneSpawnRequest.offsetY - sceneSpawnRequest.relativeY + 1
                                                 );
-                                                (sceneSpawnRequest.aRenderable601 as Model).method595(i, j, 0, k);
+                                                (sceneSpawnRequest.renderable as Model).method595(i, j, 0, k);
                                             }
                                         }
                                     }
@@ -1232,17 +1232,17 @@ export class Scene {
                                             const sceneSpawnRequest: SceneSpawnRequest = class50_sub3.sceneSpawnRequests[k3];
                                             if (
                                                 sceneSpawnRequest != null &&
-                                                sceneSpawnRequest.aRenderable601 != null &&
-                                                sceneSpawnRequest.aRenderable601.verticesNormal != null
+                                                sceneSpawnRequest.renderable != null &&
+                                                sceneSpawnRequest.renderable.verticesNormal != null
                                             ) {
-                                                const l3: number = sceneSpawnRequest.anInt120 - sceneSpawnRequest.x + 1;
-                                                const i4: number = sceneSpawnRequest.anInt122 - sceneSpawnRequest.y + 1;
+                                                const l3: number = sceneSpawnRequest.offsetX - sceneSpawnRequest.relativeX + 1;
+                                                const i4: number = sceneSpawnRequest.offsetY - sceneSpawnRequest.relativeY + 1;
                                                 this.method275(
                                                     class50_sub1_sub4_sub4,
-                                                    sceneSpawnRequest.aRenderable601 as Model,
-                                                    (sceneSpawnRequest.x - i1) * 128 + (l3 - l) * 64,
+                                                    sceneSpawnRequest.renderable as Model,
+                                                    (sceneSpawnRequest.relativeX - i1) * 128 + (l3 - l) * 64,
                                                     j3,
-                                                    (sceneSpawnRequest.y - i) * 128 + (i4 - j1) * 64,
+                                                    (sceneSpawnRequest.relativeY - i) * 128 + (i4 - j1) * 64,
                                                     flag
                                                 );
                                             }
@@ -1339,7 +1339,7 @@ export class Scene {
         if (class50_sub3 == null) {
             return;
         }
-        const genericTile: GenericTile = class50_sub3.genericTile;
+        const genericTile: GenericTile = class50_sub3.paint;
         if (genericTile != null) {
             const j1: number = genericTile.rgbColor;
             if (j1 === 0) {
@@ -1422,34 +1422,34 @@ export class Scene {
         } else if (i1 >= this.anInt454 * 128) {
             i1 = this.anInt454 * 128 - 1;
         }
-        Scene.anInt463++;
-        Scene.anInt473 = Model.SINE[k1];
-        Scene.anInt474 = Model.COSINE[k1];
-        Scene.anInt475 = Model.SINE[j1];
-        Scene.anInt476 = Model.COSINE[j1];
+        Scene.cycle++;
+        Scene.pitchSin = Model.SINE[k1];
+        Scene.pitchCos = Model.COSINE[k1];
+        Scene.yawSin = Model.SINE[j1];
+        Scene.yawCos = Model.COSINE[j1];
         Scene.aBooleanArrayArray507 = Scene.aBooleanArrayArrayArrayArray506[((k1 - 128) / 32) | 0][(j1 / 64) | 0];
-        Scene.anInt470 = i;
-        Scene.anInt471 = l;
-        Scene.anInt472 = i1;
-        Scene.anInt468 = (i / 128) | 0;
-        Scene.anInt469 = (i1 / 128) | 0;
+        Scene.cameraX2 = i;
+        Scene.cameraY2 = l;
+        Scene.cameraZ2 = i1;
+        Scene.screenCenterX = (i / 128) | 0;
+        Scene.screenCenterZ = (i1 / 128) | 0;
         Scene.anInt462 = j;
-        Scene.anInt464 = Scene.anInt468 - 25;
+        Scene.anInt464 = Scene.screenCenterX - 25;
         if (k !== 0) {
             return;
         }
         if (Scene.anInt464 < 0) {
             Scene.anInt464 = 0;
         }
-        Scene.anInt466 = Scene.anInt469 - 25;
+        Scene.anInt466 = Scene.screenCenterZ - 25;
         if (Scene.anInt466 < 0) {
             Scene.anInt466 = 0;
         }
-        Scene.anInt465 = Scene.anInt468 + 25;
+        Scene.anInt465 = Scene.screenCenterX + 25;
         if (Scene.anInt465 > this.anInt453) {
             Scene.anInt465 = this.anInt453;
         }
-        Scene.anInt467 = Scene.anInt469 + 25;
+        Scene.anInt467 = Scene.screenCenterZ + 25;
         if (Scene.anInt467 > this.anInt454) {
             Scene.anInt467 = this.anInt454;
         }
@@ -1466,19 +1466,19 @@ export class Scene {
                                 if (class50_sub3 != null) {
                                     if (
                                         class50_sub3.anInt1411 > j ||
-                                        (!Scene.aBooleanArrayArray507[j2 - Scene.anInt468 + 25][l2 - Scene.anInt469 + 25] &&
+                                        (!Scene.aBooleanArrayArray507[j2 - Scene.screenCenterX + 25][l2 - Scene.screenCenterZ + 25] &&
                                             this.anIntArrayArrayArray455[l1][j2][l2] - l < 2000)
                                     ) {
-                                        class50_sub3.aBoolean1412 = false;
-                                        class50_sub3.aBoolean1413 = false;
-                                        class50_sub3.anInt1415 = 0;
+                                        class50_sub3.draw = false;
+                                        class50_sub3.visible = false;
+                                        class50_sub3.wallCullDirection = 0;
                                     } else {
-                                        class50_sub3.aBoolean1412 = true;
-                                        class50_sub3.aBoolean1413 = true;
+                                        class50_sub3.draw = true;
+                                        class50_sub3.visible = true;
                                         if (class50_sub3.sceneSpawnRequestCount > 0) {
-                                            class50_sub3.aBoolean1414 = true;
+                                            class50_sub3.drawEntities = true;
                                         } else {
-                                            class50_sub3.aBoolean1414 = false;
+                                            class50_sub3.drawEntities = false;
                                         }
                                         Scene.anInt461++;
                                     }
@@ -1494,38 +1494,38 @@ export class Scene {
                 const aclass50_sub3_1: SceneTile[][] = this.tiles[i2];
                 for (let i3: number = -25; i3 <= 0; i3++) {
                     {
-                        const j3: number = Scene.anInt468 + i3;
-                        const l3: number = Scene.anInt468 - i3;
+                        const j3: number = Scene.screenCenterX + i3;
+                        const l3: number = Scene.screenCenterX - i3;
                         if (j3 >= Scene.anInt464 || l3 < Scene.anInt465) {
                             for (let j4: number = -25; j4 <= 0; j4++) {
                                 {
-                                    const l4: number = Scene.anInt469 + j4;
-                                    const j5: number = Scene.anInt469 - j4;
+                                    const l4: number = Scene.screenCenterZ + j4;
+                                    const j5: number = Scene.screenCenterZ - j4;
                                     if (j3 >= Scene.anInt464) {
                                         if (l4 >= Scene.anInt466) {
                                             const class50_sub3_1: SceneTile = aclass50_sub3_1[j3][l4];
-                                            if (class50_sub3_1 != null && class50_sub3_1.aBoolean1412) {
-                                                this.method281(class50_sub3_1, true);
+                                            if (class50_sub3_1 != null && class50_sub3_1.draw) {
+                                                this.drawTile(class50_sub3_1, true);
                                             }
                                         }
                                         if (j5 < Scene.anInt467) {
                                             const class50_sub3_2: SceneTile = aclass50_sub3_1[j3][j5];
-                                            if (class50_sub3_2 != null && class50_sub3_2.aBoolean1412) {
-                                                this.method281(class50_sub3_2, true);
+                                            if (class50_sub3_2 != null && class50_sub3_2.draw) {
+                                                this.drawTile(class50_sub3_2, true);
                                             }
                                         }
                                     }
                                     if (l3 < Scene.anInt465) {
                                         if (l4 >= Scene.anInt466) {
                                             const class50_sub3_3: SceneTile = aclass50_sub3_1[l3][l4];
-                                            if (class50_sub3_3 != null && class50_sub3_3.aBoolean1412) {
-                                                this.method281(class50_sub3_3, true);
+                                            if (class50_sub3_3 != null && class50_sub3_3.draw) {
+                                                this.drawTile(class50_sub3_3, true);
                                             }
                                         }
                                         if (j5 < Scene.anInt467) {
                                             const class50_sub3_4: SceneTile = aclass50_sub3_1[l3][j5];
-                                            if (class50_sub3_4 != null && class50_sub3_4.aBoolean1412) {
-                                                this.method281(class50_sub3_4, true);
+                                            if (class50_sub3_4 != null && class50_sub3_4.draw) {
+                                                this.drawTile(class50_sub3_4, true);
                                             }
                                         }
                                     }
@@ -1545,38 +1545,38 @@ export class Scene {
                 const aclass50_sub3_2: SceneTile[][] = this.tiles[k2];
                 for (let k3: number = -25; k3 <= 0; k3++) {
                     {
-                        const i4: number = Scene.anInt468 + k3;
-                        const k4: number = Scene.anInt468 - k3;
+                        const i4: number = Scene.screenCenterX + k3;
+                        const k4: number = Scene.screenCenterX - k3;
                         if (i4 >= Scene.anInt464 || k4 < Scene.anInt465) {
                             for (let i5: number = -25; i5 <= 0; i5++) {
                                 {
-                                    const k5: number = Scene.anInt469 + i5;
-                                    const l5: number = Scene.anInt469 - i5;
+                                    const k5: number = Scene.screenCenterZ + i5;
+                                    const l5: number = Scene.screenCenterZ - i5;
                                     if (i4 >= Scene.anInt464) {
                                         if (k5 >= Scene.anInt466) {
                                             const class50_sub3_5: SceneTile = aclass50_sub3_2[i4][k5];
-                                            if (class50_sub3_5 != null && class50_sub3_5.aBoolean1412) {
-                                                this.method281(class50_sub3_5, false);
+                                            if (class50_sub3_5 != null && class50_sub3_5.draw) {
+                                                this.drawTile(class50_sub3_5, false);
                                             }
                                         }
                                         if (l5 < Scene.anInt467) {
                                             const class50_sub3_6: SceneTile = aclass50_sub3_2[i4][l5];
-                                            if (class50_sub3_6 != null && class50_sub3_6.aBoolean1412) {
-                                                this.method281(class50_sub3_6, false);
+                                            if (class50_sub3_6 != null && class50_sub3_6.draw) {
+                                                this.drawTile(class50_sub3_6, false);
                                             }
                                         }
                                     }
                                     if (k4 < Scene.anInt465) {
                                         if (k5 >= Scene.anInt466) {
                                             const class50_sub3_7: SceneTile = aclass50_sub3_2[k4][k5];
-                                            if (class50_sub3_7 != null && class50_sub3_7.aBoolean1412) {
-                                                this.method281(class50_sub3_7, false);
+                                            if (class50_sub3_7 != null && class50_sub3_7.draw) {
+                                                this.drawTile(class50_sub3_7, false);
                                             }
                                         }
                                         if (l5 < Scene.anInt467) {
                                             const class50_sub3_8: SceneTile = aclass50_sub3_2[k4][l5];
-                                            if (class50_sub3_8 != null && class50_sub3_8.aBoolean1412) {
-                                                this.method281(class50_sub3_8, false);
+                                            if (class50_sub3_8 != null && class50_sub3_8.draw) {
+                                                this.drawTile(class50_sub3_8, false);
                                             }
                                         }
                                     }
@@ -1594,68 +1594,68 @@ export class Scene {
         Scene.aBoolean482 = false;
     }
 
-    public method281(class50_sub3: SceneTile, flag: boolean) {
-        Scene.aClass6_492.insertBack(class50_sub3);
+    public drawTile(tile: SceneTile, flag: boolean) {
+        Scene.tileList.insertBack(tile);
         do {
             {
-                let class50_sub3_1: SceneTile;
+                let tileFromList: SceneTile;
                 do {
                     {
-                        class50_sub3_1 = Scene.aClass6_492.removeFirst() as SceneTile;
-                        if (class50_sub3_1 == null) {
+                        tileFromList = Scene.tileList.removeFirst() as SceneTile;
+                        if (tileFromList == null) {
                             return;
                         }
                     }
-                } while (!class50_sub3_1.aBoolean1413);
-                const i: number = class50_sub3_1.anInt1398;
-                const j: number = class50_sub3_1.anInt1399;
-                const k: number = class50_sub3_1.anInt1397;
-                const l: number = class50_sub3_1.anInt1400;
+                } while (!tileFromList.visible);
+                const i: number = tileFromList.x;
+                const j: number = tileFromList.y;
+                const k: number = tileFromList.plane;
+                const l: number = tileFromList.renderLevel;
                 const aclass50_sub3: SceneTile[][] = this.tiles[k];
-                if (class50_sub3_1.aBoolean1412) {
+                if (tileFromList.draw) {
                     if (flag) {
                         if (k > 0) {
                             const class50_sub3_2: SceneTile = this.tiles[k - 1][i][j];
-                            if (class50_sub3_2 != null && class50_sub3_2.aBoolean1413) {
+                            if (class50_sub3_2 != null && class50_sub3_2.visible) {
                                 continue;
                             }
                         }
-                        if (i <= Scene.anInt468 && i > Scene.anInt464) {
+                        if (i <= Scene.screenCenterX && i > Scene.anInt464) {
                             const class50_sub3_3: SceneTile = aclass50_sub3[i - 1][j];
                             if (
                                 class50_sub3_3 != null &&
-                                class50_sub3_3.aBoolean1413 &&
-                                (class50_sub3_3.aBoolean1412 || (class50_sub3_1.anInt1410 & 1) === 0)
+                                class50_sub3_3.visible &&
+                                (class50_sub3_3.draw || (tileFromList.anInt1410 & 1) === 0)
                             ) {
                                 continue;
                             }
                         }
-                        if (i >= Scene.anInt468 && i < Scene.anInt465 - 1) {
+                        if (i >= Scene.screenCenterX && i < Scene.anInt465 - 1) {
                             const class50_sub3_4: SceneTile = aclass50_sub3[i + 1][j];
                             if (
                                 class50_sub3_4 != null &&
-                                class50_sub3_4.aBoolean1413 &&
-                                (class50_sub3_4.aBoolean1412 || (class50_sub3_1.anInt1410 & 4) === 0)
+                                class50_sub3_4.visible &&
+                                (class50_sub3_4.draw || (tileFromList.anInt1410 & 4) === 0)
                             ) {
                                 continue;
                             }
                         }
-                        if (j <= Scene.anInt469 && j > Scene.anInt466) {
+                        if (j <= Scene.screenCenterZ && j > Scene.anInt466) {
                             const class50_sub3_5: SceneTile = aclass50_sub3[i][j - 1];
                             if (
                                 class50_sub3_5 != null &&
-                                class50_sub3_5.aBoolean1413 &&
-                                (class50_sub3_5.aBoolean1412 || (class50_sub3_1.anInt1410 & 8) === 0)
+                                class50_sub3_5.visible &&
+                                (class50_sub3_5.draw || (tileFromList.anInt1410 & 8) === 0)
                             ) {
                                 continue;
                             }
                         }
-                        if (j >= Scene.anInt469 && j < Scene.anInt467 - 1) {
+                        if (j >= Scene.screenCenterZ && j < Scene.anInt467 - 1) {
                             const class50_sub3_6: SceneTile = aclass50_sub3[i][j + 1];
                             if (
                                 class50_sub3_6 != null &&
-                                class50_sub3_6.aBoolean1413 &&
-                                (class50_sub3_6.aBoolean1412 || (class50_sub3_1.anInt1410 & 2) === 0)
+                                class50_sub3_6.visible &&
+                                (class50_sub3_6.draw || (tileFromList.anInt1410 & 2) === 0)
                             ) {
                                 continue;
                             }
@@ -1663,31 +1663,31 @@ export class Scene {
                     } else {
                         flag = true;
                     }
-                    class50_sub3_1.aBoolean1412 = false;
-                    if (class50_sub3_1.aClass50_Sub3_1419 != null) {
-                        const class50_sub3_7: SceneTile = class50_sub3_1.aClass50_Sub3_1419;
-                        if (class50_sub3_7.genericTile != null) {
-                            if (!this.method287(0, i, j)) {
-                                this.method282(
-                                    class50_sub3_7.genericTile,
+                    tileFromList.draw = false;
+                    if (tileFromList.bridge != null) {
+                        const class50_sub3_7: SceneTile = tileFromList.bridge;
+                        if (class50_sub3_7.paint != null) {
+                            if (!this.isTileOccluded(0, i, j)) {
+                                this.drawTileUnderlay(
+                                    class50_sub3_7.paint,
                                     0,
-                                    Scene.anInt473,
-                                    Scene.anInt474,
-                                    Scene.anInt475,
-                                    Scene.anInt476,
+                                    Scene.pitchSin,
+                                    Scene.pitchCos,
+                                    Scene.yawSin,
+                                    Scene.yawCos,
                                     i,
                                     j
                                 );
                             }
-                        } else if (class50_sub3_7.complexTile != null && !this.method287(0, i, j)) {
-                            this.method283(
-                                Scene.anInt474,
-                                Scene.anInt476,
+                        } else if (class50_sub3_7.complexTile != null && !this.isTileOccluded(0, i, j)) {
+                            this.drawTileOverlay(
+                                Scene.pitchCos,
+                                Scene.yawCos,
                                 class50_sub3_7.complexTile,
-                                Scene.anInt473,
+                                Scene.pitchSin,
                                 j,
                                 i,
-                                Scene.anInt475,
+                                Scene.yawSin,
                                 (3 as number) | 0
                             );
                         }
@@ -1695,13 +1695,13 @@ export class Scene {
                         if (wall != null) {
                             wall.aRenderable769.renderAtPoint(
                                 0,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
-                                wall.x - Scene.anInt470,
-                                wall.plane - Scene.anInt471,
-                                wall.y - Scene.anInt472,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
+                                wall.x - Scene.cameraX2,
+                                wall.plane - Scene.cameraY2,
+                                wall.y - Scene.cameraZ2,
                                 wall.hash
                             );
                         }
@@ -1709,133 +1709,133 @@ export class Scene {
                             {
                                 const sceneSpawnRequest: SceneSpawnRequest = class50_sub3_7.sceneSpawnRequests[i2];
                                 if (sceneSpawnRequest != null) {
-                                    sceneSpawnRequest.aRenderable601.renderAtPoint(
+                                    sceneSpawnRequest.renderable.renderAtPoint(
                                         sceneSpawnRequest.anInt118,
-                                        Scene.anInt473,
-                                        Scene.anInt474,
-                                        Scene.anInt475,
-                                        Scene.anInt476,
-                                        sceneSpawnRequest.anInt115 - Scene.anInt470,
-                                        sceneSpawnRequest.anInt114 - Scene.anInt471,
-                                        sceneSpawnRequest.anInt116 - Scene.anInt472,
-                                        sceneSpawnRequest.anInt125
+                                        Scene.pitchSin,
+                                        Scene.pitchCos,
+                                        Scene.yawSin,
+                                        Scene.yawCos,
+                                        sceneSpawnRequest.x - Scene.cameraX2,
+                                        sceneSpawnRequest.tileHeight - Scene.cameraY2,
+                                        sceneSpawnRequest.y - Scene.cameraZ2,
+                                        sceneSpawnRequest.hash
                                     );
                                 }
                             }
                         }
                     }
                     let flag1: boolean = false;
-                    if (class50_sub3_1.genericTile != null) {
-                        if (!this.method287(l, i, j)) {
+                    if (tileFromList.paint != null) {
+                        if (!this.isTileOccluded(l, i, j)) {
                             flag1 = true;
-                            this.method282(
-                                class50_sub3_1.genericTile,
+                            this.drawTileUnderlay(
+                                tileFromList.paint,
                                 l,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
                                 i,
                                 j
                             );
                         }
-                    } else if (class50_sub3_1.complexTile != null && !this.method287(l, i, j)) {
+                    } else if (tileFromList.complexTile != null && !this.isTileOccluded(l, i, j)) {
                         flag1 = true;
-                        this.method283(
-                            Scene.anInt474,
-                            Scene.anInt476,
-                            class50_sub3_1.complexTile,
-                            Scene.anInt473,
+                        this.drawTileOverlay(
+                            Scene.pitchCos,
+                            Scene.yawCos,
+                            tileFromList.complexTile,
+                            Scene.pitchSin,
                             j,
                             i,
-                            Scene.anInt475,
+                            Scene.yawSin,
                             (3 as number) | 0
                         );
                     }
                     let j1: number = 0;
                     let j2: number = 0;
-                    const wall_3: Wall = class50_sub3_1.wall;
-                    const wallDecoration_1: WallDecoration = class50_sub3_1.wallDecoration;
+                    const wall_3: Wall = tileFromList.wall;
+                    const wallDecoration_1: WallDecoration = tileFromList.wallDecoration;
                     if (wall_3 != null || wallDecoration_1 != null) {
-                        if (Scene.anInt468 === i) {
+                        if (Scene.screenCenterX === i) {
                             j1++;
-                        } else if (Scene.anInt468 < i) {
+                        } else if (Scene.screenCenterX < i) {
                             j1 += 2;
                         }
-                        if (Scene.anInt469 === j) {
+                        if (Scene.screenCenterZ === j) {
                             j1 += 3;
-                        } else if (Scene.anInt469 > j) {
+                        } else if (Scene.screenCenterZ > j) {
                             j1 += 6;
                         }
                         j2 = Scene.anIntArray493[j1];
-                        class50_sub3_1.anInt1418 = Scene.anIntArray495[j1];
+                        tileFromList.wallDrawFlags = Scene.TILE_WALL_DRAW_FLAGS_1[j1];
                     }
                     if (wall_3 != null) {
-                        if ((wall_3.faceUnknown & Scene.anIntArray494[j1]) !== 0) {
-                            if (wall_3.faceUnknown === 16) {
-                                class50_sub3_1.anInt1415 = 3;
-                                class50_sub3_1.anInt1416 = Scene.anIntArray496[j1];
-                                class50_sub3_1.anInt1417 = 3 - class50_sub3_1.anInt1416;
-                            } else if (wall_3.faceUnknown === 32) {
-                                class50_sub3_1.anInt1415 = 6;
-                                class50_sub3_1.anInt1416 = Scene.anIntArray497[j1];
-                                class50_sub3_1.anInt1417 = 6 - class50_sub3_1.anInt1416;
-                            } else if (wall_3.faceUnknown === 64) {
-                                class50_sub3_1.anInt1415 = 12;
-                                class50_sub3_1.anInt1416 = Scene.anIntArray498[j1];
-                                class50_sub3_1.anInt1417 = 12 - class50_sub3_1.anInt1416;
+                        if ((wall_3.orientationA & Scene.anIntArray494[j1]) !== 0) {
+                            if (wall_3.orientationA === 16) {
+                                tileFromList.wallCullDirection = 3;
+                                tileFromList.wallUncullDirection = Scene.WALL_UNCULL_FLAGS_0[j1];
+                                tileFromList.wallCullOppositeDirection = 3 - tileFromList.wallUncullDirection;
+                            } else if (wall_3.orientationA === 32) {
+                                tileFromList.wallCullDirection = 6;
+                                tileFromList.wallUncullDirection = Scene.anIntArray497[j1];
+                                tileFromList.wallCullOppositeDirection = 6 - tileFromList.wallUncullDirection;
+                            } else if (wall_3.orientationA === 64) {
+                                tileFromList.wallCullDirection = 12;
+                                tileFromList.wallUncullDirection = Scene.anIntArray498[j1];
+                                tileFromList.wallCullOppositeDirection = 12 - tileFromList.wallUncullDirection;
                             } else {
-                                class50_sub3_1.anInt1415 = 9;
-                                class50_sub3_1.anInt1416 = Scene.anIntArray499[j1];
-                                class50_sub3_1.anInt1417 = 9 - class50_sub3_1.anInt1416;
+                                tileFromList.wallCullDirection = 9;
+                                tileFromList.wallUncullDirection = Scene.anIntArray499[j1];
+                                tileFromList.wallCullOppositeDirection = 9 - tileFromList.wallUncullDirection;
                             }
                         } else {
-                            class50_sub3_1.anInt1415 = 0;
+                            tileFromList.wallCullDirection = 0;
                         }
-                        if ((wall_3.faceUnknown & j2) !== 0 && !this.method288(l, i, j, wall_3.faceUnknown)) {
+                        if ((wall_3.orientationA & j2) !== 0 && !this.isWallOccluded(l, i, j, wall_3.orientationA)) {
                             wall_3.aRenderable769.renderAtPoint(
                                 0,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
-                                wall_3.x - Scene.anInt470,
-                                wall_3.plane - Scene.anInt471,
-                                wall_3.y - Scene.anInt472,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
+                                wall_3.x - Scene.cameraX2,
+                                wall_3.plane - Scene.cameraY2,
+                                wall_3.y - Scene.cameraZ2,
                                 wall_3.hash
                             );
                         }
-                        if ((wall_3.face & j2) !== 0 && !this.method288(l, i, j, wall_3.face)) {
+                        if ((wall_3.face & j2) !== 0 && !this.isWallOccluded(l, i, j, wall_3.face)) {
                             wall_3.aRenderable770.renderAtPoint(
                                 0,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
-                                wall_3.x - Scene.anInt470,
-                                wall_3.plane - Scene.anInt471,
-                                wall_3.y - Scene.anInt472,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
+                                wall_3.x - Scene.cameraX2,
+                                wall_3.plane - Scene.cameraY2,
+                                wall_3.y - Scene.cameraZ2,
                                 wall_3.hash
                             );
                         }
                     }
-                    if (wallDecoration_1 != null && !this.method289(l, i, j, wallDecoration_1.renderable.modelHeight)) {
+                    if (wallDecoration_1 != null && !this.isOccluded(l, i, j, wallDecoration_1.renderable.modelHeight)) {
                         if ((wallDecoration_1.faceUnknown & j2) !== 0) {
                             wallDecoration_1.renderable.renderAtPoint(
                                 wallDecoration_1.face,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
-                                wallDecoration_1.y - Scene.anInt470,
-                                wallDecoration_1.plane - Scene.anInt471,
-                                wallDecoration_1.x - Scene.anInt472,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
+                                wallDecoration_1.y - Scene.cameraX2,
+                                wallDecoration_1.plane - Scene.cameraY2,
+                                wallDecoration_1.x - Scene.cameraZ2,
                                 wallDecoration_1.hash
                             );
                         } else if ((wallDecoration_1.faceUnknown & 768) !== 0) {
-                            const j4: number = wallDecoration_1.y - Scene.anInt470;
-                            const l5: number = wallDecoration_1.plane - Scene.anInt471;
-                            const k6: number = wallDecoration_1.x - Scene.anInt472;
+                            const j4: number = wallDecoration_1.y - Scene.cameraX2;
+                            const l5: number = wallDecoration_1.plane - Scene.cameraY2;
+                            const k6: number = wallDecoration_1.x - Scene.cameraZ2;
                             const i8: number = wallDecoration_1.face;
                             let k9: number;
                             if (i8 === 1 || i8 === 2) {
@@ -1854,10 +1854,10 @@ export class Scene {
                                 const k11: number = k6 + Scene.anIntArray479[i8];
                                 wallDecoration_1.renderable.renderAtPoint(
                                     i8 * 512 + 256,
-                                    Scene.anInt473,
-                                    Scene.anInt474,
-                                    Scene.anInt475,
-                                    Scene.anInt476,
+                                    Scene.pitchSin,
+                                    Scene.pitchCos,
+                                    Scene.yawSin,
+                                    Scene.yawCos,
                                     i11,
                                     l5,
                                     k11,
@@ -1869,10 +1869,10 @@ export class Scene {
                                 const l11: number = k6 + Scene.anIntArray481[i8];
                                 wallDecoration_1.renderable.renderAtPoint(
                                     (i8 * 512 + 1280) & 2047,
-                                    Scene.anInt473,
-                                    Scene.anInt474,
-                                    Scene.anInt475,
-                                    Scene.anInt476,
+                                    Scene.pitchSin,
+                                    Scene.pitchCos,
+                                    Scene.yawSin,
+                                    Scene.yawCos,
                                     j11,
                                     l5,
                                     l11,
@@ -1882,98 +1882,98 @@ export class Scene {
                         }
                     }
                     if (flag1) {
-                        const floorDecoration: FloorDecoration = class50_sub3_1.floorDecoration;
+                        const floorDecoration: FloorDecoration = tileFromList.floorDecoration;
                         if (floorDecoration != null) {
                             floorDecoration.renderable.renderAtPoint(
                                 0,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
-                                floorDecoration.y - Scene.anInt470,
-                                floorDecoration.x - Scene.anInt471,
-                                floorDecoration.z - Scene.anInt472,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
+                                floorDecoration.y - Scene.cameraX2,
+                                floorDecoration.x - Scene.cameraY2,
+                                floorDecoration.z - Scene.cameraZ2,
                                 floorDecoration.hash
                             );
                         }
-                        const cameraAngle_1: CameraAngle = class50_sub3_1.cameraAngle;
+                        const cameraAngle_1: CameraAngle = tileFromList.cameraAngle;
                         if (cameraAngle_1 != null && cameraAngle_1.anInt180 === 0) {
                             if (cameraAngle_1.aRenderable151 != null) {
                                 cameraAngle_1.aRenderable151.renderAtPoint(
                                     0,
-                                    Scene.anInt473,
-                                    Scene.anInt474,
-                                    Scene.anInt475,
-                                    Scene.anInt476,
-                                    cameraAngle_1.y - Scene.anInt470,
-                                    cameraAngle_1.x - Scene.anInt471,
-                                    cameraAngle_1.z - Scene.anInt472,
+                                    Scene.pitchSin,
+                                    Scene.pitchCos,
+                                    Scene.yawSin,
+                                    Scene.yawCos,
+                                    cameraAngle_1.y - Scene.cameraX2,
+                                    cameraAngle_1.x - Scene.cameraY2,
+                                    cameraAngle_1.z - Scene.cameraZ2,
                                     cameraAngle_1.anInt179
                                 );
                             }
                             if (cameraAngle_1.aRenderable152 != null) {
                                 cameraAngle_1.aRenderable152.renderAtPoint(
                                     0,
-                                    Scene.anInt473,
-                                    Scene.anInt474,
-                                    Scene.anInt475,
-                                    Scene.anInt476,
-                                    cameraAngle_1.y - Scene.anInt470,
-                                    cameraAngle_1.x - Scene.anInt471,
-                                    cameraAngle_1.z - Scene.anInt472,
+                                    Scene.pitchSin,
+                                    Scene.pitchCos,
+                                    Scene.yawSin,
+                                    Scene.yawCos,
+                                    cameraAngle_1.y - Scene.cameraX2,
+                                    cameraAngle_1.x - Scene.cameraY2,
+                                    cameraAngle_1.z - Scene.cameraZ2,
                                     cameraAngle_1.anInt179
                                 );
                             }
                             if (cameraAngle_1.aRenderable150 != null) {
                                 cameraAngle_1.aRenderable150.renderAtPoint(
                                     0,
-                                    Scene.anInt473,
-                                    Scene.anInt474,
-                                    Scene.anInt475,
-                                    Scene.anInt476,
-                                    cameraAngle_1.y - Scene.anInt470,
-                                    cameraAngle_1.x - Scene.anInt471,
-                                    cameraAngle_1.z - Scene.anInt472,
+                                    Scene.pitchSin,
+                                    Scene.pitchCos,
+                                    Scene.yawSin,
+                                    Scene.yawCos,
+                                    cameraAngle_1.y - Scene.cameraX2,
+                                    cameraAngle_1.x - Scene.cameraY2,
+                                    cameraAngle_1.z - Scene.cameraZ2,
                                     cameraAngle_1.anInt179
                                 );
                             }
                         }
                     }
-                    const k4: number = class50_sub3_1.anInt1410;
+                    const k4: number = tileFromList.anInt1410;
                     if (k4 !== 0) {
-                        if (i < Scene.anInt468 && (k4 & 4) !== 0) {
+                        if (i < Scene.screenCenterX && (k4 & 4) !== 0) {
                             const class50_sub3_17: SceneTile = aclass50_sub3[i + 1][j];
-                            if (class50_sub3_17 != null && class50_sub3_17.aBoolean1413) {
-                                Scene.aClass6_492.insertBack(class50_sub3_17);
+                            if (class50_sub3_17 != null && class50_sub3_17.visible) {
+                                Scene.tileList.insertBack(class50_sub3_17);
                             }
                         }
-                        if (j < Scene.anInt469 && (k4 & 2) !== 0) {
+                        if (j < Scene.screenCenterZ && (k4 & 2) !== 0) {
                             const class50_sub3_18: SceneTile = aclass50_sub3[i][j + 1];
-                            if (class50_sub3_18 != null && class50_sub3_18.aBoolean1413) {
-                                Scene.aClass6_492.insertBack(class50_sub3_18);
+                            if (class50_sub3_18 != null && class50_sub3_18.visible) {
+                                Scene.tileList.insertBack(class50_sub3_18);
                             }
                         }
-                        if (i > Scene.anInt468 && (k4 & 1) !== 0) {
+                        if (i > Scene.screenCenterX && (k4 & 1) !== 0) {
                             const class50_sub3_19: SceneTile = aclass50_sub3[i - 1][j];
-                            if (class50_sub3_19 != null && class50_sub3_19.aBoolean1413) {
-                                Scene.aClass6_492.insertBack(class50_sub3_19);
+                            if (class50_sub3_19 != null && class50_sub3_19.visible) {
+                                Scene.tileList.insertBack(class50_sub3_19);
                             }
                         }
-                        if (j > Scene.anInt469 && (k4 & 8) !== 0) {
+                        if (j > Scene.screenCenterZ && (k4 & 8) !== 0) {
                             const class50_sub3_20: SceneTile = aclass50_sub3[i][j - 1];
-                            if (class50_sub3_20 != null && class50_sub3_20.aBoolean1413) {
-                                Scene.aClass6_492.insertBack(class50_sub3_20);
+                            if (class50_sub3_20 != null && class50_sub3_20.visible) {
+                                Scene.tileList.insertBack(class50_sub3_20);
                             }
                         }
                     }
                 }
-                if (class50_sub3_1.anInt1415 !== 0) {
+                if (tileFromList.wallCullDirection !== 0) {
                     let flag2: boolean = true;
-                    for (let k1: number = 0; k1 < class50_sub3_1.sceneSpawnRequestCount; k1++) {
+                    for (let k1: number = 0; k1 < tileFromList.sceneSpawnRequestCount; k1++) {
                         {
                             if (
-                                class50_sub3_1.sceneSpawnRequests[k1].anInt124 === Scene.anInt463 ||
-                                (class50_sub3_1.anIntArray1409[k1] & class50_sub3_1.anInt1415) !== class50_sub3_1.anInt1416
+                                tileFromList.sceneSpawnRequests[k1].cycle === Scene.cycle ||
+                                (tileFromList.anIntArray1409[k1] & tileFromList.wallCullDirection) !== tileFromList.wallUncullDirection
                             ) {
                                 continue;
                             }
@@ -1982,76 +1982,76 @@ export class Scene {
                         }
                     }
                     if (flag2) {
-                        const wall_1: Wall = class50_sub3_1.wall;
-                        if (!this.method288(l, i, j, wall_1.faceUnknown)) {
+                        const wall_1: Wall = tileFromList.wall;
+                        if (!this.isWallOccluded(l, i, j, wall_1.orientationA)) {
                             wall_1.aRenderable769.renderAtPoint(
                                 0,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
-                                wall_1.x - Scene.anInt470,
-                                wall_1.plane - Scene.anInt471,
-                                wall_1.y - Scene.anInt472,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
+                                wall_1.x - Scene.cameraX2,
+                                wall_1.plane - Scene.cameraY2,
+                                wall_1.y - Scene.cameraZ2,
                                 wall_1.hash
                             );
                         }
-                        class50_sub3_1.anInt1415 = 0;
+                        tileFromList.wallCullDirection = 0;
                     }
                 }
-                if (class50_sub3_1.aBoolean1414) {
+                if (tileFromList.drawEntities) {
                     try {
-                        const i1: number = class50_sub3_1.sceneSpawnRequestCount;
-                        class50_sub3_1.aBoolean1414 = false;
+                        const i1: number = tileFromList.sceneSpawnRequestCount;
+                        tileFromList.drawEntities = false;
                         let l1: number = 0;
                         label0: for (let k2: number = 0; k2 < i1; k2++) {
                             {
-                                const sceneSpawnRequest_1: SceneSpawnRequest = class50_sub3_1.sceneSpawnRequests[k2];
-                                if (sceneSpawnRequest_1.anInt124 === Scene.anInt463) {
+                                const sceneSpawnRequest_1: SceneSpawnRequest = tileFromList.sceneSpawnRequests[k2];
+                                if (sceneSpawnRequest_1.cycle === Scene.cycle) {
                                     continue;
                                 }
-                                for (let k3: number = sceneSpawnRequest_1.x; k3 <= sceneSpawnRequest_1.anInt120; k3++) {
+                                for (let k3: number = sceneSpawnRequest_1.relativeX; k3 <= sceneSpawnRequest_1.offsetX; k3++) {
                                     {
-                                        for (let l4: number = sceneSpawnRequest_1.y; l4 <= sceneSpawnRequest_1.anInt122; l4++) {
+                                        for (let l4: number = sceneSpawnRequest_1.relativeY; l4 <= sceneSpawnRequest_1.offsetY; l4++) {
                                             {
                                                 const class50_sub3_21: SceneTile = aclass50_sub3[k3][l4];
-                                                if (class50_sub3_21.aBoolean1412) {
-                                                    class50_sub3_1.aBoolean1414 = true;
+                                                if (class50_sub3_21.draw) {
+                                                    tileFromList.drawEntities = true;
                                                 } else {
-                                                    if (class50_sub3_21.anInt1415 === 0) {
+                                                    if (class50_sub3_21.wallCullDirection === 0) {
                                                         continue;
                                                     }
                                                     let l6: number = 0;
-                                                    if (k3 > sceneSpawnRequest_1.x) {
+                                                    if (k3 > sceneSpawnRequest_1.relativeX) {
                                                         l6++;
                                                     }
-                                                    if (k3 < sceneSpawnRequest_1.anInt120) {
+                                                    if (k3 < sceneSpawnRequest_1.offsetX) {
                                                         l6 += 4;
                                                     }
-                                                    if (l4 > sceneSpawnRequest_1.y) {
+                                                    if (l4 > sceneSpawnRequest_1.relativeY) {
                                                         l6 += 8;
                                                     }
-                                                    if (l4 < sceneSpawnRequest_1.anInt122) {
+                                                    if (l4 < sceneSpawnRequest_1.offsetY) {
                                                         l6 += 2;
                                                     }
-                                                    if ((l6 & class50_sub3_21.anInt1415) !== class50_sub3_1.anInt1417) {
+                                                    if ((l6 & class50_sub3_21.wallCullDirection) !== tileFromList.wallCullOppositeDirection) {
                                                         continue;
                                                     }
-                                                    class50_sub3_1.aBoolean1414 = true;
+                                                    tileFromList.drawEntities = true;
                                                 }
                                                 continue label0;
                                             }
                                         }
                                     }
                                 }
-                                Scene.aSceneSpawnRequestArray477[l1++] = sceneSpawnRequest_1;
-                                let i5: number = Scene.anInt468 - sceneSpawnRequest_1.x;
-                                const i6: number = sceneSpawnRequest_1.anInt120 - Scene.anInt468;
+                                Scene.entityBuffer[l1++] = sceneSpawnRequest_1;
+                                let i5: number = Scene.screenCenterX - sceneSpawnRequest_1.relativeX;
+                                const i6: number = sceneSpawnRequest_1.offsetX - Scene.screenCenterX;
                                 if (i6 > i5) {
                                     i5 = i6;
                                 }
-                                const i7: number = Scene.anInt469 - sceneSpawnRequest_1.y;
-                                const j8: number = sceneSpawnRequest_1.anInt122 - Scene.anInt469;
+                                const i7: number = Scene.screenCenterZ - sceneSpawnRequest_1.relativeY;
+                                const j8: number = sceneSpawnRequest_1.offsetY - Scene.screenCenterZ;
                                 if (j8 > i7) {
                                     sceneSpawnRequest_1.anInt123 = i5 + j8;
                                 } else {
@@ -2065,16 +2065,16 @@ export class Scene {
                                 let l3: number = -1;
                                 for (let j5: number = 0; j5 < l1; j5++) {
                                     {
-                                        const sceneSpawnRequest_2: SceneSpawnRequest = Scene.aSceneSpawnRequestArray477[j5];
-                                        if (sceneSpawnRequest_2.anInt124 !== Scene.anInt463) {
+                                        const sceneSpawnRequest_2: SceneSpawnRequest = Scene.entityBuffer[j5];
+                                        if (sceneSpawnRequest_2.cycle !== Scene.cycle) {
                                             if (sceneSpawnRequest_2.anInt123 > i3) {
                                                 i3 = sceneSpawnRequest_2.anInt123;
                                                 l3 = j5;
                                             } else if (sceneSpawnRequest_2.anInt123 === i3) {
-                                                const j7: number = sceneSpawnRequest_2.anInt115 - Scene.anInt470;
-                                                const k8: number = sceneSpawnRequest_2.anInt116 - Scene.anInt472;
-                                                const l9: number = Scene.aSceneSpawnRequestArray477[l3].anInt115 - Scene.anInt470;
-                                                const l10: number = Scene.aSceneSpawnRequestArray477[l3].anInt116 - Scene.anInt472;
+                                                const j7: number = sceneSpawnRequest_2.x - Scene.cameraX2;
+                                                const k8: number = sceneSpawnRequest_2.y - Scene.cameraZ2;
+                                                const l9: number = Scene.entityBuffer[l3].x - Scene.cameraX2;
+                                                const l10: number = Scene.entityBuffer[l3].y - Scene.cameraZ2;
                                                 if (j7 * j7 + k8 * k8 > l9 * l9 + l10 * l10) {
                                                     l3 = j5;
                                                 }
@@ -2085,39 +2085,39 @@ export class Scene {
                                 if (l3 === -1) {
                                     break;
                                 }
-                                const sceneSpawnRequest_3: SceneSpawnRequest = Scene.aSceneSpawnRequestArray477[l3];
-                                sceneSpawnRequest_3.anInt124 = Scene.anInt463;
+                                const sceneSpawnRequest_3: SceneSpawnRequest = Scene.entityBuffer[l3];
+                                sceneSpawnRequest_3.cycle = Scene.cycle;
                                 if (
-                                    !this.method290(
+                                    !this.isAreaOccluded(
                                         l,
-                                        sceneSpawnRequest_3.x,
-                                        sceneSpawnRequest_3.anInt120,
-                                        sceneSpawnRequest_3.y,
-                                        sceneSpawnRequest_3.anInt122,
-                                        sceneSpawnRequest_3.aRenderable601.modelHeight
+                                        sceneSpawnRequest_3.relativeX,
+                                        sceneSpawnRequest_3.offsetX,
+                                        sceneSpawnRequest_3.relativeY,
+                                        sceneSpawnRequest_3.offsetY,
+                                        sceneSpawnRequest_3.renderable.modelHeight
                                     )
                                 ) {
-                                    sceneSpawnRequest_3.aRenderable601.renderAtPoint(
+                                    sceneSpawnRequest_3.renderable.renderAtPoint(
                                         sceneSpawnRequest_3.anInt118,
-                                        Scene.anInt473,
-                                        Scene.anInt474,
-                                        Scene.anInt475,
-                                        Scene.anInt476,
-                                        sceneSpawnRequest_3.anInt115 - Scene.anInt470,
-                                        sceneSpawnRequest_3.anInt114 - Scene.anInt471,
-                                        sceneSpawnRequest_3.anInt116 - Scene.anInt472,
-                                        sceneSpawnRequest_3.anInt125
+                                        Scene.pitchSin,
+                                        Scene.pitchCos,
+                                        Scene.yawSin,
+                                        Scene.yawCos,
+                                        sceneSpawnRequest_3.x - Scene.cameraX2,
+                                        sceneSpawnRequest_3.tileHeight - Scene.cameraY2,
+                                        sceneSpawnRequest_3.y - Scene.cameraZ2,
+                                        sceneSpawnRequest_3.hash
                                     );
                                 }
-                                for (let k7: number = sceneSpawnRequest_3.x; k7 <= sceneSpawnRequest_3.anInt120; k7++) {
+                                for (let k7: number = sceneSpawnRequest_3.relativeX; k7 <= sceneSpawnRequest_3.offsetX; k7++) {
                                     {
-                                        for (let l8: number = sceneSpawnRequest_3.y; l8 <= sceneSpawnRequest_3.anInt122; l8++) {
+                                        for (let l8: number = sceneSpawnRequest_3.relativeY; l8 <= sceneSpawnRequest_3.offsetY; l8++) {
                                             {
                                                 const class50_sub3_22: SceneTile = aclass50_sub3[k7][l8];
-                                                if (class50_sub3_22.anInt1415 !== 0) {
-                                                    Scene.aClass6_492.insertBack(class50_sub3_22);
-                                                } else if ((k7 !== i || l8 !== j) && class50_sub3_22.aBoolean1413) {
-                                                    Scene.aClass6_492.insertBack(class50_sub3_22);
+                                                if (class50_sub3_22.wallCullDirection !== 0) {
+                                                    Scene.tileList.insertBack(class50_sub3_22);
+                                                } else if ((k7 !== i || l8 !== j) && class50_sub3_22.visible) {
+                                                    Scene.tileList.insertBack(class50_sub3_22);
                                                 }
                                             }
                                         }
@@ -2125,103 +2125,103 @@ export class Scene {
                                 }
                             }
                         }
-                        if (class50_sub3_1.aBoolean1414) {
+                        if (tileFromList.drawEntities) {
                             continue;
                         }
                     } catch (_ex) {
-                        class50_sub3_1.aBoolean1414 = false;
+                        tileFromList.drawEntities = false;
                     }
                 }
-                if (!class50_sub3_1.aBoolean1413 || class50_sub3_1.anInt1415 !== 0) {
+                if (!tileFromList.visible || tileFromList.wallCullDirection !== 0) {
                     continue;
                 }
-                if (i <= Scene.anInt468 && i > Scene.anInt464) {
+                if (i <= Scene.screenCenterX && i > Scene.anInt464) {
                     const class50_sub3_8: SceneTile = aclass50_sub3[i - 1][j];
-                    if (class50_sub3_8 != null && class50_sub3_8.aBoolean1413) {
+                    if (class50_sub3_8 != null && class50_sub3_8.visible) {
                         continue;
                     }
                 }
-                if (i >= Scene.anInt468 && i < Scene.anInt465 - 1) {
+                if (i >= Scene.screenCenterX && i < Scene.anInt465 - 1) {
                     const class50_sub3_9: SceneTile = aclass50_sub3[i + 1][j];
-                    if (class50_sub3_9 != null && class50_sub3_9.aBoolean1413) {
+                    if (class50_sub3_9 != null && class50_sub3_9.visible) {
                         continue;
                     }
                 }
-                if (j <= Scene.anInt469 && j > Scene.anInt466) {
+                if (j <= Scene.screenCenterZ && j > Scene.anInt466) {
                     const class50_sub3_10: SceneTile = aclass50_sub3[i][j - 1];
-                    if (class50_sub3_10 != null && class50_sub3_10.aBoolean1413) {
+                    if (class50_sub3_10 != null && class50_sub3_10.visible) {
                         continue;
                     }
                 }
-                if (j >= Scene.anInt469 && j < Scene.anInt467 - 1) {
+                if (j >= Scene.screenCenterZ && j < Scene.anInt467 - 1) {
                     const class50_sub3_11: SceneTile = aclass50_sub3[i][j + 1];
-                    if (class50_sub3_11 != null && class50_sub3_11.aBoolean1413) {
+                    if (class50_sub3_11 != null && class50_sub3_11.visible) {
                         continue;
                     }
                 }
-                class50_sub3_1.aBoolean1413 = false;
+                tileFromList.visible = false;
                 Scene.anInt461--;
-                const cameraAngle: CameraAngle = class50_sub3_1.cameraAngle;
+                const cameraAngle: CameraAngle = tileFromList.cameraAngle;
                 if (cameraAngle != null && cameraAngle.anInt180 !== 0) {
                     if (cameraAngle.aRenderable151 != null) {
                         cameraAngle.aRenderable151.renderAtPoint(
                             0,
-                            Scene.anInt473,
-                            Scene.anInt474,
-                            Scene.anInt475,
-                            Scene.anInt476,
-                            cameraAngle.y - Scene.anInt470,
-                            cameraAngle.x - Scene.anInt471 - cameraAngle.anInt180,
-                            cameraAngle.z - Scene.anInt472,
+                            Scene.pitchSin,
+                            Scene.pitchCos,
+                            Scene.yawSin,
+                            Scene.yawCos,
+                            cameraAngle.y - Scene.cameraX2,
+                            cameraAngle.x - Scene.cameraY2 - cameraAngle.anInt180,
+                            cameraAngle.z - Scene.cameraZ2,
                             cameraAngle.anInt179
                         );
                     }
                     if (cameraAngle.aRenderable152 != null) {
                         cameraAngle.aRenderable152.renderAtPoint(
                             0,
-                            Scene.anInt473,
-                            Scene.anInt474,
-                            Scene.anInt475,
-                            Scene.anInt476,
-                            cameraAngle.y - Scene.anInt470,
-                            cameraAngle.x - Scene.anInt471 - cameraAngle.anInt180,
-                            cameraAngle.z - Scene.anInt472,
+                            Scene.pitchSin,
+                            Scene.pitchCos,
+                            Scene.yawSin,
+                            Scene.yawCos,
+                            cameraAngle.y - Scene.cameraX2,
+                            cameraAngle.x - Scene.cameraY2 - cameraAngle.anInt180,
+                            cameraAngle.z - Scene.cameraZ2,
                             cameraAngle.anInt179
                         );
                     }
                     if (cameraAngle.aRenderable150 != null) {
                         cameraAngle.aRenderable150.renderAtPoint(
                             0,
-                            Scene.anInt473,
-                            Scene.anInt474,
-                            Scene.anInt475,
-                            Scene.anInt476,
-                            cameraAngle.y - Scene.anInt470,
-                            cameraAngle.x - Scene.anInt471 - cameraAngle.anInt180,
-                            cameraAngle.z - Scene.anInt472,
+                            Scene.pitchSin,
+                            Scene.pitchCos,
+                            Scene.yawSin,
+                            Scene.yawCos,
+                            cameraAngle.y - Scene.cameraX2,
+                            cameraAngle.x - Scene.cameraY2 - cameraAngle.anInt180,
+                            cameraAngle.z - Scene.cameraZ2,
                             cameraAngle.anInt179
                         );
                     }
                 }
-                if (class50_sub3_1.anInt1418 !== 0) {
-                    const wallDecoration: WallDecoration = class50_sub3_1.wallDecoration;
-                    if (wallDecoration != null && !this.method289(l, i, j, wallDecoration.renderable.modelHeight)) {
-                        if ((wallDecoration.faceUnknown & class50_sub3_1.anInt1418) !== 0) {
+                if (tileFromList.wallDrawFlags !== 0) {
+                    const wallDecoration: WallDecoration = tileFromList.wallDecoration;
+                    if (wallDecoration != null && !this.isOccluded(l, i, j, wallDecoration.renderable.modelHeight)) {
+                        if ((wallDecoration.faceUnknown & tileFromList.wallDrawFlags) !== 0) {
                             wallDecoration.renderable.renderAtPoint(
                                 wallDecoration.face,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
-                                wallDecoration.y - Scene.anInt470,
-                                wallDecoration.plane - Scene.anInt471,
-                                wallDecoration.x - Scene.anInt472,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
+                                wallDecoration.y - Scene.cameraX2,
+                                wallDecoration.plane - Scene.cameraY2,
+                                wallDecoration.x - Scene.cameraZ2,
                                 wallDecoration.hash
                             );
                         } else if ((wallDecoration.faceUnknown & 768) !== 0) {
-                            const l2: number = wallDecoration.y - Scene.anInt470;
-                            const j3: number = wallDecoration.plane - Scene.anInt471;
-                            const i4: number = wallDecoration.x - Scene.anInt472;
+                            const l2: number = wallDecoration.y - Scene.cameraX2;
+                            const j3: number = wallDecoration.plane - Scene.cameraY2;
+                            const i4: number = wallDecoration.x - Scene.cameraZ2;
                             const k5: number = wallDecoration.face;
                             let j6: number;
                             if (k5 === 1 || k5 === 2) {
@@ -2240,10 +2240,10 @@ export class Scene {
                                 const i10: number = i4 + Scene.anIntArray479[k5];
                                 wallDecoration.renderable.renderAtPoint(
                                     k5 * 512 + 256,
-                                    Scene.anInt473,
-                                    Scene.anInt474,
-                                    Scene.anInt475,
-                                    Scene.anInt476,
+                                    Scene.pitchSin,
+                                    Scene.pitchCos,
+                                    Scene.yawSin,
+                                    Scene.yawCos,
                                     i9,
                                     j3,
                                     i10,
@@ -2255,10 +2255,10 @@ export class Scene {
                                 const j10: number = i4 + Scene.anIntArray481[k5];
                                 wallDecoration.renderable.renderAtPoint(
                                     (k5 * 512 + 1280) & 2047,
-                                    Scene.anInt473,
-                                    Scene.anInt474,
-                                    Scene.anInt475,
-                                    Scene.anInt476,
+                                    Scene.pitchSin,
+                                    Scene.pitchCos,
+                                    Scene.yawSin,
+                                    Scene.yawCos,
                                     j9,
                                     j3,
                                     j10,
@@ -2267,31 +2267,31 @@ export class Scene {
                             }
                         }
                     }
-                    const wall_2: Wall = class50_sub3_1.wall;
+                    const wall_2: Wall = tileFromList.wall;
                     if (wall_2 != null) {
-                        if ((wall_2.face & class50_sub3_1.anInt1418) !== 0 && !this.method288(l, i, j, wall_2.face)) {
+                        if ((wall_2.face & tileFromList.wallDrawFlags) !== 0 && !this.isWallOccluded(l, i, j, wall_2.face)) {
                             wall_2.aRenderable770.renderAtPoint(
                                 0,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
-                                wall_2.x - Scene.anInt470,
-                                wall_2.plane - Scene.anInt471,
-                                wall_2.y - Scene.anInt472,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
+                                wall_2.x - Scene.cameraX2,
+                                wall_2.plane - Scene.cameraY2,
+                                wall_2.y - Scene.cameraZ2,
                                 wall_2.hash
                             );
                         }
-                        if ((wall_2.faceUnknown & class50_sub3_1.anInt1418) !== 0 && !this.method288(l, i, j, wall_2.faceUnknown)) {
+                        if ((wall_2.orientationA & tileFromList.wallDrawFlags) !== 0 && !this.isWallOccluded(l, i, j, wall_2.orientationA)) {
                             wall_2.aRenderable769.renderAtPoint(
                                 0,
-                                Scene.anInt473,
-                                Scene.anInt474,
-                                Scene.anInt475,
-                                Scene.anInt476,
-                                wall_2.x - Scene.anInt470,
-                                wall_2.plane - Scene.anInt471,
-                                wall_2.y - Scene.anInt472,
+                                Scene.pitchSin,
+                                Scene.pitchCos,
+                                Scene.yawSin,
+                                Scene.yawCos,
+                                wall_2.x - Scene.cameraX2,
+                                wall_2.plane - Scene.cameraY2,
+                                wall_2.y - Scene.cameraZ2,
                                 wall_2.hash
                             );
                         }
@@ -2299,51 +2299,51 @@ export class Scene {
                 }
                 if (k < this.anInt452 - 1) {
                     const class50_sub3_12: SceneTile = this.tiles[k + 1][i][j];
-                    if (class50_sub3_12 != null && class50_sub3_12.aBoolean1413) {
-                        Scene.aClass6_492.insertBack(class50_sub3_12);
+                    if (class50_sub3_12 != null && class50_sub3_12.visible) {
+                        Scene.tileList.insertBack(class50_sub3_12);
                     }
                 }
-                if (i < Scene.anInt468) {
+                if (i < Scene.screenCenterX) {
                     const class50_sub3_13: SceneTile = aclass50_sub3[i + 1][j];
-                    if (class50_sub3_13 != null && class50_sub3_13.aBoolean1413) {
-                        Scene.aClass6_492.insertBack(class50_sub3_13);
+                    if (class50_sub3_13 != null && class50_sub3_13.visible) {
+                        Scene.tileList.insertBack(class50_sub3_13);
                     }
                 }
-                if (j < Scene.anInt469) {
+                if (j < Scene.screenCenterZ) {
                     const class50_sub3_14: SceneTile = aclass50_sub3[i][j + 1];
-                    if (class50_sub3_14 != null && class50_sub3_14.aBoolean1413) {
-                        Scene.aClass6_492.insertBack(class50_sub3_14);
+                    if (class50_sub3_14 != null && class50_sub3_14.visible) {
+                        Scene.tileList.insertBack(class50_sub3_14);
                     }
                 }
-                if (i > Scene.anInt468) {
+                if (i > Scene.screenCenterX) {
                     const class50_sub3_15: SceneTile = aclass50_sub3[i - 1][j];
-                    if (class50_sub3_15 != null && class50_sub3_15.aBoolean1413) {
-                        Scene.aClass6_492.insertBack(class50_sub3_15);
+                    if (class50_sub3_15 != null && class50_sub3_15.visible) {
+                        Scene.tileList.insertBack(class50_sub3_15);
                     }
                 }
-                if (j > Scene.anInt469) {
+                if (j > Scene.screenCenterZ) {
                     const class50_sub3_16: SceneTile = aclass50_sub3[i][j - 1];
-                    if (class50_sub3_16 != null && class50_sub3_16.aBoolean1413) {
-                        Scene.aClass6_492.insertBack(class50_sub3_16);
+                    if (class50_sub3_16 != null && class50_sub3_16.visible) {
+                        Scene.tileList.insertBack(class50_sub3_16);
                     }
                 }
             }
         } while (true);
     }
 
-    public method282(genericTile: GenericTile, i: number, j: number, k: number, l: number, i1: number, j1: number, k1: number) {
+    public drawTileUnderlay(genericTile: GenericTile, i: number, j: number, k: number, l: number, i1: number, j1: number, k1: number) {
         let l1: number;
-        let i2: number = (l1 = (j1 << 7) - Scene.anInt470);
+        let i2: number = (l1 = (j1 << 7) - Scene.cameraX2);
         let j2: number;
-        let k2: number = (j2 = (k1 << 7) - Scene.anInt472);
+        let k2: number = (j2 = (k1 << 7) - Scene.cameraZ2);
         let l2: number;
         let i3: number = (l2 = i2 + 128);
         let j3: number;
         let k3: number = (j3 = k2 + 128);
-        let l3: number = this.anIntArrayArrayArray455[i][j1][k1] - Scene.anInt471;
-        let i4: number = this.anIntArrayArrayArray455[i][j1 + 1][k1] - Scene.anInt471;
-        let j4: number = this.anIntArrayArrayArray455[i][j1 + 1][k1 + 1] - Scene.anInt471;
-        let k4: number = this.anIntArrayArrayArray455[i][j1][k1 + 1] - Scene.anInt471;
+        let l3: number = this.anIntArrayArrayArray455[i][j1][k1] - Scene.cameraY2;
+        let i4: number = this.anIntArrayArrayArray455[i][j1 + 1][k1] - Scene.cameraY2;
+        let j4: number = this.anIntArrayArrayArray455[i][j1 + 1][k1 + 1] - Scene.cameraY2;
+        let k4: number = this.anIntArrayArrayArray455[i][j1][k1 + 1] - Scene.cameraY2;
         let l4: number = (k2 * l + i2 * i1) >> 16;
         k2 = (k2 * i1 - i2 * l) >> 16;
         i2 = l4;
@@ -2532,13 +2532,13 @@ export class Scene {
         }
     }
 
-    public method283(i: number, j: number, complexTile: ComplexTile, k: number, l: number, i1: number, j1: number, byte0: number) {
+    public drawTileOverlay(i: number, j: number, complexTile: ComplexTile, k: number, l: number, i1: number, j1: number, byte0: number) {
         let k1: number = complexTile.anIntArray403.length;
         for (let l1: number = 0; l1 < k1; l1++) {
             {
-                let i2: number = complexTile.anIntArray403[l1] - Scene.anInt470;
-                let k2: number = complexTile.anIntArray404[l1] - Scene.anInt471;
-                let i3: number = complexTile.anIntArray405[l1] - Scene.anInt472;
+                let i2: number = complexTile.anIntArray403[l1] - Scene.cameraX2;
+                let k2: number = complexTile.anIntArray404[l1] - Scene.cameraY2;
+                let i3: number = complexTile.anIntArray405[l1] - Scene.cameraZ2;
                 let k3: number = (i3 * j1 + i2 * j) >> 16;
                 i3 = (i3 * j - i2 * j1) >> 16;
                 i2 = k3;
@@ -2706,15 +2706,15 @@ export class Scene {
             {
                 const class39: SceneCluster = aclass39[k];
                 if (class39.anInt679 === 1) {
-                    const l: number = class39.anInt675 - Scene.anInt468 + 25;
+                    const l: number = class39.anInt675 - Scene.screenCenterX + 25;
                     if (l < 0 || l > 50) {
                         continue;
                     }
-                    let k1: number = class39.anInt677 - Scene.anInt469 + 25;
+                    let k1: number = class39.anInt677 - Scene.screenCenterZ + 25;
                     if (k1 < 0) {
                         k1 = 0;
                     }
-                    let j2: number = class39.anInt678 - Scene.anInt469 + 25;
+                    let j2: number = class39.anInt678 - Scene.screenCenterZ + 25;
                     if (j2 > 50) {
                         j2 = 50;
                     }
@@ -2728,7 +2728,7 @@ export class Scene {
                     if (!flag) {
                         continue;
                     }
-                    let j3: number = Scene.anInt470 - class39.anInt680;
+                    let j3: number = Scene.cameraX2 - class39.anInt680;
                     if (j3 > 32) {
                         class39.anInt686 = 1;
                     } else {
@@ -2738,23 +2738,23 @@ export class Scene {
                         class39.anInt686 = 2;
                         j3 = -j3;
                     }
-                    class39.anInt689 = (((class39.anInt682 - Scene.anInt472) << 8) / j3) | 0;
-                    class39.anInt690 = (((class39.anInt683 - Scene.anInt472) << 8) / j3) | 0;
-                    class39.anInt691 = (((class39.anInt684 - Scene.anInt471) << 8) / j3) | 0;
-                    class39.anInt692 = (((class39.anInt685 - Scene.anInt471) << 8) / j3) | 0;
+                    class39.anInt689 = (((class39.anInt682 - Scene.cameraZ2) << 8) / j3) | 0;
+                    class39.anInt690 = (((class39.anInt683 - Scene.cameraZ2) << 8) / j3) | 0;
+                    class39.anInt691 = (((class39.anInt684 - Scene.cameraY2) << 8) / j3) | 0;
+                    class39.anInt692 = (((class39.anInt685 - Scene.cameraY2) << 8) / j3) | 0;
                     Scene.aClass39Array491[Scene.anInt490++] = class39;
                     continue;
                 }
                 if (class39.anInt679 === 2) {
-                    const i1: number = class39.anInt677 - Scene.anInt469 + 25;
+                    const i1: number = class39.anInt677 - Scene.screenCenterZ + 25;
                     if (i1 < 0 || i1 > 50) {
                         continue;
                     }
-                    let l1: number = class39.anInt675 - Scene.anInt468 + 25;
+                    let l1: number = class39.anInt675 - Scene.screenCenterX + 25;
                     if (l1 < 0) {
                         l1 = 0;
                     }
-                    let k2: number = class39.anInt676 - Scene.anInt468 + 25;
+                    let k2: number = class39.anInt676 - Scene.screenCenterX + 25;
                     if (k2 > 50) {
                         k2 = 50;
                     }
@@ -2768,7 +2768,7 @@ export class Scene {
                     if (!flag1) {
                         continue;
                     }
-                    let k3: number = Scene.anInt472 - class39.anInt682;
+                    let k3: number = Scene.cameraZ2 - class39.anInt682;
                     if (k3 > 32) {
                         class39.anInt686 = 3;
                     } else {
@@ -2778,28 +2778,28 @@ export class Scene {
                         class39.anInt686 = 4;
                         k3 = -k3;
                     }
-                    class39.anInt687 = (((class39.anInt680 - Scene.anInt470) << 8) / k3) | 0;
-                    class39.anInt688 = (((class39.anInt681 - Scene.anInt470) << 8) / k3) | 0;
-                    class39.anInt691 = (((class39.anInt684 - Scene.anInt471) << 8) / k3) | 0;
-                    class39.anInt692 = (((class39.anInt685 - Scene.anInt471) << 8) / k3) | 0;
+                    class39.anInt687 = (((class39.anInt680 - Scene.cameraX2) << 8) / k3) | 0;
+                    class39.anInt688 = (((class39.anInt681 - Scene.cameraX2) << 8) / k3) | 0;
+                    class39.anInt691 = (((class39.anInt684 - Scene.cameraY2) << 8) / k3) | 0;
+                    class39.anInt692 = (((class39.anInt685 - Scene.cameraY2) << 8) / k3) | 0;
                     Scene.aClass39Array491[Scene.anInt490++] = class39;
                 } else if (class39.anInt679 === 4) {
-                    const j1: number = class39.anInt684 - Scene.anInt471;
+                    const j1: number = class39.anInt684 - Scene.cameraY2;
                     if (j1 > 128) {
-                        let i2: number = class39.anInt677 - Scene.anInt469 + 25;
+                        let i2: number = class39.anInt677 - Scene.screenCenterZ + 25;
                         if (i2 < 0) {
                             i2 = 0;
                         }
-                        let l2: number = class39.anInt678 - Scene.anInt469 + 25;
+                        let l2: number = class39.anInt678 - Scene.screenCenterZ + 25;
                         if (l2 > 50) {
                             l2 = 50;
                         }
                         if (i2 <= l2) {
-                            let i3: number = class39.anInt675 - Scene.anInt468 + 25;
+                            let i3: number = class39.anInt675 - Scene.screenCenterX + 25;
                             if (i3 < 0) {
                                 i3 = 0;
                             }
-                            let l3: number = class39.anInt676 - Scene.anInt468 + 25;
+                            let l3: number = class39.anInt676 - Scene.screenCenterX + 25;
                             if (l3 > 50) {
                                 l3 = 50;
                             }
@@ -2819,10 +2819,10 @@ export class Scene {
                             }
                             if (flag2) {
                                 class39.anInt686 = 5;
-                                class39.anInt687 = (((class39.anInt680 - Scene.anInt470) << 8) / j1) | 0;
-                                class39.anInt688 = (((class39.anInt681 - Scene.anInt470) << 8) / j1) | 0;
-                                class39.anInt689 = (((class39.anInt682 - Scene.anInt472) << 8) / j1) | 0;
-                                class39.anInt690 = (((class39.anInt683 - Scene.anInt472) << 8) / j1) | 0;
+                                class39.anInt687 = (((class39.anInt680 - Scene.cameraX2) << 8) / j1) | 0;
+                                class39.anInt688 = (((class39.anInt681 - Scene.cameraX2) << 8) / j1) | 0;
+                                class39.anInt689 = (((class39.anInt682 - Scene.cameraZ2) << 8) / j1) | 0;
+                                class39.anInt690 = (((class39.anInt683 - Scene.cameraZ2) << 8) / j1) | 0;
                                 Scene.aClass39Array491[Scene.anInt490++] = class39;
                             }
                         }
@@ -2832,12 +2832,12 @@ export class Scene {
         }
     }
 
-    public method287(i: number, j: number, k: number): boolean {
+    public isTileOccluded(i: number, j: number, k: number): boolean {
         const l: number = this.anIntArrayArrayArray460[i][j][k];
-        if (l === -Scene.anInt463) {
+        if (l === -Scene.cycle) {
             return false;
         }
-        if (l === Scene.anInt463) {
+        if (l === Scene.cycle) {
             return true;
         }
         const i1: number = j << 7;
@@ -2848,16 +2848,16 @@ export class Scene {
             this.method291(i1 + 128 - 1, this.anIntArrayArrayArray455[i][j + 1][k + 1], j1 + 128 - 1) &&
             this.method291(i1 + 1, this.anIntArrayArrayArray455[i][j][k + 1], j1 + 128 - 1)
         ) {
-            this.anIntArrayArrayArray460[i][j][k] = Scene.anInt463;
+            this.anIntArrayArrayArray460[i][j][k] = Scene.cycle;
             return true;
         } else {
-            this.anIntArrayArrayArray460[i][j][k] = -Scene.anInt463;
+            this.anIntArrayArrayArray460[i][j][k] = -Scene.cycle;
             return false;
         }
     }
 
-    public method288(i: number, j: number, k: number, l: number): boolean {
-        if (!this.method287(i, j, k)) {
+    public isWallOccluded(i: number, j: number, k: number, l: number): boolean {
+        if (!this.isTileOccluded(i, j, k)) {
             return false;
         }
         const i1: number = j << 7;
@@ -2868,7 +2868,7 @@ export class Scene {
         const j2: number = k1 - 238;
         if (l < 16) {
             if (l === 1) {
-                if (i1 > Scene.anInt470) {
+                if (i1 > Scene.cameraX2) {
                     if (!this.method291(i1, k1, j1)) {
                         return false;
                     }
@@ -2890,7 +2890,7 @@ export class Scene {
                 return this.method291(i1, i2, j1 + 128);
             }
             if (l === 2) {
-                if (j1 < Scene.anInt472) {
+                if (j1 < Scene.cameraZ2) {
                     if (!this.method291(i1, k1, j1 + 128)) {
                         return false;
                     }
@@ -2912,7 +2912,7 @@ export class Scene {
                 return this.method291(i1 + 128, i2, j1 + 128);
             }
             if (l === 4) {
-                if (i1 < Scene.anInt470) {
+                if (i1 < Scene.cameraX2) {
                     if (!this.method291(i1 + 128, k1, j1)) {
                         return false;
                     }
@@ -2934,7 +2934,7 @@ export class Scene {
                 return this.method291(i1 + 128, i2, j1 + 128);
             }
             if (l === 8) {
-                if (j1 > Scene.anInt472) {
+                if (j1 > Scene.cameraZ2) {
                     if (!this.method291(i1, k1, j1)) {
                         return false;
                     }
@@ -2976,8 +2976,8 @@ export class Scene {
         }
     }
 
-    public method289(i: number, j: number, k: number, l: number): boolean {
-        if (!this.method287(i, j, k)) {
+    public isOccluded(i: number, j: number, k: number, l: number): boolean {
+        if (!this.isTileOccluded(i, j, k)) {
             return false;
         }
         const i1: number = j << 7;
@@ -2990,9 +2990,9 @@ export class Scene {
         );
     }
 
-    public method290(i: number, j: number, k: number, l: number, i1: number, j1: number): boolean {
+    public isAreaOccluded(i: number, j: number, k: number, l: number, i1: number, j1: number): boolean {
         if (j === k && l === i1) {
-            if (!this.method287(i, j, l)) {
+            if (!this.isTileOccluded(i, j, l)) {
                 return false;
             }
             const k1: number = j << 7;
@@ -3007,7 +3007,7 @@ export class Scene {
         for (let l1: number = j; l1 <= k; l1++) {
             {
                 for (let j2: number = l; j2 <= i1; j2++) {
-                    if (this.anIntArrayArrayArray460[i][l1][j2] === -Scene.anInt463) {
+                    if (this.anIntArrayArrayArray460[i][l1][j2] === -Scene.cycle) {
                         return false;
                     }
                 }
