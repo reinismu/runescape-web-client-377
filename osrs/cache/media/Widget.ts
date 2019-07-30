@@ -232,7 +232,7 @@ export class Widget {
         Widget.fonts = fonts;
         let parentId: number = -1;
         const widgetCount: number = buffer.getUnsignedLEShort();
-        Widget.interfaces = Array(widgetCount).fill(0);
+        Widget.interfaces = Array(widgetCount).fill(null);
         Widget.data = Array(widgetCount).fill(0);
         while ((buffer.currentPosition < buffer.buffer.length)) {{
             let widgetIndex: number = buffer.getUnsignedLEShort();
@@ -267,129 +267,130 @@ export class Widget {
         Widget.fonts = null;
         Widget.data = null;
     }
-    public optionText: string;
+    
+    public optionText: string = null;
 
-    public disabledImage: ImageRGB;
+    public disabledImage: ImageRGB = null;
 
-    public imageY: number[];
+    public imageY: number[] = null;
 
-    public id: number;
+    public id: number = 0;
 
-    public itemDeletesDraged: boolean;
+    public itemDeletesDraged: boolean = false;
 
-    public anInt218: number;
+    public anInt218: number = 0;
 
-    public hiddenUntilHovered: boolean;
+    public hiddenUntilHovered: boolean = false;
 
-    public alpha: number;
+    public alpha: number = 0;
 
-    public imageX: number[];
+    public imageX: number[] = null;
 
-    public optionAttributes: number;
+    public optionAttributes: number = 0;
 
-    public itemAmounts: number[];
+    public itemAmounts: number[] = null;
 
-    public unknownOne: number;
+    public unknownOne: number = 0;
 
-    public enabledHoveredColor: number;
+    public enabledHoveredColor: number = 0;
 
-    public anInt227: number;
+    public anInt227: number = 0;
 
-    public anInt228: number;
+    public anInt228: number = 0;
 
-    public isInventory: boolean;
+    public isInventory: boolean = false;
 
-    public disabledText: string;
+    public disabledText: string = null;
 
-    public anInt231: number;
+    public anInt231: number = 0;
 
-    public childrenX: number[];
+    public childrenX: number[] = null;
 
-    public unknownTwo: boolean;
+    public unknownTwo: boolean = false;
 
-    public opcodes: number[][];
+    public opcodes: number[][] = null;
 
-    public anInt235: number;
+    public anInt235: number = 0;
 
-    public type: number;
+    public type: number = 0;
 
-    public typeFaces: TypeFace;
+    public typeFaces: TypeFace = null;
 
-    public height: number;
+    public height: number = 0;
 
-    public filled: boolean;
+    public filled: boolean = false;
 
-    public disabledColor: number;
+    public disabledColor: number = 0;
 
-    public width: number;
+    public width: number = 0;
 
-    public contentType: number;
+    public contentType: number = 0;
 
-    public itemSpritePadsY: number;
+    public itemSpritePadsY: number = 0;
 
-    public enabledImage: ImageRGB;
+    public enabledImage: ImageRGB = null;
 
-    public typeFaceShadowed: boolean;
+    public typeFaceShadowed: boolean = false;
 
-    public parentId: number;
+    public parentId: number = 0;
 
-    public enabledText: string;
+    public enabledText: string = null;
 
-    public zoom: number;
+    public zoom: number = 0;
 
-    public rotationX: number;
+    public rotationX: number = 0;
 
-    public rotationY: number;
+    public rotationY: number = 0;
 
-    public hoveredPopup: number;
+    public hoveredPopup: number = 0;
 
-    public conditionValues: number[];
+    public conditionValues: number[] = null;
 
-    public children: number[];
+    public children: number[] = null;
 
-    public anInt259: number;
+    public anInt259: number = 0;
 
-    public enabledColor: number;
+    public enabledColor: number = 0;
 
-    public disabledHoveredColor: number;
+    public disabledHoveredColor: number = 0;
 
-    public options: string[];
+    public options: string[] = null;
 
-    public itemSpritePadsX: number;
+    public itemSpritePadsX: number = 0;
 
-    public images: ImageRGB[];
+    public images: ImageRGB[] = null;
 
-    public enabledModelType: number;
+    public enabledModelType: number = 0;
 
-    public enabledModelId: number;
+    public enabledModelId: number = 0;
 
-    public tooltip: string;
+    public tooltip: string = null;
 
-    public items: number[];
+    public items: number[] = null;
 
-    public typeFaceCentered: boolean;
+    public typeFaceCentered: boolean = false;
 
-    public conditionTypes: number[];
+    public conditionTypes: number[] = null;
 
-    public itemSwapable: boolean;
+    public itemSwapable: boolean = false;
 
-    public childrenY: number[];
+    public childrenY: number[] = null;
 
-    public optionCircumfix: string;
+    public optionCircumfix: string = null;
 
-    public modelType: number;
+    public modelType: number = 0;
 
-    public modelId: number;
+    public modelId: number = 0;
 
-    public scrollLimit: number;
+    public scrollLimit: number = 0;
 
-    public disabledAnimation: number;
+    public disabledAnimation: number = 0;
 
-    public enabledAnimation: number;
+    public enabledAnimation: number = 0;
 
-    public itemUsable: boolean;
+    public itemUsable: boolean = false;
 
-    public actionType: number;
+    public actionType: number = 0;
 
     constructor() {
         if (this.optionText === undefined) { this.optionText = null; }

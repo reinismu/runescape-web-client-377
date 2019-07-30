@@ -669,19 +669,20 @@ export class Game extends GameShell {
 
     public repaintGame() {
         if (this.aBoolean1016 || this.startUpError || this.aBoolean1097) {
-            this.method123(281);
+            this.drawError();
             return;
         }
         Game.anInt1309++;
         if (!this.loggedIn) {
             this.drawLoginScreen(false);
         } else {
-            this.method74(7);
+            this.drawGame();
         }
         this.anInt1094 = 0;
     }
 
-    public method74(i: number) {
+    public drawGame() {
+        // Not responsible for actual game drawing
         if (this.anInt1053 !== -1 && (this.loadingStage === 2 || this.imageProducer != null)) {
             if (this.loadingStage === 2) {
                 this.method88(this.tickDelta, this.anInt1053, (5 as number) | 0);
@@ -763,7 +764,7 @@ export class Game extends GameShell {
             this.redrawTabArea = true;
         }
         if (this.redrawTabArea) {
-            this.method134((7 as number) | 0);
+            this.redrawTabs();
             this.redrawTabArea = false;
         }
         if (this.backDialogueId === -1 && this.inputType === 0) {
@@ -978,9 +979,6 @@ export class Game extends GameShell {
             Rasterizer3D.lineOffsets = this.anIntArray1002;
         }
         this.tickDelta = 0;
-        if (i !== 7) {
-            for (let l: number = 1; l > 0; l++) {}
-        }
     }
 
     /*private*/ public renderMinimap() {
@@ -1428,7 +1426,7 @@ export class Game extends GameShell {
         }
     }
 
-    public method134(byte0: number) {
+    public redrawTabs() {
         this.aClass18_1156.createRasterizer();
         Rasterizer3D.lineOffsets = this.anIntArray1001;
         this.inventoryBackgroundImage.drawImage(0, 0);
@@ -1443,8 +1441,6 @@ export class Game extends GameShell {
         this.aClass18_1156.drawGraphics(553, 205, this.gameGraphics);
         this.aClass18_1158.createRasterizer();
         Rasterizer3D.lineOffsets = this.anIntArray1002;
-        if (byte0 === 7) {
-        }
     }
 
     public method151(i: number) {
@@ -3700,10 +3696,9 @@ export class Game extends GameShell {
         }
     }
 
-    public method123(i: number) {
+    public drawError() {
         const g: Graphics = this.gameGraphics;
         g.setColor(Color.black);
-        i = (68 / i) | 0;
         g.fillRect(0, 0, 765, 503);
         this.setFrameRate(1);
         if (this.startUpError) {
@@ -7603,6 +7598,7 @@ export class Game extends GameShell {
                 if (this.incomingRandom != null) {
                     this.opcode = (this.opcode - this.incomingRandom.nextInt()) & 255;
                 }
+                console.log("Received packet with opcode: " + this.opcode);
                 this.packetSize = PacketConstants.PACKET_SIZES[this.opcode];
                 available--;
             }
@@ -11755,20 +11751,6 @@ export class Game extends GameShell {
     }
 
     async processFlamesCycle(): Promise<boolean> {
-        console.log("hello123");
-        // this.aBoolean1320 = true;
-        // try {
-        //     if (!this.startedRenderingFlames) {
-        //         this.aBoolean1320 = false;
-        //         return;
-        //     }
-        //     this.flameCycle++;
-        //     this.calculateFlamePositions();
-        //     this.calculateFlamePositions();
-        //     this.renderFlames();
-        // } catch (ignored) {}
-        // return 20;
-        // console.log("whu2");
         this.aBoolean1320 = true;
         try {
             this.flameCycle++;

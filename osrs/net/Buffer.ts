@@ -183,7 +183,7 @@ export class Buffer extends CacheableNode {
     }
 
     public putOpcode(opcode: number) {
-        this.buffer[this.currentPosition++] = ((opcode + this.random.nextInt()) as number) | 0;
+        this.buffer[this.currentPosition++] = ((opcode + (this.random.nextInt()| 0)) as number) | 0;
     }
 
     public putByte(value: number) {
