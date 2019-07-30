@@ -22,7 +22,7 @@ export class Player extends Actor {
 
     public playerModel: Model;
 
-    public anInt1748: number = -1;
+    public prayerIconId: number = -1;
 
     public cachedModel: number = -1;
 
@@ -38,7 +38,7 @@ export class Player extends Actor {
 
     public gender: number;
 
-    public anInt1756: number = -1;
+    public skullIconId: number = -1;
 
     public npcDefinition: ActorDefinition;
 
@@ -394,8 +394,8 @@ export class Player extends Actor {
     public updateAppearance(buffer: Buffer) {
         buffer.currentPosition = 0;
         this.gender = buffer.getUnsignedByte();
-        this.anInt1756 = buffer.getSignedByte();
-        this.anInt1748 = buffer.getSignedByte();
+        this.skullIconId = buffer.getSignedByte();
+        this.prayerIconId = buffer.getSignedByte();
         this.npcDefinition = null;
         this.teamId = 0;
         for (let index: number = 0; index < 12; index++) {

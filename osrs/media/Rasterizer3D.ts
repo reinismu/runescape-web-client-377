@@ -17,7 +17,7 @@ export class Rasterizer3D extends Rasterizer {
 
     public static anInt1525: number = 0;
     public static aBoolean1526: boolean = false;
-    public static lowMemory: boolean = true;
+    public static lowMemory: boolean = false;
 
     public static aBoolean1528: boolean = false;
     public static aBoolean1529: boolean = false;
@@ -601,7 +601,7 @@ export class Rasterizer3D extends Rasterizer {
         }}
     }
 
-    public static method504(ai: number[], i: number, j: number, k: number, l: number, i1: number, j1: number, k1: number) {
+    public static method504(pixels: number[], i: number, j: number, k: number, l: number, i1: number, j1: number, k1: number) {
         if (Rasterizer3D.approximateAlphaBlending) {
             let l1: number;
             if (Rasterizer3D.aBoolean1528) {
@@ -625,15 +625,15 @@ export class Rasterizer3D extends Rasterizer {
                 while ((--k >= 0)) {{
                     j = Rasterizer3D.getRgbLookupTableId[j1 >> 8];
                     j1 += l1;
-                    ai[i++] = j;
-                    ai[i++] = j;
-                    ai[i++] = j;
-                    ai[i++] = j;
+                    pixels[i++] = j;
+                    pixels[i++] = j;
+                    pixels[i++] = j;
+                    pixels[i++] = j;
                 }}
                 k = i1 - l & 3;
                 if (k > 0) {
                     j = Rasterizer3D.getRgbLookupTableId[j1 >> 8];
-                    do {ai[i++] = j; } while ((--k > 0));
+                    do {pixels[i++] = j; } while ((--k > 0));
                     return;
                 }
             } else {
@@ -643,16 +643,16 @@ export class Rasterizer3D extends Rasterizer {
                     j = Rasterizer3D.getRgbLookupTableId[j1 >> 8];
                     j1 += l1;
                     j = ((j & 16711935) * l2 >> 8 & 16711935) + ((j & 65280) * l2 >> 8 & 65280);
-                    ai[i++] = j + ((ai[i] & 16711935) * j2 >> 8 & 16711935) + ((ai[i] & 65280) * j2 >> 8 & 65280);
-                    ai[i++] = j + ((ai[i] & 16711935) * j2 >> 8 & 16711935) + ((ai[i] & 65280) * j2 >> 8 & 65280);
-                    ai[i++] = j + ((ai[i] & 16711935) * j2 >> 8 & 16711935) + ((ai[i] & 65280) * j2 >> 8 & 65280);
-                    ai[i++] = j + ((ai[i] & 16711935) * j2 >> 8 & 16711935) + ((ai[i] & 65280) * j2 >> 8 & 65280);
+                    pixels[i++] = j + ((pixels[i] & 16711935) * j2 >> 8 & 16711935) + ((pixels[i] & 65280) * j2 >> 8 & 65280);
+                    pixels[i++] = j + ((pixels[i] & 16711935) * j2 >> 8 & 16711935) + ((pixels[i] & 65280) * j2 >> 8 & 65280);
+                    pixels[i++] = j + ((pixels[i] & 16711935) * j2 >> 8 & 16711935) + ((pixels[i] & 65280) * j2 >> 8 & 65280);
+                    pixels[i++] = j + ((pixels[i] & 16711935) * j2 >> 8 & 16711935) + ((pixels[i] & 65280) * j2 >> 8 & 65280);
                 }}
                 k = i1 - l & 3;
                 if (k > 0) {
                     j = Rasterizer3D.getRgbLookupTableId[j1 >> 8];
                     j = ((j & 16711935) * l2 >> 8 & 16711935) + ((j & 65280) * l2 >> 8 & 65280);
-                    do {ai[i++] = j + ((ai[i] & 16711935) * j2 >> 8 & 16711935) + ((ai[i] & 65280) * j2 >> 8 & 65280); } while ((--k > 0));
+                    do {pixels[i++] = j + ((pixels[i] & 16711935) * j2 >> 8 & 16711935) + ((pixels[i] & 65280) * j2 >> 8 & 65280); } while ((--k > 0));
                 }
             }
             return;
@@ -671,7 +671,7 @@ export class Rasterizer3D extends Rasterizer {
         k = i1 - l;
         if (Rasterizer3D.anInt1531 === 0) {
             do {{
-                ai[i++] = Rasterizer3D.getRgbLookupTableId[j1 >> 8];
+                pixels[i++] = Rasterizer3D.getRgbLookupTableId[j1 >> 8];
                 j1 += i2;
             }} while ((--k > 0));
             return;
@@ -682,7 +682,7 @@ export class Rasterizer3D extends Rasterizer {
             j = Rasterizer3D.getRgbLookupTableId[j1 >> 8];
             j1 += i2;
             j = ((j & 16711935) * i3 >> 8 & 16711935) + ((j & 65280) * i3 >> 8 & 65280);
-            ai[i++] = j + ((ai[i] & 16711935) * k2 >> 8 & 16711935) + ((ai[i] & 65280) * k2 >> 8 & 65280);
+            pixels[i++] = j + ((pixels[i] & 16711935) * k2 >> 8 & 16711935) + ((pixels[i] & 65280) * k2 >> 8 & 65280);
         }} while ((--k > 0));
     }
 
@@ -1055,7 +1055,7 @@ export class Rasterizer3D extends Rasterizer {
                     j -= i;
                     i = Rasterizer3D.lineOffsets[i];
                     while ((--j >= 0)) {{
-                        Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, i, j1 >> 16, l >> 16, i2 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
+                        Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, i, j1 >> 16, l >> 16, i2 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
                         j1 += i8;
                         l += i7;
                         i2 += j8;
@@ -1066,7 +1066,7 @@ export class Rasterizer3D extends Rasterizer {
                         j6 += l6;
                     }}
                     while ((--k >= 0)) {{
-                        Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, i, j1 >> 16, i1 >> 16, i2 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
+                        Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, i, j1 >> 16, i1 >> 16, i2 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
                         j1 += i8;
                         i1 += k7;
                         i2 += j8;
@@ -1082,7 +1082,7 @@ export class Rasterizer3D extends Rasterizer {
                 j -= i;
                 i = Rasterizer3D.lineOffsets[i];
                 while ((--j >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, i, l >> 16, j1 >> 16, k1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, i, l >> 16, j1 >> 16, k1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
                     j1 += i8;
                     l += i7;
                     i2 += j8;
@@ -1093,7 +1093,7 @@ export class Rasterizer3D extends Rasterizer {
                     j6 += l6;
                 }}
                 while ((--k >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, i, i1 >> 16, j1 >> 16, l1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, i, i1 >> 16, j1 >> 16, l1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
                     j1 += i8;
                     i1 += k7;
                     i2 += j8;
@@ -1130,7 +1130,7 @@ export class Rasterizer3D extends Rasterizer {
                 k -= i;
                 i = Rasterizer3D.lineOffsets[i];
                 while ((--k >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, i, i1 >> 16, l >> 16, l1 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, i, i1 >> 16, l >> 16, l1 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
                     i1 += i8;
                     l += i7;
                     l1 += j8;
@@ -1141,7 +1141,7 @@ export class Rasterizer3D extends Rasterizer {
                     j6 += l6;
                 }}
                 while ((--j >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, i, j1 >> 16, l >> 16, i2 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, i, j1 >> 16, l >> 16, i2 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
                     j1 += k7;
                     l += i7;
                     i2 += l7;
@@ -1157,7 +1157,7 @@ export class Rasterizer3D extends Rasterizer {
             k -= i;
             i = Rasterizer3D.lineOffsets[i];
             while ((--k >= 0)) {{
-                Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, i, l >> 16, i1 >> 16, k1 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
+                Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, i, l >> 16, i1 >> 16, k1 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
                 i1 += i8;
                 l += i7;
                 l1 += j8;
@@ -1168,7 +1168,7 @@ export class Rasterizer3D extends Rasterizer {
                 j6 += l6;
             }}
             while ((--j >= 0)) {{
-                Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, i, l >> 16, j1 >> 16, k1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
+                Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, i, l >> 16, j1 >> 16, k1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
                 j1 += k7;
                 l += i7;
                 i2 += l7;
@@ -1210,7 +1210,7 @@ export class Rasterizer3D extends Rasterizer {
                     k -= j;
                     j = Rasterizer3D.lineOffsets[j];
                     while ((--k >= 0)) {{
-                        Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, j, l >> 16, i1 >> 16, k1 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
+                        Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, j, l >> 16, i1 >> 16, k1 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
                         l += i7;
                         i1 += k7;
                         k1 += j7;
@@ -1221,7 +1221,7 @@ export class Rasterizer3D extends Rasterizer {
                         j6 += l6;
                     }}
                     while ((--i >= 0)) {{
-                        Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, j, l >> 16, j1 >> 16, k1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
+                        Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, j, l >> 16, j1 >> 16, k1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
                         l += i7;
                         j1 += i8;
                         k1 += j7;
@@ -1237,7 +1237,7 @@ export class Rasterizer3D extends Rasterizer {
                 k -= j;
                 j = Rasterizer3D.lineOffsets[j];
                 while ((--k >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, j, i1 >> 16, l >> 16, l1 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, j, i1 >> 16, l >> 16, l1 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
                     l += i7;
                     i1 += k7;
                     k1 += j7;
@@ -1248,7 +1248,7 @@ export class Rasterizer3D extends Rasterizer {
                     j6 += l6;
                 }}
                 while ((--i >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, j, j1 >> 16, l >> 16, i2 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, j, j1 >> 16, l >> 16, i2 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
                     l += i7;
                     j1 += i8;
                     k1 += j7;
@@ -1285,7 +1285,7 @@ export class Rasterizer3D extends Rasterizer {
                 i -= j;
                 j = Rasterizer3D.lineOffsets[j];
                 while ((--i >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, j, j1 >> 16, i1 >> 16, i2 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, j, j1 >> 16, i1 >> 16, i2 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
                     j1 += i7;
                     i1 += k7;
                     i2 += j7;
@@ -1296,7 +1296,7 @@ export class Rasterizer3D extends Rasterizer {
                     j6 += l6;
                 }}
                 while ((--k >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, j, l >> 16, i1 >> 16, k1 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, j, l >> 16, i1 >> 16, k1 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
                     l += i8;
                     i1 += k7;
                     k1 += j8;
@@ -1312,7 +1312,7 @@ export class Rasterizer3D extends Rasterizer {
             i -= j;
             j = Rasterizer3D.lineOffsets[j];
             while ((--i >= 0)) {{
-                Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, j, i1 >> 16, j1 >> 16, l1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
+                Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, j, i1 >> 16, j1 >> 16, l1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
                 j1 += i7;
                 i1 += k7;
                 i2 += j7;
@@ -1323,7 +1323,7 @@ export class Rasterizer3D extends Rasterizer {
                 j6 += l6;
             }}
             while ((--k >= 0)) {{
-                Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, j, i1 >> 16, l >> 16, l1 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
+                Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, j, i1 >> 16, l >> 16, l1 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
                 l += i8;
                 i1 += k7;
                 k1 += j8;
@@ -1364,7 +1364,7 @@ export class Rasterizer3D extends Rasterizer {
                 i -= k;
                 k = Rasterizer3D.lineOffsets[k];
                 while ((--i >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, k, i1 >> 16, j1 >> 16, l1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, k, i1 >> 16, j1 >> 16, l1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
                     i1 += k7;
                     j1 += i8;
                     l1 += l7;
@@ -1375,7 +1375,7 @@ export class Rasterizer3D extends Rasterizer {
                     j6 += l6;
                 }}
                 while ((--j >= 0)) {{
-                    Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, k, i1 >> 16, l >> 16, l1 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
+                    Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, k, i1 >> 16, l >> 16, l1 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
                     i1 += k7;
                     l += i7;
                     l1 += l7;
@@ -1391,7 +1391,7 @@ export class Rasterizer3D extends Rasterizer {
             i -= k;
             k = Rasterizer3D.lineOffsets[k];
             while ((--i >= 0)) {{
-                Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, k, j1 >> 16, i1 >> 16, i2 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
+                Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, k, j1 >> 16, i1 >> 16, i2 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
                 i1 += k7;
                 j1 += i8;
                 l1 += l7;
@@ -1402,7 +1402,7 @@ export class Rasterizer3D extends Rasterizer {
                 j6 += l6;
             }}
             while ((--j >= 0)) {{
-                Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, k, l >> 16, i1 >> 16, k1 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
+                Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, k, l >> 16, i1 >> 16, k1 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
                 i1 += k7;
                 l += i7;
                 l1 += l7;
@@ -1439,7 +1439,7 @@ export class Rasterizer3D extends Rasterizer {
             j -= k;
             k = Rasterizer3D.lineOffsets[k];
             while ((--j >= 0)) {{
-                Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, k, l >> 16, j1 >> 16, k1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
+                Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, k, l >> 16, j1 >> 16, k1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
                 l += k7;
                 j1 += i8;
                 k1 += l7;
@@ -1450,7 +1450,7 @@ export class Rasterizer3D extends Rasterizer {
                 j6 += l6;
             }}
             while ((--i >= 0)) {{
-                Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, k, i1 >> 16, j1 >> 16, l1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
+                Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, k, i1 >> 16, j1 >> 16, l1 >> 8, i2 >> 8, l4, k5, j6, i5, l5, k6);
                 i1 += i7;
                 j1 += i8;
                 l1 += j7;
@@ -1466,7 +1466,7 @@ export class Rasterizer3D extends Rasterizer {
         j -= k;
         k = Rasterizer3D.lineOffsets[k];
         while ((--j >= 0)) {{
-            Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, k, j1 >> 16, l >> 16, i2 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
+            Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, k, j1 >> 16, l >> 16, i2 >> 8, k1 >> 8, l4, k5, j6, i5, l5, k6);
             l += k7;
             j1 += i8;
             k1 += l7;
@@ -1477,7 +1477,7 @@ export class Rasterizer3D extends Rasterizer {
             j6 += l6;
         }}
         while ((--i >= 0)) {{
-            Rasterizer3D.method508(Rasterizer.pixels, ai, 0, 0, k, j1 >> 16, i1 >> 16, i2 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
+            Rasterizer3D.fillPixels(Rasterizer.pixels, ai, 0, 0, k, j1 >> 16, i1 >> 16, i2 >> 8, l1 >> 8, l4, k5, j6, i5, l5, k6);
             i1 += i7;
             j1 += i8;
             l1 += j7;
@@ -1489,7 +1489,7 @@ export class Rasterizer3D extends Rasterizer {
         }}
     }
 
-    public static method508(ai: number[], ai1: number[], i: number, j: number, k: number, l: number, i1: number, j1: number, k1: number, l1: number, i2: number, j2: number, k2: number, l2: number, i3: number) {
+    public static fillPixels(pixels: number[], ai1: number[], i: number, j: number, k: number, l: number, i1: number, j1: number, k1: number, l1: number, i2: number, j2: number, k2: number, l2: number, i3: number) {
         if (l >= i1) { return; }
         let j3: number;
         let k3: number;
@@ -1543,28 +1543,28 @@ export class Rasterizer3D extends Rasterizer {
             let i8: number = j1 >> 23;
             if (Rasterizer3D.aBoolean1529) {
                 while ((k3-- > 0)) {{
-                    ai[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
+                    pixels[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
                     i += i7;
                     j += k7;
-                    ai[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
+                    pixels[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
                     i += i7;
                     j += k7;
-                    ai[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
+                    pixels[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
                     i += i7;
                     j += k7;
-                    ai[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
+                    pixels[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
                     i += i7;
                     j += k7;
-                    ai[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
+                    pixels[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
                     i += i7;
                     j += k7;
-                    ai[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
+                    pixels[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
                     i += i7;
                     j += k7;
-                    ai[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
+                    pixels[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
                     i += i7;
                     j += k7;
-                    ai[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
+                    pixels[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
                     i = i4;
                     j = k4;
                     l1 += k2;
@@ -1583,7 +1583,7 @@ export class Rasterizer3D extends Rasterizer {
                     i8 = j1 >> 23;
                 }}
                 for (k3 = i1 - l & 7; k3-- > 0; ) {{
-                    ai[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
+                    pixels[k++] = ai1[(j & 4032) + (i >> 6)] >>> i8;
                     i += i7;
                     j += k7;
                 }}
@@ -1591,35 +1591,35 @@ export class Rasterizer3D extends Rasterizer {
             }
             while ((k3-- > 0)) {{
                 let k8: number;
-                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { ai[k] = k8; }
+                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { pixels[k] = k8; }
                 k++;
                 i += i7;
                 j += k7;
-                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { ai[k] = k8; }
+                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { pixels[k] = k8; }
                 k++;
                 i += i7;
                 j += k7;
-                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { ai[k] = k8; }
+                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { pixels[k] = k8; }
                 k++;
                 i += i7;
                 j += k7;
-                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { ai[k] = k8; }
+                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { pixels[k] = k8; }
                 k++;
                 i += i7;
                 j += k7;
-                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { ai[k] = k8; }
+                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { pixels[k] = k8; }
                 k++;
                 i += i7;
                 j += k7;
-                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { ai[k] = k8; }
+                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { pixels[k] = k8; }
                 k++;
                 i += i7;
                 j += k7;
-                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { ai[k] = k8; }
+                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { pixels[k] = k8; }
                 k++;
                 i += i7;
                 j += k7;
-                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { ai[k] = k8; }
+                if ((k8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { pixels[k] = k8; }
                 k++;
                 i = i4;
                 j = k4;
@@ -1640,7 +1640,7 @@ export class Rasterizer3D extends Rasterizer {
             }}
             for (k3 = i1 - l & 7; k3-- > 0; ) {{
                 let l8: number;
-                if ((l8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { ai[k] = l8; }
+                if ((l8 = ai1[(j & 4032) + (i >> 6)] >>> i8) !== 0) { pixels[k] = l8; }
                 k++;
                 i += i7;
                 j += k7;
@@ -1674,28 +1674,28 @@ export class Rasterizer3D extends Rasterizer {
         let j8: number = j1 >> 23;
         if (Rasterizer3D.aBoolean1529) {
             while ((k3-- > 0)) {{
-                ai[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
+                pixels[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
                 i += j7;
                 j += l7;
-                ai[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
+                pixels[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
                 i += j7;
                 j += l7;
-                ai[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
+                pixels[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
                 i += j7;
                 j += l7;
-                ai[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
+                pixels[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
                 i += j7;
                 j += l7;
-                ai[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
+                pixels[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
                 i += j7;
                 j += l7;
-                ai[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
+                pixels[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
                 i += j7;
                 j += l7;
-                ai[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
+                pixels[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
                 i += j7;
                 j += l7;
-                ai[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
+                pixels[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
                 i = j4;
                 j = l4;
                 l1 += k2;
@@ -1714,7 +1714,7 @@ export class Rasterizer3D extends Rasterizer {
                 j8 = j1 >> 23;
             }}
             for (k3 = i1 - l & 7; k3-- > 0; ) {{
-                ai[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
+                pixels[k++] = ai1[(j & 16256) + (i >> 7)] >>> j8;
                 i += j7;
                 j += l7;
             }}
@@ -1722,35 +1722,35 @@ export class Rasterizer3D extends Rasterizer {
         }
         while ((k3-- > 0)) {{
             let i9: number;
-            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { ai[k] = i9; }
+            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { pixels[k] = i9; }
             k++;
             i += j7;
             j += l7;
-            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { ai[k] = i9; }
+            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { pixels[k] = i9; }
             k++;
             i += j7;
             j += l7;
-            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { ai[k] = i9; }
+            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { pixels[k] = i9; }
             k++;
             i += j7;
             j += l7;
-            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { ai[k] = i9; }
+            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { pixels[k] = i9; }
             k++;
             i += j7;
             j += l7;
-            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { ai[k] = i9; }
+            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { pixels[k] = i9; }
             k++;
             i += j7;
             j += l7;
-            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { ai[k] = i9; }
+            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { pixels[k] = i9; }
             k++;
             i += j7;
             j += l7;
-            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { ai[k] = i9; }
+            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { pixels[k] = i9; }
             k++;
             i += j7;
             j += l7;
-            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { ai[k] = i9; }
+            if ((i9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { pixels[k] = i9; }
             k++;
             i = j4;
             j = l4;
@@ -1771,7 +1771,7 @@ export class Rasterizer3D extends Rasterizer {
         }}
         for (let l3: number = i1 - l & 7; l3-- > 0; ) {{
             let j9: number;
-            if ((j9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { ai[k] = j9; }
+            if ((j9 = ai1[(j & 16256) + (i >> 7)] >>> j8) !== 0) { pixels[k] = j9; }
             k++;
             i += j7;
             j += l7;

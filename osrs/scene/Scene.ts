@@ -300,7 +300,7 @@ export class Scene {
 
     public anInt458: number;
 
-    public aSceneSpawnRequestArray459: SceneSpawnRequest[];
+    public sceneSpawnRequests: SceneSpawnRequest[];
 
     public anIntArrayArrayArray460: number[][][];
 
@@ -364,8 +364,8 @@ export class Scene {
         if (this.anInt458 === undefined) {
             this.anInt458 = 0;
         }
-        if (this.aSceneSpawnRequestArray459 === undefined) {
-            this.aSceneSpawnRequestArray459 = null;
+        if (this.sceneSpawnRequests === undefined) {
+            this.sceneSpawnRequests = null;
         }
         if (this.anIntArrayArrayArray460 === undefined) {
             this.anIntArrayArrayArray460 = null;
@@ -379,27 +379,9 @@ export class Scene {
         if (this.anInt503 === undefined) {
             this.anInt503 = 0;
         }
-        this.aSceneSpawnRequestArray459 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(null);
-            }
-            return a;
-        })(5000);
-        this.anIntArray501 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(10000);
-        this.anIntArray502 = (s => {
-            const a = [];
-            while (s-- > 0) {
-                a.push(0);
-            }
-            return a;
-        })(10000);
+        this.sceneSpawnRequests = Array(5000).fill(null);
+        this.anIntArray501 = Array(10000).fill(0);
+        this.anIntArray502 = Array(10000).fill(0);
         this.anInt452 = j;
         this.anInt453 = k;
         this.anInt454 = i;
@@ -456,7 +438,7 @@ export class Scene {
             }
         }
         for (let k1: number = 0; k1 < this.anInt458; k1++) {
-            this.aSceneSpawnRequestArray459[k1] = null;
+            this.sceneSpawnRequests[k1] = null;
         }
         this.anInt458 = 0;
         for (let l1: number = 0; l1 < Scene.aSceneSpawnRequestArray477.length; l1++) {
@@ -707,29 +689,29 @@ export class Scene {
         } else {
             const j2: number = i1 * 128 + 64 * j;
             const k2: number = k * 128 + 64 * k1;
-            return this.method254(i, i1, k, j, k1, j2, k2, l1, class50_sub1_sub4, l, false, i2, byte0);
+            return this.addSceneSpawnRequest(i, i1, k, j, k1, j2, k2, l1, class50_sub1_sub4, l, false, i2, byte0);
         }
     }
 
     public addEntity(
         i: number,
-        class50_sub1_sub4: Renderable,
-        j: number,
-        k: number,
+        entity: Renderable,
+        x: number,
+        z: number,
         flag: boolean,
         l: number,
-        i1: number,
+        plane: number,
         j1: number,
-        k1: number,
+        y: number,
         l1: number
     ): boolean {
-        if (class50_sub1_sub4 == null) {
+        if (entity == null) {
             return true;
         }
-        let i2: number = j - j1;
-        let j2: number = k1 - j1;
-        let k2: number = j + j1;
-        let l2: number = k1 + j1;
+        let i2: number = x - j1;
+        let j2: number = y - j1;
+        let k2: number = x + j1;
+        let l2: number = y + j1;
         if (flag) {
             if (l1 > 640 && l1 < 1408) {
                 l2 += 128;
@@ -748,7 +730,7 @@ export class Scene {
         j2 = (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(j2 / 128);
         k2 = (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(k2 / 128);
         l2 = (n => (n < 0 ? Math.ceil(n) : Math.floor(n)))(l2 / 128);
-        return this.method254(i1, i2, j2, k2 - i2 + 1, l2 - j2 + 1, j, k1, k, class50_sub1_sub4, l1, true, i, (0 as number) | 0);
+        return this.addSceneSpawnRequest(plane, i2, j2, k2 - i2 + 1, l2 - j2 + 1, x, y, z, entity, l1, true, i, (0 as number) | 0);
     }
 
     public addRenderable(
@@ -756,7 +738,7 @@ export class Scene {
         j: number,
         k: number,
         l: number,
-        class50_sub1_sub4: Renderable,
+        renderable: Renderable,
         i1: number,
         j1: number,
         k1: number,
@@ -766,22 +748,22 @@ export class Scene {
         k2: number,
         l2: number
     ): boolean {
-        if (class50_sub1_sub4 == null) {
+        if (renderable == null) {
             return true;
         } else {
-            return this.method254(k2, i1, j, j2 - i1 + 1, k1 - j + 1, l1, j1, i, class50_sub1_sub4, i2, true, l2, (0 as number) | 0);
+            return this.addSceneSpawnRequest(k2, i1, j, j2 - i1 + 1, k1 - j + 1, l1, j1, i, renderable, i2, true, l2, 0);
         }
     }
 
-    public method254(
+    public addSceneSpawnRequest(
         i: number,
         j: number,
         k: number,
         l: number,
         i1: number,
-        j1: number,
-        k1: number,
-        l1: number,
+        x: number,
+        y: number,
+        z: number,
         renderable: Renderable,
         i2: number,
         flag: boolean,
@@ -807,9 +789,9 @@ export class Scene {
         sceneSpawnRequest.anInt125 = j2;
         sceneSpawnRequest.config = byte0;
         sceneSpawnRequest.anInt113 = i;
-        sceneSpawnRequest.anInt115 = j1;
-        sceneSpawnRequest.anInt116 = k1;
-        sceneSpawnRequest.anInt114 = l1;
+        sceneSpawnRequest.anInt115 = x;
+        sceneSpawnRequest.anInt116 = y;
+        sceneSpawnRequest.anInt114 = z;
         sceneSpawnRequest.aRenderable601 = renderable;
         sceneSpawnRequest.anInt118 = i2;
         sceneSpawnRequest.x = j;
@@ -848,7 +830,7 @@ export class Scene {
             }
         }
         if (flag) {
-            this.aSceneSpawnRequestArray459[this.anInt458++] = sceneSpawnRequest;
+            this.sceneSpawnRequests[this.anInt458++] = sceneSpawnRequest;
         }
         return true;
     }
@@ -856,9 +838,9 @@ export class Scene {
     public method255() {
         for (let j: number = 0; j < this.anInt458; j++) {
             {
-                const sceneSpawnRequest: SceneSpawnRequest = this.aSceneSpawnRequestArray459[j];
+                const sceneSpawnRequest: SceneSpawnRequest = this.sceneSpawnRequests[j];
                 this.method256(sceneSpawnRequest);
-                this.aSceneSpawnRequestArray459[j] = null;
+                this.sceneSpawnRequests[j] = null;
             }
         }
         this.anInt458 = 0;

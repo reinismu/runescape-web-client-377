@@ -94,7 +94,7 @@ export class Game extends GameShell {
     public static BITFIELD_MAX_VALUE: number[] = init_BITFIELD_MAX_VALUE();
     public static SKILL_EXPERIENCE: number[] = init_SKILL_EXPERIENCE();
     public static memberServer: boolean = true;
-    public static lowMemory: boolean = true;
+    public static lowMemory: boolean = false;
     public static localPlayer: Player = null;
     static playerColours: number[][] = [
         [6798, 107, 10283, 16, 4797, 7744, 5799, 4634, 33697, 22433, 2983, 54193],
@@ -217,12 +217,12 @@ export class Game extends GameShell {
     tabIcon: IndexedImage[] = Array(13).fill(null);
     minimapCompass: ImageRGB = null;
     minimapEdge: ImageRGB = null;
-    aClass50_Sub1_Sub1_Sub3Array1153: IndexedImage[] = Array(100).fill(null);
+    mapscenes: IndexedImage[] = Array(100).fill(null);
     worldMapHintIcons: ImageRGB[] = Array(100).fill(null);
-    aClass50_Sub1_Sub1_Sub1Array1182: ImageRGB[] = Array(20).fill(null);
-    aClass50_Sub1_Sub1_Sub1Array1288: ImageRGB[] = Array(32).fill(null);
-    aClass50_Sub1_Sub1_Sub1Array1079: ImageRGB[] = Array(32).fill(null);
-    aClass50_Sub1_Sub1_Sub1Array954: ImageRGB[] = Array(32).fill(null);
+    hitmarks: ImageRGB[] = Array(20).fill(null);
+    headiconsPks: ImageRGB[] = Array(32).fill(null);
+    headiconsPrayers: ImageRGB[] = Array(32).fill(null);
+    headiconsHints: ImageRGB[] = Array(32).fill(null);
     aClass50_Sub1_Sub1_Sub1_1037: ImageRGB = null;
     aClass50_Sub1_Sub1_Sub1_1086: ImageRGB = null;
     mapFlagMarker: ImageRGB = null;
@@ -396,8 +396,8 @@ export class Game extends GameShell {
     cameraX: number = 0;
     cameraZ: number = 0;
     cameraY: number = 0;
-    anInt1219: number = 0;
-    anInt1220: number = 0;
+    cameraPitch: number = 0;
+    cameraYaw: number = 0;
     aBooleanArray927: boolean[] = Array(5).fill(false);
     anIntArray1105: number[] = Array(5).fill(0);
     anIntArray852: number[] = Array(5).fill(0);
@@ -557,8 +557,8 @@ export class Game extends GameShell {
     anInt1138: number = 0;
     anIntArrayArray886: number[][] = Array(104).fill(Array(104).fill(0));
     anInt939: number = 0;
-    anInt932: number = -1;
-    anInt933: number = -1;
+    screenX: number = -1;
+    screenY: number = -1;
     anInt940: number = 50;
     anIntArray944: number[] = Array(this.anInt940).fill(0);
     anIntArray943: number[] = Array(this.anInt940).fill(0);
@@ -746,7 +746,7 @@ export class Game extends GameShell {
             }
         }
         if (this.loadingStage === 2) {
-            this.method151(2);
+            this.drawGameView();
         }
         if (this.menuOpen && this.anInt1304 === 1) {
             this.redrawTabArea = true;
@@ -1443,12 +1443,12 @@ export class Game extends GameShell {
         Rasterizer3D.lineOffsets = this.anIntArray1002;
     }
 
-    public method151(i: number) {
+    public drawGameView() {
         this.anInt1138++;
         this.processPlayerAdditions(true);
-        this.method57(751, true);
+        this.method57(true);
         this.processPlayerAdditions(false);
-        this.method57(751, false);
+        this.method57(false);
         this.method51(false);
         this.method76(-992);
         if (!this.oriented) {
@@ -1463,7 +1463,7 @@ export class Game extends GameShell {
             this.setCameraPosition(
                 this.anInt1262,
                 this.anInt1263,
-                this.method110(Game.localPlayer.worldY, Game.localPlayer.worldX, (9 as number) | 0, this.plane) - 50,
+                this.getTileHeight(Game.localPlayer.worldY, Game.localPlayer.worldX, (9 as number) | 0, this.plane) - 50,
                 j,
                 l
             );
@@ -1477,11 +1477,9 @@ export class Game extends GameShell {
         const i1: number = this.cameraX;
         const j1: number = this.cameraZ;
         const k1: number = this.cameraY;
-        const l1: number = this.anInt1219;
-        const i2: number = this.anInt1220;
-        if (i !== 2) {
-            this.anInt1004 = this.incomingRandom.nextInt();
-        }
+        const l1: number = this.cameraPitch;
+        const i2: number = this.cameraYaw;
+
         for (let j2: number = 0; j2 < 5; j2++) {
             if (this.aBooleanArray927[j2]) {
                 const k2: number =
@@ -1498,15 +1496,15 @@ export class Game extends GameShell {
                     this.cameraY += k2;
                 }
                 if (j2 === 3) {
-                    this.anInt1220 = (this.anInt1220 + k2) & 2047;
+                    this.cameraYaw = (this.cameraYaw + k2) & 2047;
                 }
                 if (j2 === 4) {
-                    this.anInt1219 += k2;
-                    if (this.anInt1219 < 128) {
-                        this.anInt1219 = 128;
+                    this.cameraPitch += k2;
+                    if (this.cameraPitch < 128) {
+                        this.cameraPitch = 128;
                     }
-                    if (this.anInt1219 > 383) {
-                        this.anInt1219 = 383;
+                    if (this.cameraPitch > 383) {
+                        this.cameraPitch = 383;
                     }
                 }
             }
@@ -1517,7 +1515,7 @@ export class Game extends GameShell {
         Model.anInt1706 = this.mouseX - 4;
         Model.anInt1707 = this.mouseY - 4;
         Rasterizer.resetPixels();
-        this.currentScene.method280(this.cameraX, k, 0, this.cameraZ, this.cameraY, this.anInt1220, this.anInt1219);
+        this.currentScene.method280(this.cameraX, k, 0, this.cameraZ, this.cameraY, this.cameraYaw, this.cameraPitch);
         this.currentScene.method255();
         this.method121(false);
         this.method127(true);
@@ -1527,8 +1525,8 @@ export class Game extends GameShell {
         this.cameraX = i1;
         this.cameraZ = j1;
         this.cameraY = k1;
-        this.anInt1219 = l1;
-        this.anInt1220 = i2;
+        this.cameraPitch = l1;
+        this.cameraYaw = i2;
     }
 
     /*private*/ public renderGameView() {
@@ -1731,7 +1729,7 @@ export class Game extends GameShell {
     }
 
     public method118(i: number): number {
-        const j: number = this.method110(this.cameraY, this.cameraX, (9 as number) | 0, this.plane);
+        const j: number = this.getTileHeight(this.cameraY, this.cameraX, (9 as number) | 0, this.plane);
         while (i >= 0) {
             this.opcode = this.buffer.getUnsignedByte();
         }
@@ -1749,7 +1747,7 @@ export class Game extends GameShell {
         } else {
             this.startUp();
         }
-        if (this.anInt1219 < 310) {
+        if (this.cameraPitch < 310) {
             Game.anInt978++;
             if (Game.anInt978 > 1457) {
                 Game.anInt978 = 0;
@@ -1874,8 +1872,8 @@ export class Game extends GameShell {
         this.cameraX = x - xOffset;
         this.cameraZ = z - zOffset;
         this.cameraY = y - yOffset;
-        this.anInt1219 = pitch;
-        this.anInt1220 = yaw;
+        this.cameraPitch = pitch;
+        this.cameraYaw = yaw;
     }
 
     public method76(i: number) {
@@ -1941,14 +1939,13 @@ export class Game extends GameShell {
         if (this.anInt1197 !== 2) {
             return;
         }
-        this.method137(
+        this.worldToScreen(
             ((this.anInt844 - this.nextTopLeftTileX) << 7) + this.anInt847,
             this.anInt846 * 2,
-            ((this.anInt845 - this.nextTopRightTileY) << 7) + this.anInt848,
-            -214
+            ((this.anInt845 - this.nextTopRightTileY) << 7) + this.anInt848
         );
-        if (this.anInt932 > -1 && Game.pulseCycle % 20 < 10) {
-            this.aClass50_Sub1_Sub1_Sub1Array954[0].drawImage(this.anInt933 - 28, this.anInt932 - 12);
+        if (this.screenX > -1 && Game.pulseCycle % 20 < 10) {
+            this.headiconsHints[0].drawImage(this.screenY - 28, this.screenX - 12);
         }
     }
 
@@ -1973,7 +1970,7 @@ export class Game extends GameShell {
                         class50_sub1_sub4_sub2.trackTarget(
                             class50_sub1_sub4_sub3_sub1.worldX,
                             class50_sub1_sub4_sub3_sub1.worldY,
-                            this.method110(
+                            this.getTileHeight(
                                 class50_sub1_sub4_sub3_sub1.worldY,
                                 class50_sub1_sub4_sub3_sub1.worldX,
                                 (9 as number) | 0,
@@ -2001,7 +1998,7 @@ export class Game extends GameShell {
                         class50_sub1_sub4_sub2.trackTarget(
                             class50_sub1_sub4_sub3_sub2.worldX,
                             class50_sub1_sub4_sub3_sub2.worldY,
-                            this.method110(
+                            this.getTileHeight(
                                 class50_sub1_sub4_sub3_sub2.worldY,
                                 class50_sub1_sub4_sub3_sub2.worldX,
                                 (9 as number) | 0,
@@ -2033,12 +2030,11 @@ export class Game extends GameShell {
         }
     }
 
-    public method57(i: number, flag: boolean) {
-        i = (26 / i) | 0;
+    public method57(flag: boolean) {
         for (let j: number = 0; j < this.anInt1133; j++) {
             {
                 const class50_sub1_sub4_sub3_sub1: Npc = this.npcs[this.anIntArray1134[j]];
-                let k: number = 536870912 + (this.anIntArray1134[j] << 14);
+                let k: number = 0x20000000 + (this.anIntArray1134[j] << 14);
                 if (
                     class50_sub1_sub4_sub3_sub1 == null ||
                     !class50_sub1_sub4_sub3_sub1.isVisible() ||
@@ -2063,13 +2059,13 @@ export class Game extends GameShell {
                     this.anIntArrayArray886[l][i1] = this.anInt1138;
                 }
                 if (!class50_sub1_sub4_sub3_sub1.npcDefinition.clickable) {
-                    k += -2147483648;
+                    k += 0x80000000;
                 }
                 this.currentScene.addEntity(
                     k,
                     class50_sub1_sub4_sub3_sub1,
                     class50_sub1_sub4_sub3_sub1.worldX,
-                    this.method110(class50_sub1_sub4_sub3_sub1.worldY, class50_sub1_sub4_sub3_sub1.worldX, (9 as number) | 0, this.plane),
+                    this.getTileHeight(class50_sub1_sub4_sub3_sub1.worldY, class50_sub1_sub4_sub3_sub1.worldX, (9 as number) | 0, this.plane),
                     class50_sub1_sub4_sub3_sub1.aBoolean1592,
                     0,
                     this.plane,
@@ -2085,7 +2081,7 @@ export class Game extends GameShell {
         this.anInt939 = 0;
         for (let i: number = -1; i < this.localPlayerCount + this.anInt1133; i++) {
             {
-                let obj: any;
+                let obj: Actor;
                 if (i === -1) {
                     obj = Game.localPlayer;
                 } else if (i < this.localPlayerCount) {
@@ -2096,8 +2092,8 @@ export class Game extends GameShell {
                 if (obj == null || !(obj as Actor).isVisible()) {
                     continue;
                 }
-                if (obj != null && ((obj instanceof Npc) as any)) {
-                    let class37: ActorDefinition = (obj as Npc).npcDefinition;
+                if (obj != null && (obj instanceof Npc)) {
+                    let class37: ActorDefinition = obj.npcDefinition;
                     if (class37.childrenIds != null) {
                         class37 = class37.getChildDefinition();
                     }
@@ -2107,38 +2103,38 @@ export class Game extends GameShell {
                 }
                 if (i < this.localPlayerCount) {
                     let k: number = 30;
-                    const class50_sub1_sub4_sub3_sub2: Player = obj as Player;
-                    if (class50_sub1_sub4_sub3_sub2.anInt1756 !== -1 || class50_sub1_sub4_sub3_sub2.anInt1748 !== -1) {
-                        this.method136(obj as Actor, false, (obj as Actor).modelHeight + 15);
-                        if (this.anInt932 > -1) {
-                            if (class50_sub1_sub4_sub3_sub2.anInt1756 !== -1) {
-                                this.aClass50_Sub1_Sub1_Sub1Array1288[class50_sub1_sub4_sub3_sub2.anInt1756].drawImage(
-                                    this.anInt933 - k,
-                                    this.anInt932 - 12
+                    const player: Player = obj as Player;
+                    if (player.skullIconId !== -1 || player.prayerIconId !== -1) {
+                        this.actorWorldToScreen(obj as Actor, (obj as Actor).modelHeight + 15);
+                        if (this.screenX > -1) {
+                            if (player.skullIconId !== -1) {
+                                this.headiconsPks[player.skullIconId].drawImage(
+                                    this.screenY - k,
+                                    this.screenX - 12
                                 );
                                 k += 25;
                             }
-                            if (class50_sub1_sub4_sub3_sub2.anInt1748 !== -1) {
-                                this.aClass50_Sub1_Sub1_Sub1Array1079[class50_sub1_sub4_sub3_sub2.anInt1748].drawImage(
-                                    this.anInt933 - k,
-                                    this.anInt932 - 12
+                            if (player.prayerIconId !== -1) {
+                                this.headiconsPrayers[player.prayerIconId].drawImage(
+                                    this.screenY - k,
+                                    this.screenX - 12
                                 );
                                 k += 25;
                             }
                         }
                     }
                     if (i >= 0 && this.anInt1197 === 10 && this.anInt1151 === this.playerList[i]) {
-                        this.method136(obj as Actor, false, (obj as Actor).modelHeight + 15);
-                        if (this.anInt932 > -1) {
-                            this.aClass50_Sub1_Sub1_Sub1Array954[1].drawImage(this.anInt933 - k, this.anInt932 - 12);
+                        this.actorWorldToScreen(obj as Actor,  (obj as Actor).modelHeight + 15);
+                        if (this.screenX > -1) {
+                            this.headiconsHints[1].drawImage(this.screenY - k, this.screenX - 12);
                         }
                     }
                 } else {
-                    const class37_1: ActorDefinition = (obj as Npc).npcDefinition;
-                    if (class37_1.headIcon >= 0 && class37_1.headIcon < this.aClass50_Sub1_Sub1_Sub1Array1079.length) {
-                        this.method136(obj as Actor, false, (obj as Actor).modelHeight + 15);
-                        if (this.anInt932 > -1) {
-                            this.aClass50_Sub1_Sub1_Sub1Array1079[class37_1.headIcon].drawImage(this.anInt933 - 30, this.anInt932 - 12);
+                    const actorDef: ActorDefinition = (obj as Npc).npcDefinition;
+                    if (actorDef.headIcon >= 0 && actorDef.headIcon < this.headiconsPrayers.length) {
+                        this.actorWorldToScreen(obj as Actor, (obj as Actor).modelHeight + 15);
+                        if (this.screenX > -1) {
+                            this.headiconsPrayers[actorDef.headIcon].drawImage(this.screenY - 30, this.screenX - 12);
                         }
                     }
                     if (
@@ -2146,25 +2142,25 @@ export class Game extends GameShell {
                         this.anInt1226 === this.anIntArray1134[i - this.localPlayerCount] &&
                         Game.pulseCycle % 20 < 10
                     ) {
-                        this.method136(obj as Actor, false, (obj as Actor).modelHeight + 15);
-                        if (this.anInt932 > -1) {
-                            this.aClass50_Sub1_Sub1_Sub1Array954[0].drawImage(this.anInt933 - 28, this.anInt932 - 12);
+                        this.actorWorldToScreen(obj as Actor, (obj as Actor).modelHeight + 15);
+                        if (this.screenX > -1) {
+                            this.headiconsHints[0].drawImage(this.screenY - 28, this.screenX - 12);
                         }
                     }
                 }
                 if (
-                    (obj as Actor).forcedChat != null &&
+                    obj.forcedChat != null &&
                     (i >= this.localPlayerCount ||
                         this.publicChatMode === 0 ||
                         this.publicChatMode === 3 ||
                         (this.publicChatMode === 1 && this.method148(13292, (obj as Player).playerName)))
                 ) {
-                    this.method136(obj as Actor, false, (obj as Actor).modelHeight);
-                    if (this.anInt932 > -1 && this.anInt939 < this.anInt940) {
+                    this.actorWorldToScreen(obj as Actor, (obj as Actor).modelHeight);
+                    if (this.screenX > -1 && this.anInt939 < this.anInt940) {
                         this.anIntArray944[this.anInt939] = (this.fontBold.getStringWidth((obj as Actor).forcedChat) / 2) | 0;
                         this.anIntArray943[this.anInt939] = this.fontBold.characterDefaultHeight;
-                        this.anIntArray941[this.anInt939] = this.anInt932;
-                        this.anIntArray942[this.anInt939] = this.anInt933;
+                        this.anIntArray941[this.anInt939] = this.screenX;
+                        this.anIntArray942[this.anInt939] = this.screenY;
                         this.anIntArray945[this.anInt939] = (obj as Actor).textColour;
                         this.anIntArray946[this.anInt939] = (obj as Actor).textEffect;
                         this.anIntArray947[this.anInt939] = (obj as Actor).textCycle;
@@ -2182,45 +2178,45 @@ export class Game extends GameShell {
                     }
                 }
                 if ((obj as Actor).endCycle > Game.pulseCycle) {
-                    this.method136(obj as Actor, false, (obj as Actor).modelHeight + 15);
-                    if (this.anInt932 > -1) {
+                    this.actorWorldToScreen(obj as Actor, (obj as Actor).modelHeight + 15);
+                    if (this.screenX > -1) {
                         let l: number = (((obj as Actor).anInt1596 * 30) / (obj as Actor).anInt1597) | 0;
                         if (l > 30) {
                             l = 30;
                         }
-                        Rasterizer.drawFilledRectangle(this.anInt932 - 15, this.anInt933 - 3, l, 5, 65280);
-                        Rasterizer.drawFilledRectangle(this.anInt932 - 15 + l, this.anInt933 - 3, 30 - l, 5, 16711680);
+                        Rasterizer.drawFilledRectangle(this.screenX - 15, this.screenY - 3, l, 5, 65280);
+                        Rasterizer.drawFilledRectangle(this.screenX - 15 + l, this.screenY - 3, 30 - l, 5, 16711680);
                     }
                 }
                 for (let i1: number = 0; i1 < 4; i1++) {
                     if ((obj as Actor).hitCycles[i1] > Game.pulseCycle) {
-                        this.method136(obj as Actor, false, ((obj as Actor).modelHeight / 2) | 0);
-                        if (this.anInt932 > -1) {
+                        this.actorWorldToScreen(obj as Actor, ((obj as Actor).modelHeight / 2) | 0);
+                        if (this.screenX > -1) {
                             if (i1 === 1) {
-                                this.anInt933 -= 20;
+                                this.screenY -= 20;
                             }
                             if (i1 === 2) {
-                                this.anInt932 -= 15;
-                                this.anInt933 -= 10;
+                                this.screenX -= 15;
+                                this.screenY -= 10;
                             }
                             if (i1 === 3) {
-                                this.anInt932 += 15;
-                                this.anInt933 -= 10;
+                                this.screenX += 15;
+                                this.screenY -= 10;
                             }
-                            this.aClass50_Sub1_Sub1_Sub1Array1182[(obj as Actor).hitTypes[i1]].drawImage(
-                                this.anInt933 - 12,
-                                this.anInt932 - 12
+                            this.hitmarks[(obj as Actor).hitTypes[i1]].drawImage(
+                                this.screenY - 12,
+                                this.screenX - 12
                             );
                             this.fontSmall.drawStringLeft(
                                 /* valueOf */ new String((obj as Actor).hitDamages[i1]).toString(),
-                                this.anInt932,
-                                this.anInt933 + 4,
+                                this.screenX,
+                                this.screenY + 4,
                                 0
                             );
                             this.fontSmall.drawStringLeft(
                                 /* valueOf */ new String((obj as Actor).hitDamages[i1]).toString(),
-                                this.anInt932 - 1,
-                                this.anInt933 + 3,
+                                this.screenX - 1,
+                                this.screenY + 3,
                                 16777215
                             );
                         }
@@ -2252,8 +2248,8 @@ export class Game extends GameShell {
                         }
                     }
                 }
-                this.anInt932 = this.anIntArray941[j];
-                this.anInt933 = this.anIntArray942[j] = k1;
+                this.screenX = this.anIntArray941[j];
+                this.screenY = this.anIntArray942[j] = k1;
                 const s: string = this.aStringArray948[j];
                 if (this.anInt998 === 0) {
                     let k2: number = 16776960;
@@ -2300,30 +2296,30 @@ export class Game extends GameShell {
                         }
                     }
                     if (this.anIntArray946[j] === 0) {
-                        this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933 + 1, 0);
-                        this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933, k2);
+                        this.fontBold.drawStringLeft(s, this.screenX, this.screenY + 1, 0);
+                        this.fontBold.drawStringLeft(s, this.screenX, this.screenY, k2);
                     }
                     if (this.anIntArray946[j] === 1) {
-                        this.fontBold.drawCenteredStringWaveY(s, this.anInt932, this.anInt933 + 1, this.anInt1138, 0);
-                        this.fontBold.drawCenteredStringWaveY(s, this.anInt932, this.anInt933, this.anInt1138, k2);
+                        this.fontBold.drawCenteredStringWaveY(s, this.screenX, this.screenY + 1, this.anInt1138, 0);
+                        this.fontBold.drawCenteredStringWaveY(s, this.screenX, this.screenY, this.anInt1138, k2);
                     }
                     if (this.anIntArray946[j] === 2) {
-                        this.fontBold.drawCeneteredStringWaveXY(s, this.anInt932, this.anInt933 + 1, this.anInt1138, 0);
-                        this.fontBold.drawCeneteredStringWaveXY(s, this.anInt932, this.anInt933, this.anInt1138, k2);
+                        this.fontBold.drawCeneteredStringWaveXY(s, this.screenX, this.screenY + 1, this.anInt1138, 0);
+                        this.fontBold.drawCeneteredStringWaveXY(s, this.screenX, this.screenY, this.anInt1138, k2);
                     }
                     if (this.anIntArray946[j] === 3) {
                         this.fontBold.drawCenteredStringWaveXYMove(
                             s,
-                            this.anInt932,
-                            this.anInt933 + 1,
+                            this.screenX,
+                            this.screenY + 1,
                             this.anInt1138,
                             150 - this.anIntArray947[j],
                             0
                         );
                         this.fontBold.drawCenteredStringWaveXYMove(
                             s,
-                            this.anInt932,
-                            this.anInt933,
+                            this.screenX,
+                            this.screenY,
                             this.anInt1138,
                             150 - this.anIntArray947[j],
                             k2
@@ -2332,9 +2328,9 @@ export class Game extends GameShell {
                     if (this.anIntArray946[j] === 4) {
                         const k3: number = this.fontBold.getStringWidth(s);
                         const i4: number = (((150 - this.anIntArray947[j]) * (k3 + 100)) / 150) | 0;
-                        Rasterizer.setCoordinates(0, this.anInt932 - 50, 334, this.anInt932 + 50);
-                        this.fontBold.drawString(s, this.anInt932 + 50 - i4, this.anInt933 + 1, 0);
-                        this.fontBold.drawString(s, this.anInt932 + 50 - i4, this.anInt933, k2);
+                        Rasterizer.setCoordinates(0, this.screenX - 50, 334, this.screenX + 50);
+                        this.fontBold.drawString(s, this.screenX + 50 - i4, this.screenY + 1, 0);
+                        this.fontBold.drawString(s, this.screenX + 50 - i4, this.screenY, k2);
                         Rasterizer.resetCoordinates();
                     }
                     if (this.anIntArray946[j] === 5) {
@@ -2345,14 +2341,14 @@ export class Game extends GameShell {
                         } else if (l3 > 125) {
                             j4 = l3 - 125;
                         }
-                        Rasterizer.setCoordinates(this.anInt933 - this.fontBold.characterDefaultHeight - 1, 0, this.anInt933 + 5, 512);
-                        this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933 + 1 + j4, 0);
-                        this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933 + j4, k2);
+                        Rasterizer.setCoordinates(this.screenY - this.fontBold.characterDefaultHeight - 1, 0, this.screenY + 5, 512);
+                        this.fontBold.drawStringLeft(s, this.screenX, this.screenY + 1 + j4, 0);
+                        this.fontBold.drawStringLeft(s, this.screenX, this.screenY + j4, k2);
                         Rasterizer.resetCoordinates();
                     }
                 } else {
-                    this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933 + 1, 0);
-                    this.fontBold.drawStringLeft(s, this.anInt932, this.anInt933, 16776960);
+                    this.fontBold.drawStringLeft(s, this.screenX, this.screenY + 1, 0);
+                    this.fontBold.drawStringLeft(s, this.screenX, this.screenY, 16776960);
                 }
             }
         }
@@ -2361,42 +2357,38 @@ export class Game extends GameShell {
         }
     }
 
-    public method136(class50_sub1_sub4_sub3: Actor, flag: boolean, i: number) {
-        this.method137(class50_sub1_sub4_sub3.worldX, i, class50_sub1_sub4_sub3.worldY, -214);
-        if (!flag) {
-        }
+    public actorWorldToScreen(actor: Actor, modelHeight: number) {
+        this.worldToScreen(actor.worldX, modelHeight, actor.worldY);
     }
 
-    public method137(i: number, j: number, k: number, l: number) {
-        if (i < 128 || k < 128 || i > 13056 || k > 13056) {
-            this.anInt932 = -1;
-            this.anInt933 = -1;
+    public worldToScreen(worldX: number, worldZ: number, worldY: number) {
+        if (worldX < 128 || worldY < 128 || worldX > 13056 || worldY > 13056) {
+            this.screenX = -1;
+            this.screenY = -1;
             return;
         }
-        let i1: number = this.method110(k, i, (9 as number) | 0, this.plane) - j;
-        i -= this.cameraX;
+        let i1: number = this.getTileHeight(worldY, worldX, 9, this.plane) - worldZ;
+        worldX -= this.cameraX;
         i1 -= this.cameraZ;
-        k -= this.cameraY;
-        const j1: number = Model.SINE[this.anInt1219];
-        const k1: number = Model.COSINE[this.anInt1219];
-        const l1: number = Model.SINE[this.anInt1220];
-        const i2: number = Model.COSINE[this.anInt1220];
-        let j2: number = (k * l1 + i * i2) >> 16;
-        k = (k * i2 - i * l1) >> 16;
-        i = j2;
-        j2 = (i1 * k1 - k * j1) >> 16;
-        k = (i1 * j1 + k * k1) >> 16;
-        while (l >= 0) {
-            this.opcode = -1;
-        }
+        worldY -= this.cameraY;
+        const j1: number = Model.SINE[this.cameraPitch];
+        const k1: number = Model.COSINE[this.cameraPitch];
+        const l1: number = Model.SINE[this.cameraYaw];
+        const i2: number = Model.COSINE[this.cameraYaw];
+        let j2: number = (worldY * l1 + worldX * i2) >> 16;
+        worldY = (worldY * i2 - worldX * l1) >> 16;
+        worldX = j2;
+        j2 = (i1 * k1 - worldY * j1) >> 16;
+        worldY = (i1 * j1 + worldY * k1) >> 16;
+
         i1 = j2;
-        if (k >= 50) {
-            this.anInt932 = Rasterizer3D.centerX + (((i << 9) / k) | 0);
-            this.anInt933 = Rasterizer3D.centerY + (((i1 << 9) / k) | 0);
+        if (worldY >= 50) {
+            this.screenX = Rasterizer3D.centerX + (((worldX << 9) / worldY) | 0);
+            this.screenY = Rasterizer3D.centerY + (((i1 << 9) / worldY) | 0);
             return;
         } else {
-            this.anInt932 = -1;
-            this.anInt933 = -1;
+            this.screenX = -1;
+            this.screenY = -1;
             return;
         }
     }
@@ -2442,7 +2434,7 @@ export class Game extends GameShell {
                     Game.pulseCycle < player.objectAppearanceEndTick
                 ) {
                     player.aBoolean1763 = false;
-                    player.anInt1750 = this.method110(player.worldY, player.worldX, (9 as number) | 0, this.plane);
+                    player.anInt1750 = this.getTileHeight(player.worldY, player.worldX, (9 as number) | 0, this.plane);
                     this.currentScene.addRenderable(
                         player.anInt1750,
                         player.anInt1769,
@@ -2466,7 +2458,7 @@ export class Game extends GameShell {
                     }
                     this.anIntArrayArray886[viewportX][viewportY] = this.anInt1138;
                 }
-                player.anInt1750 = this.method110(player.worldY, player.worldX, (9 as number) | 0, this.plane);
+                player.anInt1750 = this.getTileHeight(player.worldY, player.worldX, (9 as number) | 0, this.plane);
                 this.currentScene.addEntity(
                     key,
                     player,
@@ -4993,7 +4985,7 @@ export class Game extends GameShell {
     public calculateCameraPosition() {
         let i: number = this.anInt874 * 128 + 64;
         let j: number = this.anInt875 * 128 + 64;
-        let k: number = this.method110(j, i, (9 as number) | 0, this.plane) - this.anInt876;
+        let k: number = this.getTileHeight(j, i, (9 as number) | 0, this.plane) - this.anInt876;
         if (this.cameraX < i) {
             this.cameraX += this.anInt877 + ((((i - this.cameraX) * this.anInt878) / 1000) | 0);
             if (this.cameraX > i) {
@@ -5032,7 +5024,7 @@ export class Game extends GameShell {
         }
         i = this.anInt993 * 128 + 64;
         j = this.anInt994 * 128 + 64;
-        k = this.method110(j, i, (9 as number) | 0, this.plane) - this.anInt995;
+        k = this.getTileHeight(j, i, (9 as number) | 0, this.plane) - this.anInt995;
         const l: number = i - this.cameraX;
         const i1: number = k - this.cameraZ;
         const j1: number = j - this.cameraY;
@@ -5045,19 +5037,19 @@ export class Game extends GameShell {
         if (l1 > 383) {
             l1 = 383;
         }
-        if (this.anInt1219 < l1) {
-            this.anInt1219 += this.anInt996 + ((((l1 - this.anInt1219) * this.anInt997) / 1000) | 0);
-            if (this.anInt1219 > l1) {
-                this.anInt1219 = l1;
+        if (this.cameraPitch < l1) {
+            this.cameraPitch += this.anInt996 + ((((l1 - this.cameraPitch) * this.anInt997) / 1000) | 0);
+            if (this.cameraPitch > l1) {
+                this.cameraPitch = l1;
             }
         }
-        if (this.anInt1219 > l1) {
-            this.anInt1219 -= this.anInt996 + ((((this.anInt1219 - l1) * this.anInt997) / 1000) | 0);
-            if (this.anInt1219 < l1) {
-                this.anInt1219 = l1;
+        if (this.cameraPitch > l1) {
+            this.cameraPitch -= this.anInt996 + ((((this.cameraPitch - l1) * this.anInt997) / 1000) | 0);
+            if (this.cameraPitch < l1) {
+                this.cameraPitch = l1;
             }
         }
-        let k2: number = j2 - this.anInt1220;
+        let k2: number = j2 - this.cameraYaw;
         if (k2 > 1024) {
             k2 -= 2048;
         }
@@ -5065,14 +5057,14 @@ export class Game extends GameShell {
             k2 += 2048;
         }
         if (k2 > 0) {
-            this.anInt1220 += this.anInt996 + (((k2 * this.anInt997) / 1000) | 0);
-            this.anInt1220 &= 2047;
+            this.cameraYaw += this.anInt996 + (((k2 * this.anInt997) / 1000) | 0);
+            this.cameraYaw &= 2047;
         }
         if (k2 < 0) {
-            this.anInt1220 -= this.anInt996 + (((-k2 * this.anInt997) / 1000) | 0);
-            this.anInt1220 &= 2047;
+            this.cameraYaw -= this.anInt996 + (((-k2 * this.anInt997) / 1000) | 0);
+            this.cameraYaw &= 2047;
         }
-        let l2: number = j2 - this.anInt1220;
+        let l2: number = j2 - this.cameraYaw;
         if (l2 > 1024) {
             l2 -= 2048;
         }
@@ -5080,7 +5072,7 @@ export class Game extends GameShell {
             l2 += 2048;
         }
         if ((l2 < 0 && k2 > 0) || (l2 > 0 && k2 < 0)) {
-            this.anInt1220 = j2;
+            this.cameraYaw = j2;
         }
     }
 
@@ -5123,7 +5115,7 @@ export class Game extends GameShell {
             }
             const l: number = this.anInt1262 >> 7;
             const i1: number = this.anInt1263 >> 7;
-            const j1: number = this.method110(this.anInt1263, this.anInt1262, (9 as number) | 0, this.plane);
+            const j1: number = this.getTileHeight(this.anInt1263, this.anInt1262, (9 as number) | 0, this.plane);
             let k1: number = 0;
             if (l > 3 && i1 > 3 && l < 100 && i1 < 100) {
                 for (let l1: number = l - 4; l1 <= l + 4; l1++) {
@@ -7876,18 +7868,18 @@ export class Game extends GameShell {
                 if (this.anInt997 >= 100) {
                     const i4: number = this.anInt993 * 128 + 64;
                     const l12: number = this.anInt994 * 128 + 64;
-                    const l17: number = this.method110(l12, i4, (9 as number) | 0, this.plane) - this.anInt995;
+                    const l17: number = this.getTileHeight(l12, i4, (9 as number) | 0, this.plane) - this.anInt995;
                     const k22: number = i4 - this.cameraX;
                     const i25: number = l17 - this.cameraZ;
                     const k27: number = l12 - this.cameraY;
                     const i30: number = (Math.sqrt(k22 * k22 + k27 * k27) as number) | 0;
-                    this.anInt1219 = (((Math.atan2(i25, i30) * 325.949) as number) | 0) & 2047;
-                    this.anInt1220 = (((Math.atan2(k22, k27) * -325.949) as number) | 0) & 2047;
-                    if (this.anInt1219 < 128) {
-                        this.anInt1219 = 128;
+                    this.cameraPitch = (((Math.atan2(i25, i30) * 325.949) as number) | 0) & 2047;
+                    this.cameraYaw = (((Math.atan2(k22, k27) * -325.949) as number) | 0) & 2047;
+                    if (this.cameraPitch < 128) {
+                        this.cameraPitch = 128;
                     }
-                    if (this.anInt1219 > 383) {
-                        this.anInt1219 = 383;
+                    if (this.cameraPitch > 383) {
+                        this.cameraPitch = 383;
                     }
                 }
                 this.opcode = -1;
@@ -8798,7 +8790,7 @@ export class Game extends GameShell {
                 if (this.anInt878 >= 100) {
                     this.cameraX = this.anInt874 * 128 + 64;
                     this.cameraY = this.anInt875 * 128 + 64;
-                    this.cameraZ = this.method110(this.cameraY, this.cameraX, (9 as number) | 0, this.plane) - this.anInt876;
+                    this.cameraZ = this.getTileHeight(this.cameraY, this.cameraX, (9 as number) | 0, this.plane) - this.anInt876;
                 }
                 this.opcode = -1;
                 return true;
@@ -9677,7 +9669,7 @@ export class Game extends GameShell {
                     }
                     player.anInt1743 = x * 128 + i23 * 64;
                     player.anInt1745 = y * 128 + j23 * 64;
-                    player.anInt1744 = this.method110(player.anInt1745, player.anInt1743, (9 as number) | 0, this.plane);
+                    player.anInt1744 = this.getTileHeight(player.anInt1745, player.anInt1743, (9 as number) | 0, this.plane);
                     if (byte1 > byte0) {
                         const byte4: number = byte1;
                         byte1 = byte0;
@@ -9864,14 +9856,14 @@ export class Game extends GameShell {
                     j20 + Game.pulseCycle,
                     i21,
                     l14,
-                    this.method110(y, x, (9 as number) | 0, this.plane) - i18,
+                    this.getTileHeight(y, x, (9 as number) | 0, this.plane) - i18,
                     x,
                     k19 + Game.pulseCycle
                 );
                 class50_sub1_sub4_sub2.trackTarget(
                     i10,
                     l12,
-                    this.method110(l12, i10, (9 as number) | 0, this.plane) - i19,
+                    this.getTileHeight(l12, i10, (9 as number) | 0, this.plane) - i19,
                     k19 + Game.pulseCycle
                 );
                 this.aClass6_1282.insertBack(class50_sub1_sub4_sub2);
@@ -9916,7 +9908,7 @@ export class Game extends GameShell {
                     Game.pulseCycle,
                     j15,
                     k10,
-                    this.method110(l7, i5, (9 as number) | 0, this.plane) - j13,
+                    this.getTileHeight(l7, i5, (9 as number) | 0, this.plane) - j13,
                     l7,
                     i5
                 );
@@ -10053,7 +10045,7 @@ export class Game extends GameShell {
             const i5: number = (k1 >> 14) & 32767;
             const class47_2: GameObjectDefinition = GameObjectDefinition.getDefinition(i5);
             if (class47_2.anInt795 !== -1) {
-                const class50_sub1_sub1_sub3_2: IndexedImage = this.aClass50_Sub1_Sub1_Sub3Array1153[class47_2.anInt795];
+                const class50_sub1_sub1_sub3_2: IndexedImage = this.mapscenes[class47_2.anInt795];
                 if (class50_sub1_sub1_sub3_2 != null) {
                     const i6: number = ((class47_2.sizeX * 4 - class50_sub1_sub1_sub3_2.width) / 2) | 0;
                     const j6: number = ((class47_2.sizeY * 4 - class50_sub1_sub1_sub3_2.height) / 2) | 0;
@@ -10127,7 +10119,7 @@ export class Game extends GameShell {
             const l3: number = (k1 >> 14) & 32767;
             const class47_1: GameObjectDefinition = GameObjectDefinition.getDefinition(l3);
             if (class47_1.anInt795 !== -1) {
-                const class50_sub1_sub1_sub3_1: IndexedImage = this.aClass50_Sub1_Sub1_Sub3Array1153[class47_1.anInt795];
+                const class50_sub1_sub1_sub3_1: IndexedImage = this.mapscenes[class47_1.anInt795];
                 if (class50_sub1_sub1_sub3_1 != null) {
                     const j5: number = ((class47_1.sizeX * 4 - class50_sub1_sub1_sub3_1.width) / 2) | 0;
                     const k5: number = ((class47_1.sizeY * 4 - class50_sub1_sub1_sub3_1.height) / 2) | 0;
@@ -10158,7 +10150,7 @@ export class Game extends GameShell {
             const j2: number = (k1 >> 14) & 32767;
             const class47: GameObjectDefinition = GameObjectDefinition.getDefinition(j2);
             if (class47.anInt795 !== -1) {
-                const class50_sub1_sub1_sub3: IndexedImage = this.aClass50_Sub1_Sub1_Sub3Array1153[class47.anInt795];
+                const class50_sub1_sub1_sub3: IndexedImage = this.mapscenes[class47.anInt795];
                 if (class50_sub1_sub1_sub3 != null) {
                     const i4: number = ((class47.sizeX * 4 - class50_sub1_sub1_sub3.width) / 2) | 0;
                     const j4: number = ((class47.sizeY * 4 - class50_sub1_sub1_sub3.height) / 2) | 0;
@@ -10668,7 +10660,7 @@ export class Game extends GameShell {
         }
         const key: number = x + (y << 7) + 1610612736;
         this.currentScene.method248(
-            this.method110(y * 128 + 64, x * 128 + 64, (9 as number) | 0, this.plane),
+            this.getTileHeight(y * 128 + 64, x * 128 + 64, (9 as number) | 0, this.plane),
             this.plane,
             mostValuable as Renderable,
             first as Renderable,
@@ -10680,7 +10672,7 @@ export class Game extends GameShell {
         );
     }
 
-    public method110(i: number, j: number, byte0: number, k: number): number {
+    public getTileHeight(i: number, j: number, byte0: number, k: number): number {
         const l: number = j >> 7;
         const i1: number = i >> 7;
         if (l < 0 || i1 < 0 || l > 103 || i1 > 103) {
@@ -11158,22 +11150,22 @@ export class Game extends GameShell {
         this.minimapEdge.trim();
 
         for (let i: number = 0; i < 72; i++) {
-            this.aClass50_Sub1_Sub1_Sub3Array1153[i] = new IndexedImage(archiveMedia, "mapscene", i);
+            this.mapscenes[i] = new IndexedImage(archiveMedia, "mapscene", i);
         }
         for (let i: number = 0; i < 70; i++) {
             this.worldMapHintIcons[i] = ImageRGB.fromArchive(archiveMedia, "mapfunction", i);
         }
         for (let i: number = 0; i < 5; i++) {
-            this.aClass50_Sub1_Sub1_Sub1Array1182[i] = ImageRGB.fromArchive(archiveMedia, "hitmarks", i);
+            this.hitmarks[i] = ImageRGB.fromArchive(archiveMedia, "hitmarks", i);
         }
         for (let i: number = 0; i < 6; i++) {
-            this.aClass50_Sub1_Sub1_Sub1Array1288[i] = ImageRGB.fromArchive(archiveMedia, "headicons_pk", i);
+            this.headiconsPks[i] = ImageRGB.fromArchive(archiveMedia, "headicons_pk", i);
         }
         for (let i: number = 0; i < 9; i++) {
-            this.aClass50_Sub1_Sub1_Sub1Array1079[i] = ImageRGB.fromArchive(archiveMedia, "headicons_prayer", i);
+            this.headiconsPrayers[i] = ImageRGB.fromArchive(archiveMedia, "headicons_prayer", i);
         }
         for (let i: number = 0; i < 6; i++) {
-            this.aClass50_Sub1_Sub1_Sub1Array954[i] = ImageRGB.fromArchive(archiveMedia, "headicons_hint", i);
+            this.headiconsHints[i] = ImageRGB.fromArchive(archiveMedia, "headicons_hint", i);
         }
 
         this.aClass50_Sub1_Sub1_Sub1_1086 = ImageRGB.fromArchive(archiveMedia, "overlay_multiway", 0);
@@ -11248,8 +11240,8 @@ export class Game extends GameShell {
                 if (this.worldMapHintIcons[i] != null) {
                     this.worldMapHintIcons[i].adjustRGB(red, green, blue);
                 }
-                if (this.aClass50_Sub1_Sub1_Sub3Array1153[i] != null) {
-                    this.aClass50_Sub1_Sub1_Sub3Array1153[i].mixPalette(red, green, blue);
+                if (this.mapscenes[i] != null) {
+                    this.mapscenes[i].mixPalette(red, green, blue);
                 }
             }
         }
