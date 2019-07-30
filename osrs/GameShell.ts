@@ -201,7 +201,7 @@ export class GameShell {
         if (this.deltime > 0) {
             this.fps = ((1000 * ld.ratio) / (this.deltime * 256)) | 0;
         }
-        this.repaintGame();
+        await this.repaintGame();
         if (this.dumpRequested) {
             console.info("ntime:" + currentTime);
             for (let i: number = 0; i < 10; i++) {
@@ -471,7 +471,7 @@ export class GameShell {
 
     public shutdown() {}
 
-    public repaintGame() {}
+    public async repaintGame() {}
 
     public redraw() {}
 

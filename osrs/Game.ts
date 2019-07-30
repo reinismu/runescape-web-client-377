@@ -171,7 +171,7 @@ export class Game extends GameShell {
     startedRenderingFlames: boolean = false;
     shouldRenderFlames: boolean = false;
     packetSize: number = 0;
-    aBoolean1320: boolean = false;
+    isRenderingFlames: boolean = false;
     flameCycle: number = 0;
     anInt1238: number = 0;
     anIntArray1166: number[] = (s => {
@@ -667,14 +667,14 @@ export class Game extends GameShell {
         this.method77(false);
     }
 
-    public repaintGame() {
+    public async repaintGame() {
         if (this.aBoolean1016 || this.startUpError || this.aBoolean1097) {
             this.drawError();
             return;
         }
         Game.anInt1309++;
         if (!this.loggedIn) {
-            this.drawLoginScreen(false);
+            await this.drawLoginScreen(false);
         } else {
             this.drawGame();
         }
@@ -3550,8 +3550,8 @@ export class Game extends GameShell {
         }
     }
 
-    public drawLoginScreen(flag: boolean) {
-        this.resetTitleScreen();
+    public async drawLoginScreen(flag: boolean) {
+        await this.resetTitleScreen();
         this.aClass18_1200.createRasterizer();
         this.titleboxImage.drawImage(0, 0);
         const c: string = "\u0168";
@@ -3892,7 +3892,7 @@ export class Game extends GameShell {
             if (!reconnecting) {
                 this.statusLineOne = "";
                 this.statusLineTwo = "Connecting to server...";
-                this.drawLoginScreen(true);
+                await this.drawLoginScreen(true);
             }
             this.gameConnection = new BufferedConnection(this, await this.openSocket(Configuration.GAME_PORT + Game.portOffset));
             const base37name: number = TextUtils.nameToLong(username);
@@ -4166,7 +4166,7 @@ export class Game extends GameShell {
                     {
                         this.statusLineOne = "You have only just left another world";
                         this.statusLineTwo = "Your profile will be transferred in: " + time;
-                        this.drawLoginScreen(true);
+                        await this.drawLoginScreen(true);
                         try {
                             await sleep(1200);
                         } catch (ignored) {}
@@ -10947,13 +10947,9 @@ export class Game extends GameShell {
 
     public async method141() {
         this.startedRenderingFlames = false;
-        while (this.aBoolean1320) {
-            {
-                this.startedRenderingFlames = false;
-                try {
-                    await sleep(50);
-                } catch (_ex) {}
-            }
+        while (this.isRenderingFlames) {
+            this.startedRenderingFlames = false;
+            await sleep(50);
         }
         this.titleboxImage = null;
         this.titleboxButtonImage = null;
@@ -11751,7 +11747,7 @@ export class Game extends GameShell {
     }
 
     async processFlamesCycle(): Promise<boolean> {
-        this.aBoolean1320 = true;
+        this.isRenderingFlames = true;
         try {
             this.flameCycle++;
             this.calculateFlamePositions();
@@ -11762,7 +11758,7 @@ export class Game extends GameShell {
         if (this.startedRenderingFlames) {
             return true;
         } else {
-            this.aBoolean1320 = false;
+            this.isRenderingFlames = false;
             return false;
         }
     }
