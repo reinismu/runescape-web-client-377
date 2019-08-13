@@ -1,14 +1,14 @@
-## TODO
+# Runescape 317 Web client
+![](images/show.png)
 
-* DONE -> Run RS client 
-* Functionality
-    * DONE -> read archives
-    * DONE -> render graphics
-    * CLOSE ->implement networking
-* Change `number[]` to `Int8Array`
+Demo http://wildy.cf/
 
-* Issues with nodes. For sore reason `type` was undefined and head.next null
-* Nodes are fucked for some reason
+
+## Setup
+
+* Make sure server is running -> https://github.com/reinismu/apollo
+* Change `Configuration` file based on your server
+* Run client `npm install && npm run dev`
 
 ## USEFUL links
 
@@ -16,6 +16,4 @@
 * 317 c# https://github.com/HelloKitty/RS317.Sharp
 * server https://github.com/apollo-rsps/apollo
 * caches https://www.mediafire.com/?xng9h28c0811s
-
-* rust bzip2 https://docs.rs/bzip2/0.3.3/bzip2/ <-- not compiling with to wasm
 
