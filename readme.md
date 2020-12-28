@@ -1,8 +1,7 @@
 # Runescape 377 Web client
 ![](images/show.png)
 
-Demo http://wildy.cf/
-
+It is a bit out of date on packages and rust version. Might need to catch up on it
 
 ## Setup
 
