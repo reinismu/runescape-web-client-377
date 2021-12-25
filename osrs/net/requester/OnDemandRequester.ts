@@ -6,7 +6,7 @@ import { OnDemandNode } from "./OnDemandNode";
 import { Requester } from "./Requester";
 import { ungzip } from "pako";
 import { Socket } from "../Socket";
-import { crc32 } from "@stardazed/crc32";
+import { crc32 } from "@stardazed/zlib";
 import { sleep, Runnable } from "../../ParallelExecutor";
 
 export class OnDemandRequester extends Requester implements Runnable{

@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = []
 
 [dependencies]
-wasm-bindgen = "0.2.48"
-num-bigint = "0.2.2"
+wasm-bindgen = "0.2.68"
+num-bigint = "0.3.0"
 
 [lib]
 crate-type = ["cdylib"]
