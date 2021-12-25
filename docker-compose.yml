@@ -1,0 +1,19 @@
+version: "3.7"
+services:
+    front:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "8500:5000"
+    back:
+        build:
+            context: ../apollo
+            dockerfile: Dockerfile
+        ports:
+            - "43594:43594"
+            - "43595:43595"
+            - "8080:8080"
+        volumes:
+            - ./client_cache:/usr/server/game/data/fs/377
+            - ./test-rsa.pem:/usr/server/game/data/rsa.pem
