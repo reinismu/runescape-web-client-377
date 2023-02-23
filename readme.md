@@ -3,6 +3,8 @@
 
 It is a bit out of date on packages and rust version. Might need to catch up on it
 
+Demo of version with WebGL: https://play.rsps.app/
+
 ## Setup with docker compose
 
 * Make sure you have **docker** and **docker-compose** installed
